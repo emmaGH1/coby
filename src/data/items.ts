@@ -37,3 +37,8 @@ export async function saveItems(items: CobyItem[]): Promise<void> {
 export async function completeItem(item: CobyItem, completedAt: string): Promise<void> {
   await saveItems([{ ...item, status: 'completed', completedAt }]);
 }
+
+export async function clearItems(): Promise<void> {
+  const db = await database();
+  await db.runAsync('DELETE FROM items');
+}

@@ -3,6 +3,7 @@ import test from 'node:test';
 import { DemoClock } from '../src/domain/clock';
 import { DEMO_DUMP, FixtureBrainDumpParser } from '../src/domain/parser';
 import { rankItems } from '../src/domain/ranking';
+import { planNudges } from '../src/domain/nudges';
 import type { CobyItem } from '../src/domain/types';
 
 const clock = new DemoClock(new Date('2026-09-29T12:00:00Z'));
@@ -50,4 +51,19 @@ test('latest safe start outranks another due-soon item', () => {
   const ranked = rankItems([later, latest], clock);
   assert.equal(ranked[0].item.id, 'a');
   assert.deepEqual(ranked[0].reasonCodes, ['latestStart']);
+});
+
+test('Gentle schedules one comfortable start and Persistent at most two nudges', () => {
+  const base = { ...stored('a', '2026-09-29T14:00:00Z'), durationMinutes: 60 };
+  const gentle = planNudges({ ...base, commitmentMode: 'gentle' }, clock);
+  const persistent = planNudges({ ...base, commitmentMode: 'persistent' }, clock);
+  assert.equal(gentle.length, 1);
+  assert.equal(gentle[0].at.toISOString(), '2026-09-29T12:30:00.000Z');
+  assert.equal(persistent.length, 2);
+  assert.equal(persistent[1].at.toISOString(), '2026-09-29T13:00:00.000Z');
+});
+
+test('unknown deadlines and completed items never receive nudges', () => {
+  assert.deepEqual(planNudges({ ...stored('a', null), commitmentMode: 'gentle' }, clock), []);
+  assert.deepEqual(planNudges({ ...stored('a', '2026-09-29T14:00:00Z', 'completed'), commitmentMode: 'gentle' }, clock), []);
 });

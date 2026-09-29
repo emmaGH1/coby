@@ -24,6 +24,7 @@ Record date, device/emulator, build, result, and evidence for every executed row
 
 ## Latest run
 
-2026-09-29: typecheck passed; lint passed; 5 domain tests passed; Android JS bundle export passed after Plan/focus. No Android runtime target available, so persistence and UI flow remain unverified on device.
+2026-09-29: typecheck passed; lint passed; 7 domain tests passed, including Gentle/Persistent timing. Android JS bundle export passed before notification plugin config; native scheduling remains unverified without a device.
+
 
 

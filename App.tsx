@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, TextInput, View } from 'react-native';
-import { SystemClock } from './src/domain/clock';
+import { DemoClock, SystemClock, type Clock } from './src/domain/clock';
 import { DEMO_DUMP, FixtureBrainDumpParser } from './src/domain/parser';
 import { rankItems, reasonText } from './src/domain/ranking';
 import type { CobyItem, ParsedItem } from './src/domain/types';
-import { completeItem, listItems, saveItems } from './src/data/items';
+import { clearItems, completeItem, listItems, saveItems } from './src/data/items';
+import { clearAllCobyNudges, syncItemNudges, triggerLabNudge } from './src/notifications/scheduler';
 
-type Screen = 'arrival' | 'home' | 'capture' | 'receipt' | 'plan' | 'focus';
+type Screen = 'arrival' | 'home' | 'capture' | 'receipt' | 'plan' | 'focus' | 'lab';
 const clock = new SystemClock();
 const parser = new FixtureBrainDumpParser();
 
@@ -35,6 +36,8 @@ export default function App() {
   const [planMode, setPlanMode] = useState<'list' | 'calendar'>('list');
   const [selectedDay, setSelectedDay] = useState(() => clock.now().toDateString());
   const [focusItem, setFocusItem] = useState<CobyItem | null>(null);
+  const [activeClock, setActiveClock] = useState<Clock>(() => new SystemClock());
+  const [labMessage, setLabMessage] = useState('Fixture parser · RevenueCat not connected');
 
   useEffect(() => {
     listItems().then((stored) => { setItems(stored); setScreen(stored.length ? 'home' : 'arrival'); })
@@ -42,7 +45,7 @@ export default function App() {
       .finally(() => setLoading(false));
   }, []);
 
-  const ranked = useMemo(() => rankItems(items, clock), [items]);
+  const ranked = useMemo(() => rankItems(items, activeClock), [items, activeClock]);
   const now = ranked[0];
   const next = ranked.slice(1, 3);
 
@@ -50,7 +53,7 @@ export default function App() {
     setError(null);
     setBusy(true);
     try {
-      const result = await parser.parse(dump, { clock, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
+      const result = await parser.parse(dump, { clock: activeClock, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
       if (!result.items.length) { setError('Write what is on your mind first.'); return; }
       setDraft(result.items);
       setScreen('receipt');
@@ -62,13 +65,14 @@ export default function App() {
     setError(null);
     setBusy(true);
     try {
-      const timestamp = clock.now().toISOString();
+      const timestamp = activeClock.now().toISOString();
       const captured = draft.map((entry, index): CobyItem => ({
-        ...entry, id: `${clock.now().getTime()}-${index}-${Math.random().toString(36).slice(2)}`,
+        ...entry, id: `${activeClock.now().getTime()}-${index}-${Math.random().toString(36).slice(2)}`,
         sourceText: dump, createdAt: timestamp, status: 'captured',
         commitmentMode: 'none', completedAt: null,
       }));
       await saveItems(captured);
+      for (const item of captured) await syncItemNudges(item, activeClock);
       setItems(await listItems());
       setDump(''); setDraft([]); setScreen('home');
     } catch { setError('Coby could not save this. Please try again.'); }
@@ -78,7 +82,7 @@ export default function App() {
   async function finishNow() {
     if (!now) return;
     setError(null); setBusy(true);
-    try { await completeItem(now.item, clock.now().toISOString()); setItems(await listItems()); setShowReason(false); }
+    try { await completeItem(now.item, activeClock.now().toISOString()); await syncItemNudges({ ...now.item, status: 'completed' }, activeClock); setItems(await listItems()); setShowReason(false); }
     catch { setError('Coby could not mark this complete. Please try again.'); }
     finally { setBusy(false); }
   }
@@ -97,7 +101,8 @@ export default function App() {
     if (!focusItem) return;
     setError(null); setBusy(true);
     try {
-      await completeItem(focusItem, clock.now().toISOString());
+      await completeItem(focusItem, activeClock.now().toISOString());
+      await syncItemNudges({ ...focusItem, status: 'completed' }, activeClock);
       setItems(await listItems()); setFocusItem(null); setScreen('home'); setShowReason(false);
     } catch { setError('Coby could not mark this complete. Please try again.'); }
     finally { setBusy(false); }
@@ -115,8 +120,47 @@ export default function App() {
 
   const openItems = items.filter((item) => item.status !== 'completed' && item.status !== 'archived');
   const calendarDays = Array.from({ length: 7 }, (_, offset) => {
-    const day = clock.now(); day.setDate(day.getDate() + offset); return day;
+    const day = activeClock.now(); day.setDate(day.getDate() + offset); return day;
   });
+
+  async function setGentle(item: CobyItem) {
+    setError(null); setBusy(true);
+    try {
+      const changed: CobyItem = { ...item, commitmentMode: 'gentle' };
+      await saveItems([changed]);
+      const enabled = await syncItemNudges(changed, activeClock);
+      setItems(await listItems());
+      if (!enabled) setError('Notifications are off. Coby still has your item.');
+    } catch { setError('Coby saved the item but could not schedule a reminder.'); }
+    finally { setBusy(false); }
+  }
+
+  async function seedLab() {
+    setBusy(true); setError(null);
+    try {
+      const result = await parser.parse(DEMO_DUMP, { clock: activeClock, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
+      const timestamp = activeClock.now().toISOString();
+      const seeded = result.items.map((entry, index): CobyItem => ({ ...entry,
+        id: `demo-${activeClock.now().getTime()}-${index}`, sourceText: DEMO_DUMP,
+        createdAt: timestamp, status: 'captured', commitmentMode: 'none', completedAt: null,
+      }));
+      await saveItems(seeded); setItems(await listItems()); setLabMessage('Demo items seeded.');
+    } catch { setError('Could not seed demo data.'); }
+    finally { setBusy(false); }
+  }
+
+  async function clearLab() {
+    setBusy(true); setError(null);
+    try { await clearItems(); await clearAllCobyNudges(); setItems([]); setLabMessage('Local items cleared.'); }
+    catch { setError('Could not clear local items.'); }
+    finally { setBusy(false); }
+  }
+
+  async function nudgeLab() {
+    if (!now) { setLabMessage('Seed an item first.'); return; }
+    try { await triggerLabNudge(now.item); setLabMessage('A local nudge is queued for two seconds from now.'); }
+    catch { setLabMessage('Notification permission is needed on an Android device.'); }
+  }
 
   if (loading) return <View style={styles.loading}><ActivityIndicator color={colors.violet} /></View>;
 
@@ -142,6 +186,8 @@ export default function App() {
           {showReason && <Text style={styles.reason}>{reasonText(now.reasonCodes)}</Text>}
           <Button label={busy ? 'Starting…' : 'Start focus'} disabled={busy} onPress={() => startFocus(now.item)} />
           <Button label="Mark complete" kind="quiet" disabled={busy} onPress={finishNow} />
+          {now.item.commitmentMode === 'none' && now.item.dueAt && <Pressable accessibilityRole="button" onPress={() => setGentle(now.item)}><Text style={styles.reminderLink}>Keep me gently on track</Text></Pressable>}
+          {now.item.commitmentMode === 'gentle' && <Text style={styles.reminderState}>Gentle reminders are on.</Text>}
         </> : <>
           <Text style={styles.nowTitle}>You’re clear for now.</Text>
           <Text style={styles.support}>Coby is ready when something comes to mind.</Text>
@@ -153,7 +199,22 @@ export default function App() {
         </View>}
         <View style={styles.bottomAction}><Button label="Get it out of my head" onPress={() => { setError(null); setScreen('capture'); }} />
           <Pressable accessibilityRole="button" onPress={() => setScreen('plan')}><Text style={styles.planLink}>See your plan →</Text></Pressable>
+          {__DEV__ && <Pressable accessibilityRole="button" onPress={() => setScreen('lab')}><Text style={styles.labLink}>Coby Lab</Text></Pressable>}
         </View>
+      </>}
+
+      {screen === 'lab' && __DEV__ && <>
+        <Pressable onPress={() => setScreen('home')} accessibilityRole="button"><Text style={styles.back}>← Home</Text></Pressable>
+        <Text style={[styles.pageTitle, styles.planTitle]}>Coby Lab</Text>
+        <Text style={styles.support}>Local demo controls. Nothing here is sent online.</Text>
+        <Text style={styles.labStatus}>{labMessage}</Text>
+        <Text style={styles.support}>Clock: {activeClock.now().toLocaleString()}</Text>
+        <Button label="Seed demo data" disabled={busy} onPress={seedLab} />
+        <Button label="Advance time by 60 minutes" disabled={busy} kind="quiet" onPress={() => { const demo = new DemoClock(activeClock.now()); demo.advanceMinutes(60); setActiveClock(demo); setLabMessage('Demo clock advanced by one hour.'); }} />
+        <Button label="Trigger next nudge" disabled={busy} kind="quiet" onPress={nudgeLab} />
+        <Button label="Use fixture parser" kind="quiet" onPress={() => setLabMessage('Fixture parser is active.')} />
+        <Button label="RevenueCat state" kind="quiet" onPress={() => setLabMessage('RevenueCat is not connected yet.')} />
+        <Button label="Clear local data" disabled={busy} kind="quiet" onPress={clearLab} />
       </>}
 
       {screen === 'plan' && <>
@@ -248,6 +309,8 @@ const styles = StyleSheet.create({
   receiptList: { marginTop: 28, marginBottom: 8 }, receiptRow: { backgroundColor: '#FFFFFF', paddingHorizontal: 20, paddingVertical: 14, borderRadius: 20, marginBottom: 10 },
   receiptTitle: { fontSize: 17, fontWeight: '600', color: colors.ink, minHeight: 32 }, receiptMeta: { fontSize: 13, color: colors.muted, marginTop: 3 },
   error: { color: '#A24D48', fontSize: 14, marginTop: 18 },
+  reminderLink: { color: colors.violet, textAlign: 'center', fontSize: 14, marginTop: 15 }, reminderState: { color: colors.muted, fontSize: 13, marginTop: 15 },
+  labLink: { color: colors.muted, fontSize: 12, textAlign: 'center', marginTop: 25 }, labStatus: { color: colors.violet, fontSize: 16, marginTop: 30, marginBottom: 20 },
   planLink: { color: colors.violet, fontSize: 15, fontWeight: '600', textAlign: 'center', marginTop: 22 },
   planTitle: { marginTop: 55 }, modeBar: { flexDirection: 'row', backgroundColor: '#EBE8E4', borderRadius: 18, padding: 4, marginTop: 30, marginBottom: 25 },
   modeButton: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 15 }, modeSelected: { backgroundColor: '#FFFFFF' }, modeText: { color: colors.ink, fontSize: 15, fontWeight: '600' },

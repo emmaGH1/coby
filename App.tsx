@@ -19,7 +19,8 @@ type Screen = 'home' | 'receipt' | 'plan' | 'focus' | 'lab' | 'paywall';
 const clock = new SystemClock();
 const fixtureParser = new FixtureBrainDumpParser();
 const configuredParser = createGeminiBrainDumpParser();
-const demoToolsEnabled = __DEV__ || process.env.EXPO_PUBLIC_COBY_DEMO_MODE === 'true';
+const releaseDemoMode = process.env.EXPO_PUBLIC_COBY_DEMO_MODE === 'true';
+const demoToolsEnabled = __DEV__;
 
 function Button({ label, onPress, kind = 'primary', disabled = false }: { label: string; onPress: () => void; kind?: 'primary' | 'quiet'; disabled?: boolean }) {
   return <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={disabled} onPress={onPress}
@@ -32,6 +33,21 @@ function dueText(item: { dueAt: string | null; dueDate: string | null }): string
   if (item.dueAt) return new Date(item.dueAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
   if (item.dueDate) return new Date(`${item.dueDate}T12:00:00`).toLocaleDateString(undefined, { dateStyle: 'medium' });
   return 'No date set';
+}
+
+function createDemoClock(): DemoClock {
+  const start = clock.now();
+  start.setHours(9, 0, 0, 0);
+  return new DemoClock(start);
+}
+
+async function buildDemoItems(demoClock: DemoClock): Promise<CobyItem[]> {
+  const result = await fixtureParser.parse(DEMO_DUMP, { clock: demoClock, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
+  const timestamp = demoClock.now().toISOString();
+  return result.items.map((entry, index): CobyItem => ({ ...entry,
+    id: `demo-${demoClock.now().getTime()}-${index}`, sourceText: DEMO_DUMP,
+    createdAt: timestamp, status: 'captured', commitmentMode: index === 1 ? 'gentle' : 'none', completedAt: null,
+  }));
 }
 
 export default function App() {
@@ -75,9 +91,21 @@ export default function App() {
   });
 
   useEffect(() => {
-    listItems().then((stored) => { setItems(stored); setScreen('home'); })
-      .catch(() => setError('Coby could not open local storage. Please restart the app.'))
-      .finally(() => setLoading(false));
+    async function hydrate() {
+      try {
+        let stored = await listItems();
+        if (!stored.length && releaseDemoMode) {
+          const demoClock = createDemoClock();
+          await saveItems(await buildDemoItems(demoClock));
+          stored = await listItems();
+          setActiveClock(demoClock);
+        }
+        setItems(stored);
+        setScreen('home');
+      } catch { setError('Coby could not open local storage. Please restart the app.'); }
+      finally { setLoading(false); }
+    }
+    void hydrate();
   }, []);
 
   useEffect(() => { loadBilling().then(setBilling); }, []);
@@ -205,14 +233,8 @@ export default function App() {
   async function seedLab() {
     setBusy(true); setError(null);
     try {
-      const demoStart = clock.now(); demoStart.setHours(9, 0, 0, 0);
-      const demoClock = new DemoClock(demoStart); setActiveClock(demoClock);
-      const result = await fixtureParser.parse(DEMO_DUMP, { clock: demoClock, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
-      const timestamp = demoClock.now().toISOString();
-      const seeded = result.items.map((entry, index): CobyItem => ({ ...entry,
-        id: `demo-${demoClock.now().getTime()}-${index}`, sourceText: DEMO_DUMP,
-        createdAt: timestamp, status: 'captured', commitmentMode: index === 1 ? 'gentle' : 'none', completedAt: null,
-      }));
+      const demoClock = createDemoClock(); setActiveClock(demoClock);
+      const seeded = await buildDemoItems(demoClock);
       await saveItems(seeded); setItems(await listItems()); setLabMessage('Demo items seeded.');
     } catch { setError('Could not seed demo data.'); }
     finally { setBusy(false); }

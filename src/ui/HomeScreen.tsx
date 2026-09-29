@@ -66,8 +66,8 @@ function CaptureComposer({ dump, onChangeDump, onUnderstand, onToggleVoice, list
       </Pressable>
       <Pressable accessibilityRole="button" accessibilityLabel="Let Coby understand this" disabled={!canUnderstand} onPress={onUnderstand}
         style={({ pressed }) => [styles.sendButton, !canUnderstand && styles.sendDisabled, pressed && canUnderstand && styles.pressed]}>
-        <Text style={styles.sendLabel}>{busy ? 'Holding…' : 'Let Coby hold it'}</Text>
-        <ArrowIcon color={colors.white} />
+        <Text style={[styles.sendLabel, !canUnderstand && styles.sendLabelDisabled]}>{busy ? 'Holding…' : 'Let Coby hold it'}</Text>
+        <ArrowIcon color={canUnderstand ? colors.white : '#8A847C'} />
       </Pressable>
     </View>
     {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
@@ -124,10 +124,6 @@ export function HomeScreen(props: Props) {
       <Text style={styles.heldCopy}>Everything else is safe in Plan.</Text>
     </View>}
 
-    <Pressable accessibilityRole="button" onPress={props.onOpenPlan} style={styles.planFooter}>
-      <Text style={styles.planFooterTitle}>Everything I’m holding</Text>
-      <ArrowIcon color={colors.violetDeep} />
-    </Pressable>
     {props.showLab && <Pressable accessibilityRole="button" onPress={props.onOpenLab}><Text style={styles.labLink}>Coby Lab</Text></Pressable>}
   </ScrollView>;
 }
@@ -156,8 +152,9 @@ const styles = StyleSheet.create({
   micLabel: { color: colors.ink, fontFamily: type.semibold, fontSize: 14 },
   micLabelActive: { color: colors.white },
   sendButton: { minHeight: 48, flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: radius.pill, paddingLeft: 18, paddingRight: 14, backgroundColor: colors.ink },
-  sendDisabled: { opacity: 0.3 },
+  sendDisabled: { backgroundColor: colors.hairline },
   sendLabel: { color: colors.white, fontFamily: type.semibold, fontSize: 14 },
+  sendLabelDisabled: { color: '#8A847C' },
   error: { color: colors.error, fontFamily: type.medium, fontSize: 13, lineHeight: 18, marginTop: 14 },
   rule: { height: 1, backgroundColor: colors.hairline, marginTop: 36, marginBottom: 28 },
   sectionLabel: { color: colors.violetDeep, fontFamily: type.bold, fontSize: 11, letterSpacing: 2.1, marginBottom: 14 },
@@ -186,7 +183,5 @@ const styles = StyleSheet.create({
   nextTitle: { color: colors.ink, fontFamily: type.medium, fontSize: 16, lineHeight: 22 },
   nextDue: { color: colors.muted, fontFamily: type.regular, fontSize: 12, marginTop: 4 },
   heldCopy: { color: colors.muted, fontFamily: type.regular, fontSize: 12, marginTop: 10 },
-  planFooter: { minHeight: 62, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 34, paddingHorizontal: 19, borderRadius: radius.medium, backgroundColor: colors.violetMist },
-  planFooterTitle: { color: colors.violetDeep, fontFamily: type.semibold, fontSize: 14 },
   labLink: { color: colors.muted, fontFamily: type.medium, fontSize: 11, textAlign: 'center', marginTop: 25 },
 });

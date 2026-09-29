@@ -39,7 +39,7 @@
 
 ## 2026-09-29 — Deterministic behavior checks
 
-- **ESLint ignores generated Android prebuild output:** keep the full lint command focused on maintained JavaScript and TypeScript files after Expo creates the native project.
+- **Lint targets maintained TypeScript:** run ESLint against `App.tsx`, `index.ts`, `src`, and `tests` so Expo caches and generated Android output cannot slow or distort the quality gate.
 
 ## 2026-09-29 — P0 product recovery
 
@@ -51,4 +51,4 @@
 - **Old submission screenshot is stale:** it remains historical evidence until a verified screenshot of the recovered interface replaces it.
 - **NDK repair is an environment blocker:** the empty `27.1.12297006` folder was moved aside; Gradle's clean reinstall reached the download and failed with a connection reset.
 
-- **Release demo tools require an explicit flag:** Coby Lab stays hidden in normal release builds; EXPO_PUBLIC_COBY_DEMO_MODE=true enables it for deterministic CI capture and demo rehearsal.
+- **Release demo state requires an explicit flag:** Coby Lab stays development-only. `EXPO_PUBLIC_COBY_DEMO_MODE=true` auto-seeds the fixture on a clean release install for deterministic CI capture and demo rehearsal.

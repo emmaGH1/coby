@@ -43,3 +43,11 @@ test('Home ranking favors a deadline and excludes completed items', () => {
 test('ranking is stable for equal priorities', () => {
   assert.deepEqual(rankItems([stored('b', null), stored('a', null)], clock).map(({ item }) => item.id), ['a', 'b']);
 });
+
+test('latest safe start outranks another due-soon item', () => {
+  const latest = { ...stored('a', '2026-09-29T12:45:00Z'), durationMinutes: 45 };
+  const later = stored('b', '2026-09-29T16:00:00Z');
+  const ranked = rankItems([later, latest], clock);
+  assert.equal(ranked[0].item.id, 'a');
+  assert.deepEqual(ranked[0].reasonCodes, ['latestStart']);
+});

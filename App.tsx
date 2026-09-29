@@ -6,7 +6,7 @@ import { rankItems, reasonText } from './src/domain/ranking';
 import type { CobyItem, ParsedItem } from './src/domain/types';
 import { completeItem, listItems, saveItems } from './src/data/items';
 
-type Screen = 'arrival' | 'home' | 'capture' | 'receipt';
+type Screen = 'arrival' | 'home' | 'capture' | 'receipt' | 'plan' | 'focus';
 const clock = new SystemClock();
 const parser = new FixtureBrainDumpParser();
 
@@ -32,6 +32,9 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showReason, setShowReason] = useState(false);
+  const [planMode, setPlanMode] = useState<'list' | 'calendar'>('list');
+  const [selectedDay, setSelectedDay] = useState(() => clock.now().toDateString());
+  const [focusItem, setFocusItem] = useState<CobyItem | null>(null);
 
   useEffect(() => {
     listItems().then((stored) => { setItems(stored); setScreen(stored.length ? 'home' : 'arrival'); })
@@ -80,6 +83,41 @@ export default function App() {
     finally { setBusy(false); }
   }
 
+  async function startFocus(item: CobyItem) {
+    setError(null); setBusy(true);
+    try {
+      const active: CobyItem = { ...item, status: 'active' };
+      await saveItems([active]);
+      setItems(await listItems()); setFocusItem(active); setScreen('focus');
+    } catch { setError('Coby could not start focus. Please try again.'); }
+    finally { setBusy(false); }
+  }
+
+  async function finishFocus() {
+    if (!focusItem) return;
+    setError(null); setBusy(true);
+    try {
+      await completeItem(focusItem, clock.now().toISOString());
+      setItems(await listItems()); setFocusItem(null); setScreen('home'); setShowReason(false);
+    } catch { setError('Coby could not mark this complete. Please try again.'); }
+    finally { setBusy(false); }
+  }
+
+  async function endFocus() {
+    if (!focusItem) return;
+    setError(null); setBusy(true);
+    try {
+      await saveItems([{ ...focusItem, status: 'planned' }]);
+      setItems(await listItems()); setFocusItem(null); setScreen('home');
+    } catch { setError('Coby could not end focus. Please try again.'); }
+    finally { setBusy(false); }
+  }
+
+  const openItems = items.filter((item) => item.status !== 'completed' && item.status !== 'archived');
+  const calendarDays = Array.from({ length: 7 }, (_, offset) => {
+    const day = clock.now(); day.setDate(day.getDate() + offset); return day;
+  });
+
   if (loading) return <View style={styles.loading}><ActivityIndicator color={colors.violet} /></View>;
 
   return <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -102,7 +140,8 @@ export default function App() {
           {now.item.dueAt && <Text style={styles.meta}>Due {new Date(now.item.dueAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</Text>}
           <Pressable accessibilityRole="button" onPress={() => setShowReason(!showReason)}><Text style={styles.reasonLink}>Why this now?</Text></Pressable>
           {showReason && <Text style={styles.reason}>{reasonText(now.reasonCodes)}</Text>}
-          <Button label={busy ? 'Finishing…' : 'Complete'} disabled={busy} onPress={finishNow} />
+          <Button label={busy ? 'Starting…' : 'Start focus'} disabled={busy} onPress={() => startFocus(now.item)} />
+          <Button label="Mark complete" kind="quiet" disabled={busy} onPress={finishNow} />
         </> : <>
           <Text style={styles.nowTitle}>You’re clear for now.</Text>
           <Text style={styles.support}>Coby is ready when something comes to mind.</Text>
@@ -112,8 +151,47 @@ export default function App() {
           {next.map(({ item }) => <Text key={item.id} style={styles.nextItem}>·  {item.title}</Text>)}
           <Text style={styles.support}>Everything else is safe with Coby.</Text>
         </View>}
-        <View style={styles.bottomAction}><Button label="Get it out of my head" onPress={() => { setError(null); setScreen('capture'); }} /></View>
+        <View style={styles.bottomAction}><Button label="Get it out of my head" onPress={() => { setError(null); setScreen('capture'); }} />
+          <Pressable accessibilityRole="button" onPress={() => setScreen('plan')}><Text style={styles.planLink}>See your plan →</Text></Pressable>
+        </View>
       </>}
+
+      {screen === 'plan' && <>
+        <Pressable onPress={() => setScreen('home')} accessibilityRole="button"><Text style={styles.back}>← Home</Text></Pressable>
+        <Text style={[styles.pageTitle, styles.planTitle]}>Everything I’m holding.</Text>
+        <Text style={styles.support}>Look around whenever you want. Coby has the rest.</Text>
+        <View style={styles.modeBar}>
+          <Pressable accessibilityRole="button" onPress={() => setPlanMode('list')} style={[styles.modeButton, planMode === 'list' && styles.modeSelected]}><Text style={styles.modeText}>List</Text></Pressable>
+          <Pressable accessibilityRole="button" onPress={() => setPlanMode('calendar')} style={[styles.modeButton, planMode === 'calendar' && styles.modeSelected]}><Text style={styles.modeText}>Calendar</Text></Pressable>
+        </View>
+        {planMode === 'calendar' && <View style={styles.dayStrip}>{calendarDays.map((day) =>
+          <Pressable key={day.toDateString()} accessibilityRole="button" accessibilityLabel={day.toDateString()} onPress={() => setSelectedDay(day.toDateString())}
+            style={[styles.dayButton, selectedDay === day.toDateString() && styles.daySelected]}>
+            <Text style={styles.dayText}>{day.toLocaleDateString(undefined, { weekday: 'short' })}</Text>
+            <Text style={styles.dayNumber}>{day.getDate()}</Text>
+          </Pressable>)}</View>}
+        {(() => {
+          const shown = planMode === 'list' ? openItems : openItems.filter((item) => item.dueAt && new Date(item.dueAt).toDateString() === selectedDay);
+          return shown.length ? shown.map((item) => <View key={item.id} style={styles.planRow}>
+            <Text style={styles.planItemTitle}>{item.title}</Text>
+            <Text style={styles.receiptMeta}>{item.dueAt ? new Date(item.dueAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : 'No time set'}</Text>
+            <Pressable accessibilityRole="button" onPress={() => startFocus(item)}><Text style={styles.reasonLink}>Focus on this →</Text></Pressable>
+          </View>) : <Text style={styles.planEmpty}>Nothing here. Coby is holding the rest.</Text>;
+        })()}
+        {planMode === 'calendar' && <Text style={styles.support}>Items without a time are in List.</Text>}
+        <View style={styles.bottomAction}><Button label="Add more" onPress={() => setScreen('capture')} /></View>
+      </>}
+
+      {screen === 'focus' && focusItem && <View style={styles.focusScreen}>
+        <CobyOrb size={88} />
+        <Text style={styles.kicker}>ONE THING NOW</Text>
+        <Text style={[styles.nowTitle, styles.focusTitle]}>{focusItem.title}</Text>
+        <Text style={styles.support}>The rest can wait. Coby has it.</Text>
+        <View style={styles.focusActions}>
+          <Button label={busy ? 'Finishing…' : 'Complete'} disabled={busy} onPress={finishFocus} />
+          <Button label="End focus" kind="quiet" disabled={busy} onPress={endFocus} />
+        </View>
+      </View>}
 
       {screen === 'capture' && <>
         <Pressable onPress={() => setScreen('home')} accessibilityRole="button"><Text style={styles.back}>← Home</Text></Pressable>
@@ -170,5 +248,13 @@ const styles = StyleSheet.create({
   receiptList: { marginTop: 28, marginBottom: 8 }, receiptRow: { backgroundColor: '#FFFFFF', paddingHorizontal: 20, paddingVertical: 14, borderRadius: 20, marginBottom: 10 },
   receiptTitle: { fontSize: 17, fontWeight: '600', color: colors.ink, minHeight: 32 }, receiptMeta: { fontSize: 13, color: colors.muted, marginTop: 3 },
   error: { color: '#A24D48', fontSize: 14, marginTop: 18 },
+  planLink: { color: colors.violet, fontSize: 15, fontWeight: '600', textAlign: 'center', marginTop: 22 },
+  planTitle: { marginTop: 55 }, modeBar: { flexDirection: 'row', backgroundColor: '#EBE8E4', borderRadius: 18, padding: 4, marginTop: 30, marginBottom: 25 },
+  modeButton: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 15 }, modeSelected: { backgroundColor: '#FFFFFF' }, modeText: { color: colors.ink, fontSize: 15, fontWeight: '600' },
+  dayStrip: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 25 }, dayButton: { alignItems: 'center', paddingVertical: 10, width: '13%', borderRadius: 15 },
+  daySelected: { backgroundColor: colors.violetSoft }, dayText: { color: colors.muted, fontSize: 11 }, dayNumber: { color: colors.ink, fontSize: 16, fontWeight: '600', marginTop: 5 },
+  planRow: { borderBottomWidth: 1, borderBottomColor: '#E6E2DD', paddingVertical: 18 }, planItemTitle: { color: colors.ink, fontSize: 18, fontWeight: '600', marginBottom: 4 },
+  planEmpty: { color: colors.muted, fontSize: 16, marginVertical: 30 }, focusScreen: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 620 },
+  focusTitle: { textAlign: 'center', marginTop: 16 }, focusActions: { alignSelf: 'stretch', marginTop: 70 },
 });
 

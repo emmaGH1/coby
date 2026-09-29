@@ -14,6 +14,9 @@ export function rankItems(items: CobyItem[], clock: Clock): RankedItem[] {
       if (item.dueAt) {
         const remaining = new Date(item.dueAt).getTime() - now;
         if (remaining < 0) { score += 100; reasonCodes.push('overdue'); }
+        else if (item.durationMinutes !== null && remaining <= item.durationMinutes * 60_000) {
+          score += 80; reasonCodes.push('latestStart');
+        }
         else if (remaining <= 24 * 60 * 60_000) { score += 55; reasonCodes.push('dueSoon'); }
         else if (remaining <= 48 * 60 * 60_000) { score += 30; reasonCodes.push('dueTomorrow'); }
       }
@@ -28,6 +31,7 @@ export function rankItems(items: CobyItem[], clock: Clock): RankedItem[] {
 export function reasonText(codes: string[]): string {
   if (codes.includes('active')) return 'You already started this.';
   if (codes.includes('overdue')) return 'Its due time has passed.';
+  if (codes.includes('latestStart')) return 'This is the latest start to finish on time.';
   if (codes.includes('dueSoon')) return 'Due within 24 hours.';
   if (codes.includes('dueTomorrow')) return 'Due within two days.';
   if (codes.includes('urgent')) return 'You marked this urgent.';

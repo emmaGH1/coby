@@ -2,9 +2,11 @@
 
 ## Status
 
-Core P0 flows are implemented. The Android debug build passed in GitHub Actions, and the release build for the real-device screenshot workflow compiled successfully. The hosted emulator is now running the capture step. The local machine has Android Studio and the Android SDK, but `adb` currently reports no running emulator or attached phone, so native behavior is not yet verified on this PC. RevenueCat entitlement and purchase behavior also remain unverified.
+Core P0 flows are implemented. The GitHub Android debug build and first hosted emulator screenshot run passed. The capture script verified a 1179×2556 PNG. Visual review showed the main NOW/NEXT content but placed the primary capture action below the first screen, so Home spacing has been tightened; TypeScript passes and the revised screenshot is awaiting recapture.
 
-`main` is published at commit `7b73f2a`.
+The local machine has Android Studio and the Android SDK, but no emulator or phone has appeared in `adb devices` yet. Native device behavior is still unverified locally. RevenueCat entitlement and purchase behavior also remain unverified.
+
+`main` is published at commit `7b73f2a`; the latest handover and layout changes are committed locally and awaiting push after a transient GitHub server error.
 
 ## Completed
 
@@ -12,18 +14,18 @@ Core P0 flows are implemented. The Android debug build passed in GitHub Actions,
 - Expo TypeScript app with local SQLite capture, receipt, Home, completion, Plan List/Calendar, and focus.
 - Deterministic prioritization, NOW/NEXT limits, clock abstraction, Gentle/Persistent nudge rules, local notification scheduler, and Coby Lab.
 - Voice capture with text fallback, fixture parser, Gemini extraction adapter, RevenueCat Plus paywall/purchase/restore adapter.
-- Date-only deadlines remain separate from exact times; missing dates and durations stay null.
-- Coby app icon, README, MIT license, GitHub Android build workflow, and emulator screenshot capture workflow.
+- Date-only deadlines stay separate from exact times; missing dates and durations stay null.
+- Coby app icon, README, MIT license, GitHub Android build, and emulator screenshot workflows.
 
 ## Evidence
 
 - `npm run typecheck`, `npm run lint`, and `npm test` (11 tests): passed.
-- Live Gemini sample extraction: passed; date-only item had no invented hour.
+- Live Gemini sample extraction: passed; the date-only item had no invented hour.
 - Android JavaScript bundle export and native prebuild: passed.
 - [GitHub Android debug build](https://github.com/emmaGH1/coby/actions/runs/36581594892): passed.
-- [Android screenshot capture workflow](https://github.com/emmaGH1/coby/actions/runs/36584453422): release APK compile passed; emulator capture is in progress.
-- Local `adb devices`: no emulator or phone currently connected.
-- RevenueCat Test Store monthly package is visible; `coby_plus` entitlement and a purchase have not been verified.
+- [First Android screenshot run](https://github.com/emmaGH1/coby/actions/runs/36584453422): release compile, emulator capture, and 1179×2556 PNG validation passed. After visual review, Home spacing was tightened; recapture is pending.
+- Local `adb devices`: no emulator or phone detected at last check.
+- RevenueCat monthly Test Store package is visible; `coby_plus` entitlement and a purchase have not been verified.
 
 ## Human setup
 
@@ -32,4 +34,4 @@ Core P0 flows are implemented. The Android debug build passed in GitHub Actions,
 
 ## NEXT ACTION
 
-Start the Pixel 6 API 36 emulator and run the development build. Verify capture through save, persistence after restart, speech, local notifications, and the Coby Plus gate; record device evidence and fix any native failures.
+Start the Pixel 6 API 36 emulator and run Coby's development build. Verify capture through save, persistence after restart, speech, local notifications, and the Coby Plus gate; record device evidence and fix any native failures.

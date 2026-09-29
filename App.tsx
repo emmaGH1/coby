@@ -238,7 +238,7 @@ export default function App() {
 
   return <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
-    <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
+    <ScrollView contentContainerStyle={[styles.page, screen === 'home' && styles.homePage]} keyboardShouldPersistTaps="handled">
       {screen === 'arrival' && <View style={styles.arrival}>
         <Text style={styles.wordmark}>coby</Text>
         <CobyOrb size={150} />
@@ -382,18 +382,19 @@ const colors = { background: '#F7F6F2', ink: '#1A1A19', violet: '#7464B5', viole
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background }, loading: { flex: 1, justifyContent: 'center', backgroundColor: colors.background },
   page: { flexGrow: 1, paddingHorizontal: 28, paddingTop: 58, paddingBottom: 42 },
+  homePage: { paddingTop: 34, paddingBottom: 24 },
   wordmark: { color: colors.ink, fontSize: 31, fontWeight: '700', letterSpacing: -2 },
   motto: { fontSize: 14, color: colors.muted }, topline: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   arrival: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 25 },
   hero: { color: colors.ink, fontSize: 42, fontWeight: '700', letterSpacing: -2.2, marginTop: 10 },
   subhead: { color: colors.muted, fontSize: 16, textAlign: 'center', marginBottom: 28 },
   orbOuter: { backgroundColor: '#DFD7F3', alignItems: 'center', justifyContent: 'center', shadowColor: colors.violet, shadowOpacity: .14, shadowRadius: 22, elevation: 6 },
-  orbInner: { backgroundColor: '#A898D1' }, homeOrb: { alignItems: 'center', marginTop: 64, marginBottom: 58 },
+  orbInner: { backgroundColor: '#A898D1' }, homeOrb: { alignItems: 'center', marginTop: 30, marginBottom: 30 },
   kicker: { fontSize: 12, fontWeight: '700', color: colors.violet, letterSpacing: 2.2, marginBottom: 15 },
   nowTitle: { fontSize: 34, lineHeight: 40, fontWeight: '600', color: colors.ink, letterSpacing: -1.4, marginBottom: 13 },
   meta: { fontSize: 15, color: colors.muted, marginBottom: 17 }, reasonLink: { color: colors.violet, fontSize: 14, fontWeight: '600', marginBottom: 14 },
   reason: { color: colors.muted, fontSize: 14, marginBottom: 15 }, support: { color: colors.muted, fontSize: 15, lineHeight: 22 },
-  nextArea: { marginTop: 44 }, nextItem: { color: colors.ink, fontSize: 16, marginBottom: 14 }, bottomAction: { marginTop: 'auto', paddingTop: 44 },
+  nextArea: { marginTop: 32 }, nextItem: { color: colors.ink, fontSize: 16, marginBottom: 10 }, bottomAction: { marginTop: 'auto', paddingTop: 24 },
   button: { minHeight: 56, backgroundColor: colors.ink, borderRadius: 20, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, marginTop: 14 },
   buttonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' }, quietButton: { backgroundColor: colors.violetSoft }, quietButtonText: { color: colors.ink }, disabledButton: { opacity: .45 },
   back: { color: colors.muted, fontSize: 15 }, captureOrb: { alignSelf: 'center', marginTop: 68, marginBottom: 38 }, receiptOrb: { alignSelf: 'center', marginTop: 36, marginBottom: 34 },
@@ -403,7 +404,7 @@ const styles = StyleSheet.create({
   receiptList: { marginTop: 28, marginBottom: 8 }, receiptRow: { backgroundColor: '#FFFFFF', paddingHorizontal: 20, paddingVertical: 14, borderRadius: 20, marginBottom: 10 },
   receiptTitle: { fontSize: 17, fontWeight: '600', color: colors.ink, minHeight: 32 }, receiptMeta: { fontSize: 13, color: colors.muted, marginTop: 3 },
   error: { color: '#A24D48', fontSize: 14, marginTop: 18 },
-  reminderLink: { color: colors.violet, textAlign: 'center', fontSize: 14, marginTop: 15 }, reminderState: { color: colors.muted, fontSize: 13, marginTop: 15 },
+  reminderLink: { color: colors.violet, textAlign: 'center', fontSize: 14, marginTop: 12 }, reminderState: { color: colors.muted, fontSize: 13, marginTop: 12 },
   labLink: { color: colors.muted, fontSize: 12, textAlign: 'center', marginTop: 25 }, labStatus: { color: colors.violet, fontSize: 16, marginTop: 30, marginBottom: 20 },
   typeInstead: { color: colors.muted, fontSize: 13, textAlign: 'center', marginTop: 18 },
   planLink: { color: colors.violet, fontSize: 15, fontWeight: '600', textAlign: 'center', marginTop: 22 },

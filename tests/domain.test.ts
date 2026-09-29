@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { DemoClock } from '../src/domain/clock';
 import { DEMO_DUMP, FixtureBrainDumpParser } from '../src/domain/parser';
-import { rankItems } from '../src/domain/ranking';
+import { rankItems, reasonText } from '../src/domain/ranking';
 import { planNudges } from '../src/domain/nudges';
 import { validateParseResult } from '../src/domain/geminiParser';
 import type { CobyItem } from '../src/domain/types';
@@ -102,4 +102,52 @@ test('an ambiguous hour and generic “on” cannot create an exact deadline', (
   assert.equal(result.items[0].dueAt, null);
   const generic = validateParseResult({ items: [{ ...response.items[0], sourceFragment: 'Work on the essay' }] }, 'Work on the essay');
   assert.equal(generic.items[0].dueDate, null);
+});
+
+test('active work outranks deadlines and gives a truthful explanation', () => {
+  const active = stored('active', '2026-09-29T20:00:00Z', 'active');
+  const dueSoon = stored('soon', '2026-09-29T13:00:00Z');
+  const ranked = rankItems([dueSoon, active], clock);
+  assert.equal(ranked[0].item.id, 'active');
+  assert.equal(reasonText(ranked[0].reasonCodes), 'You already started this.');
+});
+
+test('overdue items outrank a latest-start item and both explanations match', () => {
+  const overdue = stored('overdue', '2026-09-29T11:59:00Z');
+  const latest = { ...stored('latest', '2026-09-29T12:45:00Z'), durationMinutes: 45 };
+  const ranked = rankItems([latest, overdue], clock);
+  assert.equal(ranked[0].item.id, 'overdue');
+  assert.equal(reasonText(ranked[0].reasonCodes), 'Its due time has passed.');
+  const latestRanked = rankItems([latest], clock)[0];
+  assert.equal(reasonText(latestRanked.reasonCodes), 'This is the latest start to finish on time.');
+});
+
+test('date-only obligations due today and tomorrow have exact explanations', () => {
+  const today = { ...stored('today', null), dueDate: '2026-09-29' };
+  const tomorrow = { ...stored('tomorrow', null), dueDate: '2026-09-30' };
+  const ranked = rankItems([tomorrow, today], clock);
+  assert.equal(ranked[0].item.id, 'today');
+  assert.equal(reasonText(ranked[0].reasonCodes), 'Due today. No exact time was set.');
+  assert.equal(reasonText(ranked[1].reasonCodes), 'Due tomorrow. No exact time was set.');
+});
+
+test('equal-priority items use creation time and id as deterministic tie-breakers', () => {
+  const createdAt = '2026-09-29T08:00:00Z';
+  const laterId = { ...stored('b', null), createdAt };
+  const earlierId = { ...stored('a', null), createdAt };
+  assert.deepEqual(rankItems([laterId, earlierId], clock).map(({ item }) => item.id), ['a', 'b']);
+});
+
+test('DemoClock advances by the requested number of minutes', () => {
+  const demo = new DemoClock(new Date('2026-09-29T12:00:00Z'));
+  demo.advanceMinutes(60);
+  assert.equal(demo.now().toISOString(), '2026-09-29T13:00:00.000Z');
+});
+
+test('explicit urgent priority outranks important for otherwise equal items', () => {
+  const urgent = { ...stored('urgent', null), explicitPriority: 'urgent' as const };
+  const important = { ...stored('important', null), explicitPriority: 'important' as const };
+  const ranked = rankItems([important, urgent], clock);
+  assert.deepEqual(ranked.map(({ item }) => item.id), ['urgent', 'important']);
+  assert.equal(reasonText(ranked[0].reasonCodes), 'You marked this urgent.');
 });

@@ -19,7 +19,7 @@ The base app/screenshot commit is db0fc3f, before the documentation checkpoints.
 
 ## Evidence
 
-- npm run typecheck, npm run lint, and npm test (11 tests): passed.
+- npm run typecheck, npm run lint, and npm test (17 tests): passed. ESLint skips the generated Android prebuild tree.
 - Fixture and live Gemini extraction on the Pixel 6: passed. Each sample produced three items; the date-only assignment had no invented hour, and “buy data” stayed undated.
 - Saved items and completion state survived force-stop and app restart after reconnecting the development build.
 - Completing the NOW call surfaced the assignment; Home showed one NOW and at most two NEXT.

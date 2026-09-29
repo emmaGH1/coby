@@ -35,3 +35,8 @@
 
 - **Keep the default offering identifier and package layout:** replace only its Monthly product with coby_plus_monthly at $4.99/month, attach it to coby_plus, and leave Yearly and Lifetime unchanged. The existing Test Store product already had the selected price, so no duplicate was created.
 - **Sandbox purchase verification:** a valid Test Store transaction is development-only; it unlocked Persistent reminders in Coby and appeared active in the RevenueCat state diagnostic. Restore still needs a separate check.
+
+
+## 2026-09-29 — Deterministic behavior checks
+
+- **ESLint ignores generated Android prebuild output:** keep the full lint command focused on maintained JavaScript and TypeScript files after Expo creates the native project.

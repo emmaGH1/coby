@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   reminderRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, marginTop: 15 },
   reminderButton: { minHeight: 48, justifyContent: 'center' },
   reminderLink: { color: colors.violetDeep, fontFamily: type.medium, fontSize: 12 },
-  reminderState: { color: colors.muted, fontFamily: type.medium, fontSize: 12 },
+  reminderState: { minHeight: 48, color: colors.muted, fontFamily: type.medium, fontSize: 12, textAlignVertical: 'center' },
   clearState: { paddingVertical: 8, paddingBottom: 12 },
   clearTitle: { color: colors.ink, fontFamily: type.semibold, fontSize: 28, letterSpacing: -1 },
   clearCopy: { color: colors.muted, fontFamily: type.regular, fontSize: 15, lineHeight: 22, marginTop: 8, maxWidth: 290 },

@@ -1,0 +1,48 @@
+# Coby product canon
+
+## Locked thesis
+
+Coby is a calm, voice-first companion for people carrying too much in their heads. Users dump thoughts naturally; Coby understands and quietly holds them, organizes them, surfaces only what deserves attention now, and proactively intervenes before important things slip. Everything remains inspectable on demand, but the user rarely needs to manage it.
+
+**Brand:** `coby` / **carry less.**  
+**Supporting copy:** Out of your head. Into good hands.  
+**UX principle:** minimal by default, transparent on demand.  
+**Core loop:** Dump → Understand → Hold → Surface → Act.
+
+Coby optimizes for reduced cognitive load and trust, not maximum information density. Coby is **not** a general-purpose task manager, chatbot, AI planner, calendar replacement, medical ADHD treatment, productivity dashboard, or autonomous agent. Do not imply that Coby treats ADHD.
+
+## P0: required before submission
+
+| Surface | Required behavior |
+| --- | --- |
+| Arrival | Warm branded entry with an immediate path into the app. |
+| Capture | Native/device voice input and reliable text fallback. Editable transcript before understanding. |
+| Understand | Structured extraction of tasks, events, and reminders. Unknown dates and durations stay null. |
+| Receipt | Calm confirmation of every extracted item; user can correct errors before saving. |
+| Hold | Local persistence survives app restart. |
+| Home | Exactly one NOW item when available and at most two NEXT items. A clear state when none exists. |
+| Plan | All held items inspectable in List and simple Calendar/day views. |
+| Focus | One item at a time, with completion and a calm return to Home. |
+| Rank | Deterministic priority with a truthful “Why this now?” explanation. |
+| Nudge | Deadline-aware local notifications; recalculate when relevant fields change. |
+| Commitment | Gentle and Persistent modes. Persistent is a Plus entitlement. |
+| Billing | RevenueCat Test Store, `coby_plus` entitlement, monthly product and working purchase/restore path. |
+| Experience | Cohesive premium Coby visual system and deterministic demo path. |
+
+Free includes brain dump, NOW/NEXT, Plan, and Gentle nudges. Plus unlocks Persistent and, later, Locked. Never paywall the basic relief loop.
+
+## P1 only after P0 is stable
+
+Locked commitment with a rescue code; dark mode; richer orb motion and haptics; natural-language task corrections. Locked is behavioral friction, not device security.
+
+## Explicitly out of scope before submission
+
+Google login, Google Calendar or Gmail sync, cloud sync, social feeds, projects, tags, habits or streaks, app blocking, autonomous LLM agents, full month-calendar implementation, and a complex task-management editor.
+
+## Trust rules
+
+- Never invent a user's life details. Preserve original input alongside parsed items.
+- A receipt makes interpretation visible before the app holds it.
+- NOW is explainable; Plan reveals everything on demand.
+- Nudges are useful and humane, never shaming or incessant.
+- If interpretation is uncertain, ask for correction or leave fields unknown.

@@ -24,3 +24,8 @@
 
 - **Conservative time parsing:** exact deadlines require an explicit clock expression. Ambiguous ‘at 8’ and generic ‘on’ cannot authorize an invented timestamp.
 - **Completion persists before notification cleanup:** a scheduler failure can warn the user but cannot turn a saved completion back into an apparent failure.
+
+## 2026-09-29 — Android test baseline
+
+- **Use Android 16 / API 36 as the primary emulator target:** Expo SDK 57 compiles and targets API 36, and the GitHub Android workflows use API 36. Android 17 / API 37 is still labeled preview in the installed Android Studio device dialog, so it is not the baseline for this submission test.
+- **Pixel 6, Google APIs, x86_64:** a practical phone-sized local emulator profile for layout and runtime checks. Submission screenshot resolution is set separately by the capture script.

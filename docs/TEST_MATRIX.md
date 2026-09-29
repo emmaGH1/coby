@@ -4,6 +4,8 @@ Record date, device/emulator, build, result, and evidence for every executed row
 
 | Area | Scenario | Target | Status |
 | --- | --- | --- | --- |
+| Android build | Compile debug APK | GitHub Actions | Passed 2026-09-29 |
+| Android screenshot | Install fixture release APK and capture 1179×2556 Home | GitHub Android emulator | In progress; compile passed |
 | Capture | Text dump parses fixture, transcript remains editable | Unit + Android | Planned |
 | Receipt | Correct items displayed, unknown due/duration absent, correction before save | Unit + Android | Planned |
 | Persistence | Saved items survive app kill/restart | Android | Planned |
@@ -20,13 +22,8 @@ Record date, device/emulator, build, result, and evidence for every executed row
 | Gemini | Schema, nulls, failures, offline fallback behavior | Unit + Android dev build | Planned |
 | RevenueCat | Test Store purchase, restore, entitlement, free vs Plus gates | Android development build | Planned |
 | Lab | Seed, clear, advance time, trigger nudge, parser fixture, billing state | Android dev build | Planned |
-| Quality | Typecheck, lint, meaningful tests, visual review, accessibility | CI/local + Android | Planned |
+| Quality | Typecheck, lint, meaningful tests, visual review, accessibility | CI/local + Android | Partial: typecheck, lint, and 11 unit tests passed; visual/device checks pending |
 
 ## Latest run
 
-2026-09-29: typecheck passed; lint passed; 11 domain tests passed. Live Gemini sample extraction passed. Android JS bundle export and native prebuild passed with speech, notification, and SQLite plugins. Android runtime, RevenueCat purchase, and notifications remain unverified without a device.
-
-
-
-
-
+2026-09-29: typecheck, lint, and 11 unit tests passed. Live Gemini sample passed with no invented time for a date-only item. Android bundle export, native prebuild, and GitHub debug APK compilation passed. The screenshot workflow's release build compiled; emulator capture is in progress. Local SDK is present, but no AVD/phone is running. Android runtime, RevenueCat purchase, speech, persistence, and notifications still need device verification.

@@ -15,6 +15,8 @@ async function main() {
   if (!result.items.length) throw new Error('Gemini returned no items');
   const assignment = result.items.find((item) => item.title.toLocaleLowerCase().includes('assignment'));
   if (!assignment || assignment.dueAt !== null) throw new Error('Date-only assignment received an invented clock time');
+  const call = result.items.find((item) => item.title.toLocaleLowerCase().includes('daniel'));
+  if (!call || call.dueAt === null || call.durationMinutes !== 5) throw new Error('The stated call time or duration was not extracted');
   console.log(`Gemini smoke passed: ${result.items.length} anchored item(s), model ${model}.`);
 }
 

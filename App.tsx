@@ -19,6 +19,7 @@ type Screen = 'home' | 'receipt' | 'plan' | 'focus' | 'lab' | 'paywall';
 const clock = new SystemClock();
 const fixtureParser = new FixtureBrainDumpParser();
 const configuredParser = createGeminiBrainDumpParser();
+const demoToolsEnabled = __DEV__ || process.env.EXPO_PUBLIC_COBY_DEMO_MODE === 'true';
 
 function Button({ label, onPress, kind = 'primary', disabled = false }: { label: string; onPress: () => void; kind?: 'primary' | 'quiet'; disabled?: boolean }) {
   return <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={disabled} onPress={onPress}
@@ -285,9 +286,10 @@ export default function App() {
       onToggleReason={() => setShowReason(!showReason)}
       onToggleVoice={() => listening ? ExpoSpeechRecognitionModule.stop() : void startListening()}
       onUnderstand={() => void understand()}
+      showLab={demoToolsEnabled}
       showReason={showReason}
     /> : <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
-      {screen === 'lab' && __DEV__ && <>
+      {screen === 'lab' && demoToolsEnabled && <>
         <Pressable onPress={() => setScreen('home')} accessibilityRole="button"><Text style={styles.back}>← Home</Text></Pressable>
         <Text style={[styles.pageTitle, styles.planTitle]}>Coby Lab</Text>
         <Text style={styles.support}>Local demo controls. Nothing here is sent online.</Text>

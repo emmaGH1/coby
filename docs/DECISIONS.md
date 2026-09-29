@@ -50,3 +50,5 @@
 - **Android-first is now explicit product canon:** P0 quality and verification target the Pixel 6 phone class and API 36 before adding iPhone-specific scope.
 - **Old submission screenshot is stale:** it remains historical evidence until a verified screenshot of the recovered interface replaces it.
 - **NDK repair is an environment blocker:** the empty `27.1.12297006` folder was moved aside; Gradle's clean reinstall reached the download and failed with a connection reset.
+
+- **Release demo tools require an explicit flag:** Coby Lab stays hidden in normal release builds; EXPO_PUBLIC_COBY_DEMO_MODE=true enables it for deterministic CI capture and demo rehearsal.

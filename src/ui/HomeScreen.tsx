@@ -25,6 +25,7 @@ type Props = {
   onPersistent: (item: CobyItem) => void;
   onOpenPlan: () => void;
   onOpenLab: () => void;
+  showLab: boolean;
   dueText: (item: { dueAt: string | null; dueDate: string | null }) => string;
 };
 
@@ -127,7 +128,7 @@ export function HomeScreen(props: Props) {
       <Text style={styles.planFooterTitle}>Everything I’m holding</Text>
       <ArrowIcon color={colors.violetDeep} />
     </Pressable>
-    {__DEV__ && <Pressable accessibilityRole="button" onPress={props.onOpenLab}><Text style={styles.labLink}>Coby Lab</Text></Pressable>}
+    {props.showLab && <Pressable accessibilityRole="button" onPress={props.onOpenLab}><Text style={styles.labLink}>Coby Lab</Text></Pressable>}
   </ScrollView>;
 }
 

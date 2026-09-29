@@ -34,7 +34,7 @@ def main() -> None:
     adb("install", "android/app/build/outputs/apk/release/app-release.apk")
     adb("shell", "am", "start", "-n", "com.emmagh1.coby/.MainActivity")
     time.sleep(12)
-    for label in ("Come in", "Get it out of my head", "Use a sample dump", "Understand", "Looks right"):
+    for label in ("Coby Lab", "Seed demo data", "← Home"):
         tap(label)
     time.sleep(4)
     output = Path("artifacts/screenshot-home.png")

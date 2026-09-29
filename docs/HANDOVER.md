@@ -24,7 +24,7 @@ The base app/screenshot commit is db0fc3f, before the documentation checkpoints.
 - Saved items and completion state survived force-stop and app restart after reconnecting the development build.
 - Completing the NOW call surfaced the assignment; Home showed one NOW and at most two NEXT.
 - Plan List showed active items. Calendar showed the assignment on Sep 30, 2026; undated items remained in List.
-- Focus showed one item and returned to Home after End focus. Completing from the focus screen was not tested.
+- Focus showed one item; End focus returned to Home, and Complete persisted the call as done and recomputed NOW to the assignment.
 - Coby Lab’s immediate nudge appeared in Android notifications as “Call Daniel” / “This is a good time to start.” Scheduled future timing, cancellation, and frequency limits remain unverified.
 - Android granted microphone permission and started speech recognition; with no audio input, recognition returned no speech and Coby showed its text fallback. Spoken transcription remains unverified.
 - RevenueCat Test Store: product coby_plus_monthly is $4.99/month and attached to entitlement coby_plus. The default offering monthly package now uses that product; Yearly and Lifetime packages stayed unchanged. A valid Test Store purchase unlocked coby_plus and the app returned to Home with Persistent reminders enabled. Coby Lab confirmed Plus active. Restore remains untested. See [RevenueCat Test Store documentation](https://www.revenuecat.com/docs/test-and-launch/sandbox/test-store).

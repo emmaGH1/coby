@@ -79,7 +79,7 @@ export function HomeScreen(props: Props) {
   return <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
     <View style={styles.header}>
       <View><Text style={styles.wordmark}>coby</Text><Text style={styles.motto}>carry less.</Text></View>
-      <Pressable accessibilityRole="button" accessibilityLabel="Open Plan" onPress={props.onOpenPlan} style={styles.planButton}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Open Plan" hitSlop={4} onPress={props.onOpenPlan} style={styles.planButton}>
         <Text style={styles.planButtonText}>Plan</Text><ArrowIcon color={colors.violetDeep} />
       </Pressable>
     </View>
@@ -96,7 +96,7 @@ export function HomeScreen(props: Props) {
     {props.now ? <>
       <Text style={styles.nowTitle}>{props.now.item.title}</Text>
       {(props.now.item.dueAt || props.now.item.dueDate) && <Text style={styles.due}>Due {props.dueText(props.now.item)}</Text>}
-      <Pressable accessibilityRole="button" accessibilityLabel="Explain why this is now" onPress={props.onToggleReason}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Explain why this is now" onPress={props.onToggleReason} style={styles.reasonButton}>
         <Text style={styles.reasonLink}>{props.showReason ? 'Hide reason' : 'Why this now?'}</Text>
       </Pressable>
       {props.showReason && <Text style={styles.reason}>{reasonText(props.now.reasonCodes)}</Text>}
@@ -105,9 +105,9 @@ export function HomeScreen(props: Props) {
         <ActionButton label="Done" disabled={props.busy} quiet onPress={props.onComplete} icon={<CheckIcon />} />
       </View>
       {props.now.item.dueAt && <View style={styles.reminderRow}>
-        {props.now.item.commitmentMode === 'none' && <Pressable accessibilityRole="button" onPress={() => props.onGentle(props.now!.item)}><Text style={styles.reminderLink}>Keep me gently on track</Text></Pressable>}
+        {props.now.item.commitmentMode === 'none' && <Pressable accessibilityRole="button" onPress={() => props.onGentle(props.now!.item)} style={styles.reminderButton}><Text style={styles.reminderLink}>Keep me gently on track</Text></Pressable>}
         {props.now.item.commitmentMode === 'gentle' && <Text style={styles.reminderState}>Gentle reminders on</Text>}
-        {props.now.item.commitmentMode !== 'persistent' && <Pressable accessibilityRole="button" onPress={() => props.onPersistent(props.now!.item)}><Text style={styles.reminderLink}>Persistent · Plus</Text></Pressable>}
+        {props.now.item.commitmentMode !== 'persistent' && <Pressable accessibilityRole="button" onPress={() => props.onPersistent(props.now!.item)} style={styles.reminderButton}><Text style={styles.reminderLink}>Persistent · Plus</Text></Pressable>}
         {props.now.item.commitmentMode === 'persistent' && <Text style={styles.reminderState}>Persistent reminders on</Text>}
       </View>}
     </> : <View style={styles.clearState}>
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 34 },
   wordmark: { color: colors.ink, fontFamily: type.bold, fontSize: 30, letterSpacing: -1.5, lineHeight: 31 },
   motto: { color: colors.muted, fontFamily: type.medium, fontSize: 11, letterSpacing: 0.1, marginTop: 2 },
-  planButton: { minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 7, paddingLeft: 16, paddingRight: 13, borderRadius: radius.pill, backgroundColor: colors.violetMist },
+  planButton: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 7, paddingLeft: 16, paddingRight: 13, borderRadius: radius.pill, backgroundColor: colors.violetMist },
   planButtonText: { color: colors.violetDeep, fontFamily: type.semibold, fontSize: 14 },
   arrivalCopy: { marginTop: 10, marginBottom: 30 },
   hero: { color: colors.ink, fontFamily: type.bold, fontSize: 39, lineHeight: 44, letterSpacing: -1.8 },
@@ -160,7 +160,8 @@ const styles = StyleSheet.create({
   sectionLabel: { color: colors.violetDeep, fontFamily: type.bold, fontSize: 11, letterSpacing: 2.1, marginBottom: 14 },
   nowTitle: { color: colors.ink, fontFamily: type.semibold, fontSize: 31, lineHeight: 37, letterSpacing: -1.3, maxWidth: '94%' },
   due: { color: colors.muted, fontFamily: type.regular, fontSize: 14, marginTop: 10 },
-  reasonLink: { color: colors.violetDeep, fontFamily: type.semibold, fontSize: 13, marginTop: 14, textDecorationLine: 'underline', textDecorationColor: '#B9ADD9' },
+  reasonButton: { minHeight: 48, alignSelf: 'flex-start', justifyContent: 'center', marginTop: 4 },
+  reasonLink: { color: colors.violetDeep, fontFamily: type.semibold, fontSize: 13, textDecorationLine: 'underline', textDecorationColor: '#B9ADD9' },
   reason: { color: colors.muted, fontFamily: type.regular, fontSize: 13, lineHeight: 19, marginTop: 9 },
   nowActions: { flexDirection: 'row', gap: 10, marginTop: 22 },
   actionButton: { minHeight: 50, flex: 1, borderRadius: radius.pill, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, paddingHorizontal: 18 },
@@ -170,6 +171,7 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.76, transform: [{ scale: 0.985 }] },
   disabled: { opacity: 0.4 },
   reminderRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, marginTop: 15 },
+  reminderButton: { minHeight: 48, justifyContent: 'center' },
   reminderLink: { color: colors.violetDeep, fontFamily: type.medium, fontSize: 12 },
   reminderState: { color: colors.muted, fontFamily: type.medium, fontSize: 12 },
   clearState: { paddingVertical: 8, paddingBottom: 12 },

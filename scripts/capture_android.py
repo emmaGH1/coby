@@ -1,0 +1,53 @@
+"""Capture the real fixture-powered Android Home screen for submission review."""
+import re
+import struct
+import subprocess
+import time
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+
+def adb(*args: str, capture: bool = False) -> bytes:
+    result = subprocess.run(["adb", *args], check=True, stdout=subprocess.PIPE if capture else subprocess.DEVNULL)
+    return result.stdout if capture else b""
+
+
+def tap(label: str) -> None:
+    for attempt in range(15):
+        adb("shell", "uiautomator", "dump", "/sdcard/window.xml")
+        root = ET.fromstring(adb("shell", "cat", "/sdcard/window.xml", capture=True).decode())
+        for node in root.iter("node"):
+            if node.attrib.get("text") == label or node.attrib.get("content-desc") == label:
+                bounds = re.findall(r"\d+", node.attrib["bounds"])
+                x = (int(bounds[0]) + int(bounds[2])) // 2
+                y = (int(bounds[1]) + int(bounds[3])) // 2
+                adb("shell", "input", "tap", str(x), str(y))
+                time.sleep(2)
+                return
+        time.sleep(2)
+    raise RuntimeError(f"Could not find Android control: {label}")
+
+
+def main() -> None:
+    adb("shell", "wm", "size", "1179x2556")
+    adb("shell", "wm", "density", "440")
+    adb("install", "android/app/build/outputs/apk/release/app-release.apk")
+    adb("shell", "am", "start", "-n", "com.emmagh1.coby/.MainActivity")
+    time.sleep(12)
+    for label in ("Come in", "Get it out of my head", "Use a sample dump", "Understand", "Looks right"):
+        tap(label)
+    time.sleep(4)
+    output = Path("artifacts/screenshot-home.png")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_bytes(adb("exec-out", "screencap", "-p", capture=True))
+    data = output.read_bytes()
+    if data[:8] != b"\x89PNG\r\n\x1a\n":
+        raise RuntimeError("Android did not return a PNG")
+    width, height = struct.unpack(">II", data[16:24])
+    if (width, height) != (1179, 2556):
+        raise RuntimeError(f"Wrong screenshot size: {width}x{height}")
+    print(f"Captured real Coby Home screen: {width}x{height}")
+
+
+if __name__ == "__main__":
+    main()

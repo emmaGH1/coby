@@ -4,9 +4,9 @@
 
 P0 is **in progress**. The earlier implementation proved the core data and integration plumbing but did not meet the product canon for capture prominence, voice trust, or visual quality. See `docs/P0_AUDIT.md` for the screen-by-screen assessment.
 
-The first recovery slice is implemented: Coby now opens on an adaptive brain-dump composer, keeps capture visible above NOW/NEXT, uses the orb as an idle/listening/thinking/settled indicator, and handles Android speech availability, segmented transcription, typed-text preservation, explicit completion, and recoverable errors. Home, orb, icons, theme, and speech helpers are separated from the remaining screen coordinator.
+The first recovery slice is implemented and release-rendered: Coby now opens on an adaptive brain-dump composer, keeps capture visible above NOW/NEXT, uses the orb as an idle/listening/thinking/settled indicator, and handles Android speech availability, segmented transcription, typed-text preservation, explicit completion, and recoverable errors. Home, orb, icons, theme, and speech helpers are separated from the remaining screen coordinator.
 
-This slice passes TypeScript, lint, and 19 unit tests. Android render and spoken transcription are not yet verified. Local native compilation is blocked while Gradle downloads NDK `27.1.12297006`; the clean reinstall began but failed with a connection reset.
+The populated Home passed a 1179×2556 Android release capture and an inline finish review. The review confirmed the capture-first hierarchy and warm paper/ink/violet world, then required 48 dp targets for Plan, reason, and reminder controls. Commit `527a3f9` added the targets and `071a5c3` aligned the mixed status/action row after recapture. Spoken transcription is still unverified with a real voice, and the remaining prototype screens have not inherited the Home system.
 
 ## Verified baseline retained
 
@@ -20,9 +20,10 @@ This slice passes TypeScript, lint, and 19 unit tests. Android render and spoken
 - `npm run typecheck`: passed.
 - `npm run lint`: passed.
 - `npm test`: 19/19 passed, including typed-text preservation and actionable voice error copy.
-- Pixel 6 AVD is connected on Android 16 / API 36.
-- Android default recognition service resolves to Google TTS recognition, and Google speech packages are installed.
-- Local Gradle reached automatic NDK installation after Java and Android SDK paths were supplied. The NDK download ended with `java.net.SocketException: Connection reset`, so no current APK or screenshot was produced.
+- Android release capture: passed at https://github.com/emmaGH1/coby/actions/runs/36631406071.
+- The checked-in `assets/submission/screenshot-home.png` is the reviewed 1179×2556 recovery Home.
+- Pixel 6 AVD is connected on Android 16 / API 36 and exposes Google's default recognition service.
+- Local Gradle reached automatic NDK installation after Java and Android SDK paths were supplied. The NDK download ended with `java.net.SocketException: Connection reset`, so live speech remains blocked locally until the native build can be refreshed.
 
 ## Known P0 gaps
 
@@ -30,7 +31,8 @@ This slice passes TypeScript, lint, and 19 unit tests. Android render and spoken
 - Receipt still edits titles only; date/time, duration, kind, and clarification correction remain.
 - Plan, Focus, paywall, and Lab still use the prototype visual system.
 - Scheduled nudge timing/cancellation/frequency and RevenueCat restore remain unverified.
-- The checked-in submission screenshot shows the rejected prototype Home and must be replaced after visual approval.
+- Empty-state Home and keyboard interaction need a local Pixel 6 pass.
+- No final demo video has been recorded.
 
 ## Environment note
 
@@ -38,4 +40,4 @@ For local Android commands in a fresh PowerShell session, provide Android Studio
 
 ## NEXT ACTION
 
-Complete NDK `27.1.12297006`, build the recovery slice on the Pixel 6, and verify the empty and populated Home composer plus a real spoken multi-clause dump before redesigning Receipt.
+Verify a real multi-clause spoken dump on the local Pixel 6, then redesign Receipt so the user can correct title, kind, date/time, duration, and clarification before saving.

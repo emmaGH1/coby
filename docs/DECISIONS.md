@@ -52,3 +52,9 @@
 - **NDK repair is an environment blocker:** the empty `27.1.12297006` folder was moved aside; Gradle's clean reinstall reached the download and failed with a connection reset.
 
 - **Release demo state requires an explicit flag:** Coby Lab stays development-only. `EXPO_PUBLIC_COBY_DEMO_MODE=true` auto-seeds the fixture on a clean release install for deterministic CI capture and demo rehearsal.
+
+## 2026-09-29 — Home finish review
+
+- **Treat Android capture as product evidence:** the release screenshot must come from an API 36 emulator at the required 1179×2556 size; a browser or JavaScript bundle is not visual proof.
+- **Keep secondary actions touchable:** Plan, explanation, and reminder actions meet the 48 dp Android touch-target floor even when their visual treatment stays quiet.
+- **Approve Home as the visual reference, not P0 as a whole:** Receipt, Plan, Focus, paywall, and Lab must inherit the system, while speech and remaining integration checks stay open.

@@ -8,11 +8,11 @@ Suggested boundaries: `app/` screens and routing; `components/` presentation; `f
 
 ## Contracts
 
-`BrainDumpParser.parse(input, context): Promise<ParseResult>` with `GeminiBrainDumpParser` and `FixtureBrainDumpParser`. Context supplies local time and timezone. Output includes title, source fragment, kind (`task | event | reminder`), nullable `dueAt`, nullable `durationMinutes`, nullable explicit priority (`urgent | important`), confidence, and clarification flag/question. The parser never ranks, schedules, nudges, or invents values.
+`BrainDumpParser.parse(input, context): Promise<ParseResult>` with `GeminiBrainDumpParser` and `FixtureBrainDumpParser`. Context supplies local time and timezone. Output includes title, source fragment, kind (`task | event | reminder`), nullable `dueDate` (date only), nullable `dueAt` (exact clock time), nullable `durationMinutes`, nullable explicit priority (`urgent | important`), confidence, and clarification flag/question. The parser never ranks, schedules, nudges, or invents values.
 
 `Clock.now(): Date` with `SystemClock` and `DemoClock`; inject it into ranking, parsing context, focus, notification scheduling, and demo fixtures. Avoid scattered `new Date()` in business logic.
 
-Stored `CobyItem`: id, title, sourceText, kind, createdAt, dueAt|null, durationMinutes|null, explicitPriority|null, status (`captured | planned | active | completed | archived`), commitmentMode (`none | gentle | persistent | locked`), completedAt|null. Add only fields needed by a working slice.
+Stored `CobyItem`: id, title, sourceText, kind, createdAt, dueDate|null, dueAt|null, durationMinutes|null, explicitPriority|null, status (`captured | planned | active | completed | archived`), commitmentMode (`none | gentle | persistent | locked`), completedAt|null. Add only fields needed by a working slice.
 
 Ranking inputs, in order: active commitment, overdue, latest safe start, deadline proximity, duration versus remaining time, explicit importance, stable creation order. Return reason codes with the ranking. Home selects one NOW and at most two NEXT. Plan shows all.
 
@@ -38,3 +38,4 @@ Provide the Gemini development key and RevenueCat Test Store project/API key whe
 ## Completion evidence
 
 Each checkpoint needs a device or emulator observation where available, typecheck/lint/test results, an updated test matrix, one NEXT ACTION, and a commit. Do not describe unverified native integrations as working.
+

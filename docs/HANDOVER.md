@@ -2,28 +2,33 @@
 
 ## Status
 
-Three local checkpoints implemented. Plan/focus committed as `5f034c7`; deterministic nudges and Coby Lab are ready for checkpoint commit. GitHub remains unreachable. No Android SDK, `adb`, or emulator was found, so native runtime behavior is unverified.
+Core P0 flows are implemented in source. The nudge/Lab checkpoint was committed as `0cc680b`. Speech, Gemini, RevenueCat Test Store adapters, the Coby icon, README, and license are ready for this checkpoint commit. The app has not yet run on an Android emulator/device; native behavior and actual Test Store purchase remain unverified. GitHub publication is pending.
 
 ## Completed
 
-- Documentation canon, Expo TypeScript app, SQLite offline capture/receipt/Home/completion.
-- Plan List/seven-day Calendar, focus start/end/complete, latest-safe-start ranking and explanation.
-- Gentle/Persistent nudge timing with two-notification cap; local scheduler cancels/replaces per item; Coby Lab seed, clear, DemoClock advance, trigger nudge, fixture and billing-state controls.
+- Documentation canon, Expo TypeScript app, local SQLite capture/receipt/Home/completion.
+- Plan List/seven-day Calendar, focus start/end/complete, deterministic ranking and explanation.
+- Gentle/Persistent local nudge rules, permission-aware scheduler, and Coby Lab seed/clear/clock/nudge/parser/billing controls.
+- Native speech capture with text fallback, Gemini extraction adapter with source-anchored validation, RevenueCat Plus paywall/purchase/restore adapter.
+- Date-only deadlines represented separately from exact-time deadlines; no invented hour or timed nudge for date-only phrases.
+- 1024×1024 Coby orb icon and adaptive Android assets; README and MIT license.
 
 ## Evidence
 
 - `npm run typecheck`: passed.
 - `npm run lint`: passed.
-- `npm test`: 7 passed.
-- `npx expo export --platform android`: prior checkpoint bundle passed; run again after native integrations.
-- Android device/emulator run: pending; no Android SDK or `adb` detected.
+- `npm test`: 10 passed.
+- `npm run smoke:gemini`: live sample extraction passed with Gemini 3.5 Flash Lite and no invented time for the date-only item.
+- RevenueCat public Test Store offerings endpoint: current `default` offering and monthly package present; entitlement/purchase not verified.
+- `npx expo export --platform android`: bundle succeeded (713 modules).
+- `npx expo prebuild --platform android --no-install`: native project generated successfully. No Android SDK/adb/emulator found; no Android app run yet.
 
 ## Blocked human
 
-- Android SDK/emulator or USB-connected device access is needed for on-device verification.
-- Gemini development API key and RevenueCat Test Store public SDK key/account setup needed for live integrations.
-- GitHub network connection or manual push needed to publish commits.
+- Android Studio SDK/emulator setup or another Android target is needed for native verification and the screenshot/video.
+- RevenueCat dashboard: attach the monthly Test Store product to entitlement `coby_plus`, then test a purchase in a development build.
+- GitHub network authentication/publication if automated push does not work.
 
 ## NEXT ACTION
 
-Integrate native speech capture with a text fallback, Gemini parser adapter with strict extraction, and RevenueCat Test Store billing gate; verify then commit.
+Finish Android device setup and run the native development build. Exercise capture, SQLite persistence after restart, notifications, speech permission/result, RevenueCat Test Store purchase/restore, and visual layout. Then fix any failures, capture the required screenshot and demo, and update this handover.

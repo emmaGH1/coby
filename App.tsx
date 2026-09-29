@@ -1,15 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import { DemoClock, SystemClock, type Clock } from './src/domain/clock';
 import { DEMO_DUMP, FixtureBrainDumpParser } from './src/domain/parser';
+import { createGeminiBrainDumpParser } from './src/domain/parserFactory';
 import { rankItems, reasonText } from './src/domain/ranking';
+import { planNudges } from './src/domain/nudges';
 import type { CobyItem, ParsedItem } from './src/domain/types';
 import { clearItems, completeItem, listItems, saveItems } from './src/data/items';
 import { clearAllCobyNudges, syncItemNudges, triggerLabNudge } from './src/notifications/scheduler';
+import { loadBilling, purchaseMonthly, restoreBilling, type BillingState } from './src/billing/revenuecat';
 
-type Screen = 'arrival' | 'home' | 'capture' | 'receipt' | 'plan' | 'focus' | 'lab';
+type Screen = 'arrival' | 'home' | 'capture' | 'receipt' | 'plan' | 'focus' | 'lab' | 'paywall';
 const clock = new SystemClock();
-const parser = new FixtureBrainDumpParser();
+const fixtureParser = new FixtureBrainDumpParser();
+const configuredParser = createGeminiBrainDumpParser();
 
 function CobyOrb({ size = 112 }: { size?: number }) {
   return <View style={[styles.orbOuter, { width: size, height: size, borderRadius: size / 2 }]}>
@@ -22,6 +27,12 @@ function Button({ label, onPress, kind = 'primary', disabled = false }: { label:
     style={[styles.button, kind === 'quiet' && styles.quietButton, disabled && styles.disabledButton]}>
     <Text style={[styles.buttonText, kind === 'quiet' && styles.quietButtonText]}>{label}</Text>
   </Pressable>;
+}
+
+function dueText(item: { dueAt: string | null; dueDate: string | null }): string {
+  if (item.dueAt) return new Date(item.dueAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  if (item.dueDate) return new Date(`${item.dueDate}T12:00:00`).toLocaleDateString(undefined, { dateStyle: 'medium' });
+  return 'No date set';
 }
 
 export default function App() {
@@ -38,12 +49,23 @@ export default function App() {
   const [focusItem, setFocusItem] = useState<CobyItem | null>(null);
   const [activeClock, setActiveClock] = useState<Clock>(() => new SystemClock());
   const [labMessage, setLabMessage] = useState('Fixture parser · RevenueCat not connected');
+  const [parserMode, setParserMode] = useState<'fixture' | 'configured'>(process.env.EXPO_PUBLIC_COBY_AI_PROVIDER === 'gemini' ? 'configured' : 'fixture');
+  const [listening, setListening] = useState(false);
+  const [billing, setBilling] = useState<BillingState>({ configured: false, plus: false, monthlyPrice: null, message: 'Checking Coby Plus…' });
+  const [pendingPersistentId, setPendingPersistentId] = useState<string | null>(null);
+
+  useSpeechRecognitionEvent('start', () => setListening(true));
+  useSpeechRecognitionEvent('end', () => setListening(false));
+  useSpeechRecognitionEvent('result', (event) => setDump(event.results[0]?.transcript ?? ''));
+  useSpeechRecognitionEvent('error', () => { setListening(false); setError('Voice capture stopped. You can type instead.'); });
 
   useEffect(() => {
     listItems().then((stored) => { setItems(stored); setScreen(stored.length ? 'home' : 'arrival'); })
       .catch(() => setError('Coby could not open local storage. Please restart the app.'))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => { loadBilling().then(setBilling); }, []);
 
   const ranked = useMemo(() => rankItems(items, activeClock), [items, activeClock]);
   const now = ranked[0];
@@ -53,12 +75,22 @@ export default function App() {
     setError(null);
     setBusy(true);
     try {
-      const result = await parser.parse(dump, { clock: activeClock, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
+      const selectedParser = parserMode === 'fixture' ? fixtureParser : configuredParser;
+      const result = await selectedParser.parse(dump, { clock: activeClock, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
       if (!result.items.length) { setError('Write what is on your mind first.'); return; }
       setDraft(result.items);
       setScreen('receipt');
     } catch { setError('Coby could not understand that yet. Your words are still here.'); }
     finally { setBusy(false); }
+  }
+
+  async function startListening() {
+    setError(null);
+    try {
+      const permission = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+      if (!permission.granted) { setError('Microphone permission is off. You can type instead.'); return; }
+      ExpoSpeechRecognitionModule.start({ lang: 'en-US', interimResults: true, continuous: false });
+    } catch { setError('Voice is unavailable here. You can type instead.'); }
   }
 
   async function holdItems() {
@@ -123,10 +155,10 @@ export default function App() {
     const day = activeClock.now(); day.setDate(day.getDate() + offset); return day;
   });
 
-  async function setGentle(item: CobyItem) {
+  async function setCommitment(item: CobyItem, mode: 'gentle' | 'persistent') {
     setError(null); setBusy(true);
     try {
-      const changed: CobyItem = { ...item, commitmentMode: 'gentle' };
+      const changed: CobyItem = { ...item, commitmentMode: mode };
       await saveItems([changed]);
       const enabled = await syncItemNudges(changed, activeClock);
       setItems(await listItems());
@@ -138,11 +170,13 @@ export default function App() {
   async function seedLab() {
     setBusy(true); setError(null);
     try {
-      const result = await parser.parse(DEMO_DUMP, { clock: activeClock, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
-      const timestamp = activeClock.now().toISOString();
+      const demoStart = clock.now(); demoStart.setHours(9, 0, 0, 0);
+      const demoClock = new DemoClock(demoStart); setActiveClock(demoClock);
+      const result = await fixtureParser.parse(DEMO_DUMP, { clock: demoClock, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
+      const timestamp = demoClock.now().toISOString();
       const seeded = result.items.map((entry, index): CobyItem => ({ ...entry,
-        id: `demo-${activeClock.now().getTime()}-${index}`, sourceText: DEMO_DUMP,
-        createdAt: timestamp, status: 'captured', commitmentMode: 'none', completedAt: null,
+        id: `demo-${demoClock.now().getTime()}-${index}`, sourceText: DEMO_DUMP,
+        createdAt: timestamp, status: 'captured', commitmentMode: index === 1 ? 'gentle' : 'none', completedAt: null,
       }));
       await saveItems(seeded); setItems(await listItems()); setLabMessage('Demo items seeded.');
     } catch { setError('Could not seed demo data.'); }
@@ -151,7 +185,7 @@ export default function App() {
 
   async function clearLab() {
     setBusy(true); setError(null);
-    try { await clearItems(); await clearAllCobyNudges(); setItems([]); setLabMessage('Local items cleared.'); }
+    try { await clearItems(); await clearAllCobyNudges(); setItems([]); setActiveClock(new SystemClock()); setLabMessage('Local items cleared.'); }
     catch { setError('Could not clear local items.'); }
     finally { setBusy(false); }
   }
@@ -160,6 +194,31 @@ export default function App() {
     if (!now) { setLabMessage('Seed an item first.'); return; }
     try { await triggerLabNudge(now.item); setLabMessage('A local nudge is queued for two seconds from now.'); }
     catch { setLabMessage('Notification permission is needed on an Android device.'); }
+  }
+
+  function requestPersistent(item: CobyItem) {
+    if (billing.plus) { void setCommitment(item, 'persistent'); return; }
+    setPendingPersistentId(item.id); setScreen('paywall');
+  }
+
+  async function buyPlus() {
+    setBusy(true); setError(null);
+    try {
+      const updated = await purchaseMonthly(); setBilling(updated);
+      if (updated.plus && pendingPersistentId) {
+        const selected = items.find((item) => item.id === pendingPersistentId);
+        if (selected) await setCommitment(selected, 'persistent');
+      }
+      setPendingPersistentId(null); setScreen('home');
+    } catch { setError('The test purchase did not complete. You can keep using Gentle.'); }
+    finally { setBusy(false); }
+  }
+
+  async function restorePlus() {
+    setBusy(true); setError(null);
+    try { const updated = await restoreBilling(); setBilling(updated); setError(updated.plus ? 'Coby Plus restored.' : 'No Coby Plus purchase found.'); }
+    catch { setError('Could not restore purchases right now.'); }
+    finally { setBusy(false); }
   }
 
   if (loading) return <View style={styles.loading}><ActivityIndicator color={colors.violet} /></View>;
@@ -181,13 +240,17 @@ export default function App() {
         <Text style={styles.kicker}>NOW</Text>
         {now ? <>
           <Text style={styles.nowTitle}>{now.item.title}</Text>
-          {now.item.dueAt && <Text style={styles.meta}>Due {new Date(now.item.dueAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</Text>}
+          {(now.item.dueAt || now.item.dueDate) && <Text style={styles.meta}>Due {dueText(now.item)}</Text>}
           <Pressable accessibilityRole="button" onPress={() => setShowReason(!showReason)}><Text style={styles.reasonLink}>Why this now?</Text></Pressable>
           {showReason && <Text style={styles.reason}>{reasonText(now.reasonCodes)}</Text>}
           <Button label={busy ? 'Starting…' : 'Start focus'} disabled={busy} onPress={() => startFocus(now.item)} />
           <Button label="Mark complete" kind="quiet" disabled={busy} onPress={finishNow} />
-          {now.item.commitmentMode === 'none' && now.item.dueAt && <Pressable accessibilityRole="button" onPress={() => setGentle(now.item)}><Text style={styles.reminderLink}>Keep me gently on track</Text></Pressable>}
-          {now.item.commitmentMode === 'gentle' && <Text style={styles.reminderState}>Gentle reminders are on.</Text>}
+          {now.item.dueAt && <>
+            {now.item.commitmentMode === 'none' && <Pressable accessibilityRole="button" onPress={() => setCommitment(now.item, 'gentle')}><Text style={styles.reminderLink}>Keep me gently on track</Text></Pressable>}
+            {now.item.commitmentMode === 'gentle' && <Text style={styles.reminderState}>Gentle reminders are on.</Text>}
+            {now.item.commitmentMode !== 'persistent' && <Pressable accessibilityRole="button" onPress={() => requestPersistent(now.item)}><Text style={styles.reminderLink}>Persistent reminders · Plus</Text></Pressable>}
+            {now.item.commitmentMode === 'persistent' && <Text style={styles.reminderState}>Persistent reminders are on.</Text>}
+          </>}
         </> : <>
           <Text style={styles.nowTitle}>You’re clear for now.</Text>
           <Text style={styles.support}>Coby is ready when something comes to mind.</Text>
@@ -211,10 +274,26 @@ export default function App() {
         <Text style={styles.support}>Clock: {activeClock.now().toLocaleString()}</Text>
         <Button label="Seed demo data" disabled={busy} onPress={seedLab} />
         <Button label="Advance time by 60 minutes" disabled={busy} kind="quiet" onPress={() => { const demo = new DemoClock(activeClock.now()); demo.advanceMinutes(60); setActiveClock(demo); setLabMessage('Demo clock advanced by one hour.'); }} />
+        <Button label="Advance to next nudge" disabled={busy} kind="quiet" onPress={() => {
+          const candidates = items.flatMap((item) => planNudges(item, activeClock)).sort((a, b) => a.at.getTime() - b.at.getTime());
+          if (!candidates.length) { setLabMessage('No future nudge is scheduled in demo time.'); return; }
+          setActiveClock(new DemoClock(candidates[0].at)); setLabMessage(`Demo clock moved to ${candidates[0].at.toLocaleTimeString()}.`);
+        }} />
         <Button label="Trigger next nudge" disabled={busy} kind="quiet" onPress={nudgeLab} />
-        <Button label="Use fixture parser" kind="quiet" onPress={() => setLabMessage('Fixture parser is active.')} />
-        <Button label="RevenueCat state" kind="quiet" onPress={() => setLabMessage('RevenueCat is not connected yet.')} />
+        <Button label="Use fixture parser" kind="quiet" onPress={() => { setParserMode('fixture'); setLabMessage('Fixture parser is active.'); }} />
+        <Button label="Use configured parser" kind="quiet" onPress={() => { setParserMode('configured'); setLabMessage('Configured Gemini parser is active.'); }} />
+        <Button label="RevenueCat state" kind="quiet" onPress={async () => { const updated = await loadBilling(); setBilling(updated); setLabMessage(`${updated.message} Plus: ${updated.plus ? 'active' : 'inactive'}.`); }} />
         <Button label="Clear local data" disabled={busy} kind="quiet" onPress={clearLab} />
+      </>}
+
+      {screen === 'paywall' && <>
+        <Pressable onPress={() => setScreen('home')} accessibilityRole="button"><Text style={styles.back}>← Home</Text></Pressable>
+        <View style={styles.captureOrb}><CobyOrb size={88} /></View>
+        <Text style={styles.pageTitle}>A little more support.</Text>
+        <Text style={styles.support}>Coby Plus adds Persistent reminders as a deadline gets close. Brain dumps, NOW, Plan and Gentle stay free.</Text>
+        <Text style={styles.labStatus}>{billing.message}</Text>
+        <Button label={billing.monthlyPrice ? `Try Plus monthly · ${billing.monthlyPrice}` : 'Monthly test product unavailable'} disabled={busy || !billing.configured || !billing.monthlyPrice} onPress={buyPlus} />
+        <Button label="Restore purchase" kind="quiet" disabled={busy || !billing.configured} onPress={restorePlus} />
       </>}
 
       {screen === 'plan' && <>
@@ -232,14 +311,14 @@ export default function App() {
             <Text style={styles.dayNumber}>{day.getDate()}</Text>
           </Pressable>)}</View>}
         {(() => {
-          const shown = planMode === 'list' ? openItems : openItems.filter((item) => item.dueAt && new Date(item.dueAt).toDateString() === selectedDay);
+          const shown = planMode === 'list' ? openItems : openItems.filter((item) => item.dueAt ? new Date(item.dueAt).toDateString() === selectedDay : item.dueDate ? new Date(`${item.dueDate}T12:00:00`).toDateString() === selectedDay : false);
           return shown.length ? shown.map((item) => <View key={item.id} style={styles.planRow}>
             <Text style={styles.planItemTitle}>{item.title}</Text>
-            <Text style={styles.receiptMeta}>{item.dueAt ? new Date(item.dueAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : 'No time set'}</Text>
+            <Text style={styles.receiptMeta}>{dueText(item)}</Text>
             <Pressable accessibilityRole="button" onPress={() => startFocus(item)}><Text style={styles.reasonLink}>Focus on this →</Text></Pressable>
           </View>) : <Text style={styles.planEmpty}>Nothing here. Coby is holding the rest.</Text>;
         })()}
-        {planMode === 'calendar' && <Text style={styles.support}>Items without a time are in List.</Text>}
+        {planMode === 'calendar' && <Text style={styles.support}>Items without a date are in List.</Text>}
         <View style={styles.bottomAction}><Button label="Add more" onPress={() => setScreen('capture')} /></View>
       </>}
 
@@ -259,6 +338,8 @@ export default function App() {
         <View style={styles.captureOrb}><CobyOrb size={88} /></View>
         <Text style={styles.pageTitle}>What’s on your mind?</Text>
         <Text style={styles.support}>Put it all here. Coby will hold it.</Text>
+        <Button label={listening ? 'Stop listening' : 'Speak to Coby'} kind="quiet" onPress={() => listening ? ExpoSpeechRecognitionModule.stop() : void startListening()} />
+        <Text style={styles.typeInstead}>Type instead</Text>
         <TextInput style={styles.dumpInput} multiline placeholder="I need to finish my assignment tomorrow…"
           placeholderTextColor="#8E8B92" value={dump} onChangeText={setDump} accessibilityLabel="Brain dump" textAlignVertical="top" />
         <Button label={busy ? 'Understanding…' : 'Understand'} onPress={understand} disabled={busy} />
@@ -273,7 +354,7 @@ export default function App() {
         <View style={styles.receiptList}>{draft.map((entry, index) => <View style={styles.receiptRow} key={index}>
           <TextInput style={styles.receiptTitle} value={entry.title} accessibilityLabel={`Item ${index + 1} title`}
             onChangeText={(title) => setDraft((current) => current.map((item, i) => i === index ? { ...item, title } : item))} />
-          <Text style={styles.receiptMeta}>{entry.dueAt ? new Date(entry.dueAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : 'No time set'}</Text>
+          <Text style={styles.receiptMeta}>{dueText(entry)}</Text>
         </View>)}</View>
         <Button label={busy ? 'Saving…' : 'Looks right'} onPress={holdItems} disabled={busy || draft.some((entry) => !entry.title.trim())} />
         <Button label="Edit what I said" kind="quiet" onPress={() => setScreen('capture')} />
@@ -311,6 +392,7 @@ const styles = StyleSheet.create({
   error: { color: '#A24D48', fontSize: 14, marginTop: 18 },
   reminderLink: { color: colors.violet, textAlign: 'center', fontSize: 14, marginTop: 15 }, reminderState: { color: colors.muted, fontSize: 13, marginTop: 15 },
   labLink: { color: colors.muted, fontSize: 12, textAlign: 'center', marginTop: 25 }, labStatus: { color: colors.violet, fontSize: 16, marginTop: 30, marginBottom: 20 },
+  typeInstead: { color: colors.muted, fontSize: 13, textAlign: 'center', marginTop: 18 },
   planLink: { color: colors.violet, fontSize: 15, fontWeight: '600', textAlign: 'center', marginTop: 22 },
   planTitle: { marginTop: 55 }, modeBar: { flexDirection: 'row', backgroundColor: '#EBE8E4', borderRadius: 18, padding: 4, marginTop: 30, marginBottom: 25 },
   modeButton: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 15 }, modeSelected: { backgroundColor: '#FFFFFF' }, modeText: { color: colors.ink, fontSize: 15, fontWeight: '600' },

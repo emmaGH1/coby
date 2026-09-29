@@ -16,3 +16,8 @@
 
 - **Nudges are local and bounded:** Gentle schedules one comfortable-start reminder; Persistent at most two. Unknown deadlines and completed items schedule none.
 - **Coby Lab is development-only:** seed/clear data, advance a DemoClock, trigger a local nudge, and inspect integration state without real-time waiting.
+
+- **Date and time precision are separate:** a date-only phrase sets dueDate without an invented dueAt. Timed nudges require an exact user-stated clock time.
+- **Gemini model updated from live evidence:** the older Flash Lite model returned 404 for this key; Gemini 3.5 Flash Lite passed a real anchored extraction smoke test.
+- **Test Store key is development-only:** the app skips Test Store configuration in release builds because RevenueCat intentionally rejects Test Store keys there.
+- **Coby orb icon is drawn programmatically:** warm ivory and one violet sphere match the design system and replace Expo placeholder assets.

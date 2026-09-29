@@ -7,6 +7,7 @@ export type ParsedItem = {
   title: string;
   sourceFragment: string;
   kind: ItemKind;
+  dueDate: string | null;
   dueAt: string | null;
   durationMinutes: number | null;
   explicitPriority: ExplicitPriority;

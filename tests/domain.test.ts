@@ -4,6 +4,7 @@ import { DemoClock } from '../src/domain/clock';
 import { DEMO_DUMP, FixtureBrainDumpParser } from '../src/domain/parser';
 import { rankItems } from '../src/domain/ranking';
 import { planNudges } from '../src/domain/nudges';
+import { validateParseResult } from '../src/domain/geminiParser';
 import type { CobyItem } from '../src/domain/types';
 
 const clock = new DemoClock(new Date('2026-09-29T12:00:00Z'));
@@ -12,6 +13,9 @@ const parser = new FixtureBrainDumpParser();
 test('fixture recognizes only the explicit demo input', async () => {
   const result = await parser.parse(DEMO_DUMP, { clock, timeZone: 'UTC' });
   assert.equal(result.items.length, 3);
+  assert.equal(result.items[0].dueAt, null);
+  assert.equal(result.items[0].dueDate, '2026-09-30');
+  assert.equal(result.items[1].durationMinutes, 5);
   assert.equal(result.items[2].title, 'Buy data');
   assert.equal(result.items[2].dueAt, null);
   assert.equal(result.items[2].durationMinutes, null);
@@ -28,7 +32,7 @@ test('other words are held intact without invented details', async () => {
 function stored(id: string, dueAt: string | null, status: CobyItem['status'] = 'captured'): CobyItem {
   return { id, title: id, sourceText: id, sourceFragment: id, kind: 'task',
     createdAt: id === 'a' ? '2026-09-29T08:00:00Z' : '2026-09-29T09:00:00Z',
-    dueAt, durationMinutes: null, explicitPriority: null, confidence: 1,
+    dueDate: null, dueAt, durationMinutes: null, explicitPriority: null, confidence: 1,
     needsClarification: false, clarificationQuestion: null, status,
     commitmentMode: 'none', completedAt: null };
 }
@@ -43,6 +47,14 @@ test('Home ranking favors a deadline and excludes completed items', () => {
 
 test('ranking is stable for equal priorities', () => {
   assert.deepEqual(rankItems([stored('b', null), stored('a', null)], clock).map(({ item }) => item.id), ['a', 'b']);
+});
+
+test('date-only obligations rank without inventing a clock time or nudge', () => {
+  const tomorrow = { ...stored('a', null), dueDate: '2026-09-30', commitmentMode: 'gentle' as const };
+  const ranked = rankItems([stored('b', null), tomorrow], clock);
+  assert.equal(ranked[0].item.id, 'a');
+  assert.deepEqual(ranked[0].reasonCodes, ['dueTomorrowDate']);
+  assert.deepEqual(planNudges(tomorrow, clock), []);
 });
 
 test('latest safe start outranks another due-soon item', () => {
@@ -66,4 +78,20 @@ test('Gentle schedules one comfortable start and Persistent at most two nudges',
 test('unknown deadlines and completed items never receive nudges', () => {
   assert.deepEqual(planNudges({ ...stored('a', null), commitmentMode: 'gentle' }, clock), []);
   assert.deepEqual(planNudges({ ...stored('a', '2026-09-29T14:00:00Z', 'completed'), commitmentMode: 'gentle' }, clock), []);
+});
+
+test('Gemini response validator discards unsupported dates and durations', () => {
+  const result = validateParseResult({ items: [{
+    title: 'Study operating systems', sourceFragment: 'Study operating systems',
+    kind: 'task', dueDate: '2026-10-01', dueAt: '2026-10-01T18:00:00Z', durationMinutes: 120,
+    explicitPriority: 'urgent', confidence: 0.9, needsClarification: false,
+  }] }, 'Study operating systems');
+  assert.equal(result.items[0].dueAt, null);
+  assert.equal(result.items[0].dueDate, null);
+  assert.equal(result.items[0].durationMinutes, null);
+  assert.equal(result.items[0].explicitPriority, null);
+});
+
+test('Gemini response validator rejects a fabricated source fragment', () => {
+  assert.throws(() => validateParseResult({ items: [{ title: 'Call Sam', sourceFragment: 'Call Sam' }] }, 'Buy data'));
 });

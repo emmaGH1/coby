@@ -7,7 +7,13 @@ export interface BrainDumpParser {
   parse(input: string, context: ParseContext): Promise<ParseResult>;
 }
 
-export const DEMO_DUMP = 'Finish the database assignment tomorrow, call Daniel tonight, and buy data.';
+export const DEMO_DUMP = 'Finish the database assignment tomorrow, call Daniel by 8 PM tonight for 5 minutes, and buy data.';
+
+function localDate(clock: Clock, dayOffset: number): string {
+  const date = clock.now();
+  date.setDate(date.getDate() + dayOffset);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
 
 function localDueDate(clock: Clock, dayOffset: number, hour: number): string {
   const date = clock.now();
@@ -16,9 +22,9 @@ function localDueDate(clock: Clock, dayOffset: number, hour: number): string {
   return date.toISOString();
 }
 
-function item(title: string, sourceFragment: string, dueAt: string | null): ParsedItem {
+function item(title: string, sourceFragment: string, dueDate: string | null, dueAt: string | null, durationMinutes: number | null = null): ParsedItem {
   return {
-    title, sourceFragment, dueAt, kind: 'task', durationMinutes: null,
+    title, sourceFragment, dueDate, dueAt, kind: 'task', durationMinutes,
     explicitPriority: null, confidence: 1, needsClarification: false,
     clarificationQuestion: null,
   };
@@ -31,11 +37,11 @@ export class FixtureBrainDumpParser implements BrainDumpParser {
     if (!trimmed) return { items: [] };
     if (trimmed.toLocaleLowerCase() === DEMO_DUMP.toLocaleLowerCase()) {
       return { items: [
-        item('Finish the database assignment', 'Finish the database assignment tomorrow', localDueDate(context.clock, 1, 18)),
-        item('Call Daniel', 'call Daniel tonight', localDueDate(context.clock, 0, 21)),
-        item('Buy data', 'buy data', null),
+        item('Finish the database assignment', 'Finish the database assignment tomorrow', localDate(context.clock, 1), null),
+        item('Call Daniel', 'call Daniel by 8 PM tonight for 5 minutes', localDate(context.clock, 0), localDueDate(context.clock, 0, 20), 5),
+        item('Buy data', 'buy data', null, null),
       ] };
     }
-    return { items: [item(trimmed, trimmed, null)] };
+    return { items: [item(trimmed, trimmed, null, null)] };
   }
 }

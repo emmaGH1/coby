@@ -6,7 +6,7 @@ Core P0 flows are implemented. The GitHub Android debug build passed and the hos
 
 Local device verification passes on a Pixel 6 AVD running Android 16 / API 36 with Google APIs and x86_64. The CI-built debug APK opened through the local loopback-only Metro connection. Fixture and Gemini text capture, SQLite persistence across app restart, NOW recomputation after completion, Plan List/Calendar, focus start/end, and an immediate local nudge were exercised. Test items and the active test notification were cleared afterward.
 
-The base app/screenshot commit is db0fc3f, before the documentation checkpoints. The local Gradle build still needs the Android NDK package: its SDK download stalled at 0 bytes, so emulator runs used the CI-built APK.
+The base app/screenshot commit is db0fc3f, before the documentation checkpoints. The local Gradle build still needs a complete NDK 27.1.12297006 install: the SDK folder exists but is missing source.properties (CXX1101), so emulator runs used the CI-built APK.
 
 ## Completed
 
@@ -27,8 +27,8 @@ The base app/screenshot commit is db0fc3f, before the documentation checkpoints.
 - Focus showed one item and returned to Home after End focus. Completing from the focus screen was not tested.
 - Coby Lab’s immediate nudge appeared in Android notifications as “Call Daniel” / “This is a good time to start.” Scheduled future timing, cancellation, and frequency limits remain unverified.
 - Android granted microphone permission and started speech recognition; with no audio input, recognition returned no speech and Coby showed its text fallback. Spoken transcription remains unverified.
-- RevenueCat’s paywall loaded the monthly Test Store product at $9.99. The user selected $4.99/month. Test Store product prices are set at product creation; a different price requires a replacement product and an offering update. See [RevenueCat Test Store documentation](https://www.revenuecat.com/docs/test-and-launch/sandbox/test-store).
-- Coby Lab cleared the test items. RevenueCat diagnostics reported the monthly Test Store package ready and Plus inactive. Purchase, restore, and coby_plus entitlement mapping were not verified.
+- RevenueCat Test Store: product coby_plus_monthly is $4.99/month and attached to entitlement coby_plus. The default offering monthly package now uses that product; Yearly and Lifetime packages stayed unchanged. A valid Test Store purchase unlocked coby_plus and the app returned to Home with Persistent reminders enabled. Coby Lab confirmed Plus active. Restore remains untested. See [RevenueCat Test Store documentation](https://www.revenuecat.com/docs/test-and-launch/sandbox/test-store).
+- Coby Lab cleared the seeded tasks and local reminders after verification. The RevenueCat Test Store sandbox customer remains Plus active from the simulated purchase.
 - Android JavaScript bundle export and native prebuild: passed.
 - [GitHub Android debug build](https://github.com/emmaGH1/coby/actions/runs/36581594892): passed.
 - [Latest Android screenshot run](https://github.com/emmaGH1/coby/actions/runs/36586728480): release compile, emulator capture, and 1179×2556 PNG validation passed. Visual review confirms the capture and Plan actions fit on the first screen.
@@ -36,10 +36,10 @@ The base app/screenshot commit is db0fc3f, before the documentation checkpoints.
 
 ## Human setup
 
-The RevenueCat dashboard is at its sign-in page in the Codex browser. Sign in there, then create a monthly Test Store product priced at $4.99 and attach it to the current default offering’s monthly package. Confirm the product unlocks coby_plus. RevenueCat does not allow changing a saved Test Store product’s price in place.
+RevenueCat configuration is complete: the $4.99 monthly product coby_plus_monthly is attached to coby_plus and the default offering. The Test Store purchase and Persistent reminder gate passed. Restore remains to be verified.
 
-For a local Gradle build, install NDK 27.1.12297006 through Android Studio SDK Manager and rerun it.
+For a local Gradle build, install or repair NDK 27.1.12297006 through Android Studio SDK Manager. The existing directory is incomplete: source.properties is missing and Gradle reports CXX1101.
 
 ## NEXT ACTION
 
-After dashboard sign-in, replace the current $9.99 Test Store product with a $4.99 monthly product, confirm its coby_plus mapping, then verify the simulated purchase/restore and free-versus-Plus gate.
+Install NDK 27.1.12297006 through Android Studio SDK Manager or sdkmanager, then rerun the local Gradle debug build.

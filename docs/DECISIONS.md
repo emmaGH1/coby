@@ -29,3 +29,9 @@
 
 - **Use Android 16 / API 36 as the primary emulator target:** Expo SDK 57 compiles and targets API 36, and the GitHub Android workflows use API 36. Android 17 / API 37 is still labeled preview in the installed Android Studio device dialog, so it is not the baseline for this submission test.
 - **Pixel 6, Google APIs, x86_64:** a practical phone-sized local emulator profile for layout and runtime checks. Submission screenshot resolution is set separately by the capture script.
+
+
+## 2026-09-29 — RevenueCat test gate
+
+- **Keep the default offering identifier and package layout:** replace only its Monthly product with coby_plus_monthly at $4.99/month, attach it to coby_plus, and leave Yearly and Lifetime unchanged. The existing Test Store product already had the selected price, so no duplicate was created.
+- **Sandbox purchase verification:** a valid Test Store transaction is development-only; it unlocked Persistent reminders in Coby and appeared active in the RevenueCat state diagnostic. Restore still needs a separate check.

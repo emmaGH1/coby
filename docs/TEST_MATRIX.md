@@ -24,7 +24,8 @@ Record date, device/emulator, build, result, and evidence for every executed row
 
 ## Latest run
 
-2026-09-29: typecheck passed; lint passed; 10 domain tests passed. Live Gemini sample extraction passed. Android JS bundle export and native prebuild passed with speech, notification, and SQLite plugins. Android runtime, RevenueCat purchase, and notifications remain unverified without a device.
+2026-09-29: typecheck passed; lint passed; 11 domain tests passed. Live Gemini sample extraction passed. Android JS bundle export and native prebuild passed with speech, notification, and SQLite plugins. Android runtime, RevenueCat purchase, and notifications remain unverified without a device.
+
 
 
 

@@ -71,6 +71,11 @@ export default function App() {
   const now = ranked[0];
   const next = ranked.slice(1, 3);
 
+  async function cancelCompletedNudges(item: CobyItem): Promise<void> {
+    try { await syncItemNudges({ ...item, status: 'completed' }, activeClock); }
+    catch { setError('Done. A previously scheduled reminder may still appear.'); }
+  }
+
   async function understand() {
     setError(null);
     setBusy(true);
@@ -114,7 +119,7 @@ export default function App() {
   async function finishNow() {
     if (!now) return;
     setError(null); setBusy(true);
-    try { await completeItem(now.item, activeClock.now().toISOString()); await syncItemNudges({ ...now.item, status: 'completed' }, activeClock); setItems(await listItems()); setShowReason(false); }
+    try { await completeItem(now.item, activeClock.now().toISOString()); setItems(await listItems()); setShowReason(false); await cancelCompletedNudges(now.item); }
     catch { setError('Coby could not mark this complete. Please try again.'); }
     finally { setBusy(false); }
   }
@@ -134,8 +139,8 @@ export default function App() {
     setError(null); setBusy(true);
     try {
       await completeItem(focusItem, activeClock.now().toISOString());
-      await syncItemNudges({ ...focusItem, status: 'completed' }, activeClock);
       setItems(await listItems()); setFocusItem(null); setScreen('home'); setShowReason(false);
+      await cancelCompletedNudges(focusItem);
     } catch { setError('Coby could not mark this complete. Please try again.'); }
     finally { setBusy(false); }
   }
@@ -216,7 +221,15 @@ export default function App() {
 
   async function restorePlus() {
     setBusy(true); setError(null);
-    try { const updated = await restoreBilling(); setBilling(updated); setError(updated.plus ? 'Coby Plus restored.' : 'No Coby Plus purchase found.'); }
+    try {
+      const updated = await restoreBilling(); setBilling(updated);
+      if (!updated.plus) { setError('No Coby Plus purchase found.'); return; }
+      if (pendingPersistentId) {
+        const selected = items.find((item) => item.id === pendingPersistentId);
+        if (selected) await setCommitment(selected, 'persistent');
+      }
+      setPendingPersistentId(null); setScreen('home');
+    }
     catch { setError('Could not restore purchases right now.'); }
     finally { setBusy(false); }
   }

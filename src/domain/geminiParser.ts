@@ -16,8 +16,8 @@ function validateItem(value: unknown, input: string): ParsedItem {
     throw new Error('Extraction was not anchored to the original words');
   }
   const kind: ItemKind = value.kind === 'event' || value.kind === 'reminder' ? value.kind : 'task';
-  const temporalCue = /\b(today|tomorrow|tonight|due|by|before|after|on|at|next|this|morning|afternoon|evening|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b|\d[/:.-]\d/i.test(fragment);
-  const exactClockCue = /\b(at|by|before)\s*(\d{1,2}(:\d{2})?\s*(am|pm)?|noon|midnight)\b|\b\d{1,2}:\d{2}\s*(am|pm)?\b/i.test(fragment);
+  const temporalCue = /\b(today|tomorrow|tonight|due|deadline|morning|afternoon|evening|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b|\b(?:at|by|before)\s*\d|\b(?:next|this)\s+(?:week|weekend|month)\b|\b\d{4}-\d{2}-\d{2}\b|\b\d{1,2}[/.]\d{1,2}\b/i.test(fragment);
+  const exactClockCue = /\b(?:at|by|before)\s*(?:\d{1,2}(?::\d{2})?\s*(?:am|pm)|(?:1[3-9]|2[0-3]):[0-5]\d|noon|midnight)\b/i.test(fragment);
   const dueDate = temporalCue && typeof value.dueDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value.dueDate) && Number.isFinite(Date.parse(value.dueDate))
     ? value.dueDate : null;
   const dueAt = exactClockCue && typeof value.dueAt === 'string' && Number.isFinite(Date.parse(value.dueAt))

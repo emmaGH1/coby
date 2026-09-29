@@ -95,3 +95,11 @@ test('Gemini response validator discards unsupported dates and durations', () =>
 test('Gemini response validator rejects a fabricated source fragment', () => {
   assert.throws(() => validateParseResult({ items: [{ title: 'Call Sam', sourceFragment: 'Call Sam' }] }, 'Buy data'));
 });
+
+test('an ambiguous hour and generic “on” cannot create an exact deadline', () => {
+  const response = { items: [{ title: 'Call Sam', sourceFragment: 'Call Sam at 8', kind: 'task', dueDate: '2026-09-29', dueAt: '2026-09-29T20:00:00Z' }] };
+  const result = validateParseResult(response, 'Call Sam at 8');
+  assert.equal(result.items[0].dueAt, null);
+  const generic = validateParseResult({ items: [{ ...response.items[0], sourceFragment: 'Work on the essay' }] }, 'Work on the essay');
+  assert.equal(generic.items[0].dueDate, null);
+});

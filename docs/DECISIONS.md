@@ -40,3 +40,13 @@
 ## 2026-09-29 — Deterministic behavior checks
 
 - **ESLint ignores generated Android prebuild output:** keep the full lint command focused on maintained JavaScript and TypeScript files after Expo creates the native project.
+
+## 2026-09-29 — P0 product recovery
+
+- **Reclassify the existing app as a functional prototype:** working plumbing is not completed P0 when the capture hierarchy, voice trust, receipt correction, and visual system diverge from product canon.
+- **Merge Arrival, Home, and Capture around an adaptive composer:** an expanded composer carries the empty state; a compact composer remains visible above NOW when items exist. Capture no longer hides behind a bottom CTA.
+- **Use the orb as state, not decoration:** idle, listening, thinking, and settled variants communicate what Coby is doing, with reduced-motion support.
+- **Tap-to-speak with explicit Done:** preserve text typed before dictation, accumulate Android's segmented final results, display interim words, and map recognizer failures to specific recovery copy.
+- **Android-first is now explicit product canon:** P0 quality and verification target the Pixel 6 phone class and API 36 before adding iPhone-specific scope.
+- **Old submission screenshot is stale:** it remains historical evidence until a verified screenshot of the recovered interface replaces it.
+- **NDK repair is an environment blocker:** the empty `27.1.12297006` folder was moved aside; Gradle's clean reinstall reached the download and failed with a connection reset.

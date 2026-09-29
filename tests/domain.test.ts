@@ -6,6 +6,7 @@ import { rankItems, reasonText } from '../src/domain/ranking';
 import { planNudges } from '../src/domain/nudges';
 import { validateParseResult } from '../src/domain/geminiParser';
 import type { CobyItem } from '../src/domain/types';
+import { appendTranscript, speechErrorMessage } from '../src/voice/speech';
 
 const clock = new DemoClock(new Date('2026-09-29T12:00:00Z'));
 const parser = new FixtureBrainDumpParser();
@@ -150,4 +151,15 @@ test('explicit urgent priority outranks important for otherwise equal items', ()
   const ranked = rankItems([important, urgent], clock);
   assert.deepEqual(ranked.map(({ item }) => item.id), ['urgent', 'important']);
   assert.equal(reasonText(ranked[0].reasonCodes), 'You marked this urgent.');
+});
+
+test('voice transcription appends to words already typed', () => {
+  assert.equal(appendTranscript('Call Mum,', 'and submit the form Friday'), 'Call Mum, and submit the form Friday');
+  assert.equal(appendTranscript('', 'buy data'), 'buy data');
+});
+
+test('voice errors tell the user what happened and how to recover', () => {
+  assert.match(speechErrorMessage('no-speech'), /didn't catch anything/i);
+  assert.match(speechErrorMessage('service-not-allowed'), /Speech Recognition & Synthesis/i);
+  assert.equal(speechErrorMessage('aborted'), '');
 });

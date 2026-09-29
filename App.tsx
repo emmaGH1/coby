@@ -1,26 +1,24 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, TextInput, View } from 'react-native';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
+import { useFonts, Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold } from '@expo-google-fonts/manrope';
 import { DemoClock, SystemClock, type Clock } from './src/domain/clock';
 import { DEMO_DUMP, FixtureBrainDumpParser } from './src/domain/parser';
 import { createGeminiBrainDumpParser } from './src/domain/parserFactory';
-import { rankItems, reasonText } from './src/domain/ranking';
+import { rankItems } from './src/domain/ranking';
 import { planNudges } from './src/domain/nudges';
 import type { CobyItem, ParsedItem } from './src/domain/types';
 import { clearItems, completeItem, listItems, saveItems } from './src/data/items';
 import { clearAllCobyNudges, syncItemNudges, triggerLabNudge } from './src/notifications/scheduler';
 import { loadBilling, purchaseMonthly, restoreBilling, type BillingState } from './src/billing/revenuecat';
+import { HomeScreen } from './src/ui/HomeScreen';
+import { CobyOrb } from './src/ui/CobyOrb';
+import { appendTranscript, speechErrorMessage } from './src/voice/speech';
 
-type Screen = 'arrival' | 'home' | 'capture' | 'receipt' | 'plan' | 'focus' | 'lab' | 'paywall';
+type Screen = 'home' | 'receipt' | 'plan' | 'focus' | 'lab' | 'paywall';
 const clock = new SystemClock();
 const fixtureParser = new FixtureBrainDumpParser();
 const configuredParser = createGeminiBrainDumpParser();
-
-function CobyOrb({ size = 112 }: { size?: number }) {
-  return <View style={[styles.orbOuter, { width: size, height: size, borderRadius: size / 2 }]}>
-    <View style={[styles.orbInner, { width: size * .65, height: size * .65, borderRadius: size }]} />
-  </View>;
-}
 
 function Button({ label, onPress, kind = 'primary', disabled = false }: { label: string; onPress: () => void; kind?: 'primary' | 'quiet'; disabled?: boolean }) {
   return <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={disabled} onPress={onPress}
@@ -36,7 +34,8 @@ function dueText(item: { dueAt: string | null; dueDate: string | null }): string
 }
 
 export default function App() {
-  const [screen, setScreen] = useState<Screen>('arrival');
+  const [fontsLoaded] = useFonts({ Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold });
+  const [screen, setScreen] = useState<Screen>('home');
   const [items, setItems] = useState<CobyItem[]>([]);
   const [dump, setDump] = useState('');
   const [draft, setDraft] = useState<ParsedItem[]>([]);
@@ -53,14 +52,29 @@ export default function App() {
   const [listening, setListening] = useState(false);
   const [billing, setBilling] = useState<BillingState>({ configured: false, plus: false, monthlyPrice: null, message: 'Checking Coby Plus…' });
   const [pendingPersistentId, setPendingPersistentId] = useState<string | null>(null);
+  const voiceBase = useRef('');
+  const voiceFinal = useRef('');
 
   useSpeechRecognitionEvent('start', () => setListening(true));
   useSpeechRecognitionEvent('end', () => setListening(false));
-  useSpeechRecognitionEvent('result', (event) => setDump(event.results[0]?.transcript ?? ''));
-  useSpeechRecognitionEvent('error', () => { setListening(false); setError('Voice capture stopped. You can type instead.'); });
+  useSpeechRecognitionEvent('result', (event) => {
+    const transcript = event.results[0]?.transcript ?? '';
+    if (event.isFinal) {
+      voiceFinal.current = appendTranscript(voiceFinal.current, transcript);
+      setDump(appendTranscript(voiceBase.current, voiceFinal.current));
+      return;
+    }
+    setDump(appendTranscript(appendTranscript(voiceBase.current, voiceFinal.current), transcript));
+  });
+  useSpeechRecognitionEvent('nomatch', () => setError("I didn't catch anything. Tap the mic and try again, or type below."));
+  useSpeechRecognitionEvent('error', (event) => {
+    setListening(false);
+    const message = speechErrorMessage(event.error);
+    if (message) setError(message);
+  });
 
   useEffect(() => {
-    listItems().then((stored) => { setItems(stored); setScreen(stored.length ? 'home' : 'arrival'); })
+    listItems().then((stored) => { setItems(stored); setScreen('home'); })
       .catch(() => setError('Coby could not open local storage. Please restart the app.'))
       .finally(() => setLoading(false));
   }, []);
@@ -92,10 +106,25 @@ export default function App() {
   async function startListening() {
     setError(null);
     try {
+      if (!ExpoSpeechRecognitionModule.isRecognitionAvailable()) {
+        setError('Android speech recognition is unavailable. Enable Speech Recognition & Synthesis, or type below.');
+        return;
+      }
+      if (Platform.OS === 'android' && ExpoSpeechRecognitionModule.getSpeechRecognitionServices().length === 0) {
+        setError('No Android speech service is enabled. Turn on Speech Recognition & Synthesis, or type below.');
+        return;
+      }
       const permission = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
-      if (!permission.granted) { setError('Microphone permission is off. You can type instead.'); return; }
-      ExpoSpeechRecognitionModule.start({ lang: 'en-US', interimResults: true, continuous: false });
-    } catch { setError('Voice is unavailable here. You can type instead.'); }
+      if (!permission.granted) { setError('Microphone access is off. Allow it in Android settings, or type below.'); return; }
+      voiceBase.current = dump;
+      voiceFinal.current = '';
+      ExpoSpeechRecognitionModule.start({
+        lang: 'en-US',
+        interimResults: true,
+        continuous: Platform.OS === 'android',
+        androidIntentOptions: { EXTRA_LANGUAGE_MODEL: 'free_form' },
+      });
+    } catch { setError('Voice could not start. Check the emulator microphone, then try again or type below.'); }
   }
 
   async function holdItems() {
@@ -234,51 +263,30 @@ export default function App() {
     finally { setBusy(false); }
   }
 
-  if (loading) return <View style={styles.loading}><ActivityIndicator color={colors.violet} /></View>;
+  if (loading || !fontsLoaded) return <View style={styles.loading}><ActivityIndicator color={colors.violet} /></View>;
 
   return <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
-    <ScrollView contentContainerStyle={[styles.page, screen === 'home' && styles.homePage]} keyboardShouldPersistTaps="handled">
-      {screen === 'arrival' && <View style={styles.arrival}>
-        <Text style={styles.wordmark}>coby</Text>
-        <CobyOrb size={150} />
-        <Text style={styles.hero}>carry less.</Text>
-        <Text style={styles.subhead}>Out of your head. Into good hands.</Text>
-        <Button label="Come in" onPress={() => setScreen('home')} />
-      </View>}
-
-      {screen === 'home' && <>
-        <View style={styles.topline}><Text style={styles.wordmark}>coby</Text><Text style={styles.motto}>carry less.</Text></View>
-        <View style={styles.homeOrb}><CobyOrb /></View>
-        <Text style={styles.kicker}>NOW</Text>
-        {now ? <>
-          <Text style={styles.nowTitle}>{now.item.title}</Text>
-          {(now.item.dueAt || now.item.dueDate) && <Text style={styles.meta}>Due {dueText(now.item)}</Text>}
-          <Pressable accessibilityRole="button" onPress={() => setShowReason(!showReason)}><Text style={styles.reasonLink}>Why this now?</Text></Pressable>
-          {showReason && <Text style={styles.reason}>{reasonText(now.reasonCodes)}</Text>}
-          <Button label={busy ? 'Starting…' : 'Start focus'} disabled={busy} onPress={() => startFocus(now.item)} />
-          <Button label="Mark complete" kind="quiet" disabled={busy} onPress={finishNow} />
-          {now.item.dueAt && <>
-            {now.item.commitmentMode === 'none' && <Pressable accessibilityRole="button" onPress={() => setCommitment(now.item, 'gentle')}><Text style={styles.reminderLink}>Keep me gently on track</Text></Pressable>}
-            {now.item.commitmentMode === 'gentle' && <Text style={styles.reminderState}>Gentle reminders are on.</Text>}
-            {now.item.commitmentMode !== 'persistent' && <Pressable accessibilityRole="button" onPress={() => requestPersistent(now.item)}><Text style={styles.reminderLink}>Persistent reminders · Plus</Text></Pressable>}
-            {now.item.commitmentMode === 'persistent' && <Text style={styles.reminderState}>Persistent reminders are on.</Text>}
-          </>}
-        </> : <>
-          <Text style={styles.nowTitle}>You’re clear for now.</Text>
-          <Text style={styles.support}>Coby is ready when something comes to mind.</Text>
-        </>}
-        {next.length > 0 && <View style={styles.nextArea}>
-          <Text style={styles.kicker}>NEXT</Text>
-          {next.map(({ item }) => <Text key={item.id} style={styles.nextItem}>·  {item.title}</Text>)}
-          <Text style={styles.support}>Everything else is safe with Coby.</Text>
-        </View>}
-        <View style={styles.bottomAction}><Button label="Get it out of my head" onPress={() => { setError(null); setScreen('capture'); }} />
-          <Pressable accessibilityRole="button" onPress={() => setScreen('plan')}><Text style={styles.planLink}>See your plan →</Text></Pressable>
-          {__DEV__ && <Pressable accessibilityRole="button" onPress={() => setScreen('lab')}><Text style={styles.labLink}>Coby Lab</Text></Pressable>}
-        </View>
-      </>}
-
+    {screen === 'home' ? <HomeScreen
+      busy={busy}
+      dueText={dueText}
+      dump={dump}
+      error={error}
+      listening={listening}
+      next={next}
+      now={now}
+      onChangeDump={(value) => { setDump(value); if (error) setError(null); }}
+      onComplete={finishNow}
+      onGentle={(item) => void setCommitment(item, 'gentle')}
+      onOpenLab={() => setScreen('lab')}
+      onOpenPlan={() => setScreen('plan')}
+      onPersistent={requestPersistent}
+      onStartFocus={(item) => void startFocus(item)}
+      onToggleReason={() => setShowReason(!showReason)}
+      onToggleVoice={() => listening ? ExpoSpeechRecognitionModule.stop() : void startListening()}
+      onUnderstand={() => void understand()}
+      showReason={showReason}
+    /> : <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
       {screen === 'lab' && __DEV__ && <>
         <Pressable onPress={() => setScreen('home')} accessibilityRole="button"><Text style={styles.back}>← Home</Text></Pressable>
         <Text style={[styles.pageTitle, styles.planTitle]}>Coby Lab</Text>
@@ -332,7 +340,7 @@ export default function App() {
           </View>) : <Text style={styles.planEmpty}>Nothing here. Coby is holding the rest.</Text>;
         })()}
         {planMode === 'calendar' && <Text style={styles.support}>Items without a date are in List.</Text>}
-        <View style={styles.bottomAction}><Button label="Add more" onPress={() => setScreen('capture')} /></View>
+        <View style={styles.bottomAction}><Button label="Add more" onPress={() => setScreen('home')} /></View>
       </>}
 
       {screen === 'focus' && focusItem && <View style={styles.focusScreen}>
@@ -346,22 +354,9 @@ export default function App() {
         </View>
       </View>}
 
-      {screen === 'capture' && <>
-        <Pressable onPress={() => setScreen('home')} accessibilityRole="button"><Text style={styles.back}>← Home</Text></Pressable>
-        <View style={styles.captureOrb}><CobyOrb size={88} /></View>
-        <Text style={styles.pageTitle}>What’s on your mind?</Text>
-        <Text style={styles.support}>Put it all here. Coby will hold it.</Text>
-        <Button label={listening ? 'Stop listening' : 'Speak to Coby'} kind="quiet" onPress={() => listening ? ExpoSpeechRecognitionModule.stop() : void startListening()} />
-        <Text style={styles.typeInstead}>Type instead</Text>
-        <TextInput style={styles.dumpInput} multiline placeholder="I need to finish my assignment tomorrow…"
-          placeholderTextColor="#8E8B92" value={dump} onChangeText={setDump} accessibilityLabel="Brain dump" textAlignVertical="top" />
-        <Button label={busy ? 'Understanding…' : 'Understand'} onPress={understand} disabled={busy} />
-        <Pressable accessibilityRole="button" onPress={() => setDump(DEMO_DUMP)}><Text style={styles.demoLink}>Use a sample dump</Text></Pressable>
-      </>}
-
       {screen === 'receipt' && <>
-        <Pressable onPress={() => setScreen('capture')} accessibilityRole="button"><Text style={styles.back}>← Edit dump</Text></Pressable>
-        <View style={styles.receiptOrb}><CobyOrb size={72} /></View>
+        <Pressable onPress={() => setScreen('home')} accessibilityRole="button"><Text style={styles.back}>← Edit dump</Text></Pressable>
+        <View style={styles.receiptOrb}><CobyOrb size={72} state="settled" /></View>
         <Text style={styles.pageTitle}>I’ve got it.</Text>
         <Text style={styles.support}>I’m holding {draft.length} {draft.length === 1 ? 'thing' : 'things'}. Tap a title to correct it.</Text>
         <View style={styles.receiptList}>{draft.map((entry, index) => <View style={styles.receiptRow} key={index}>
@@ -370,11 +365,11 @@ export default function App() {
           <Text style={styles.receiptMeta}>{dueText(entry)}</Text>
         </View>)}</View>
         <Button label={busy ? 'Saving…' : 'Looks right'} onPress={holdItems} disabled={busy || draft.some((entry) => !entry.title.trim())} />
-        <Button label="Edit what I said" kind="quiet" onPress={() => setScreen('capture')} />
+        <Button label="Edit what I said" kind="quiet" onPress={() => setScreen('home')} />
       </>}
 
       {error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
-    </ScrollView>
+    </ScrollView>}
   </KeyboardAvoidingView>;
 }
 

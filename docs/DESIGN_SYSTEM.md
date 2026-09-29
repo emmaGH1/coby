@@ -8,10 +8,14 @@ Premium calm companion: a quiet room with a soft, recognizable presence. Use whi
 
 | Token | Initial value | Role |
 | --- | --- | --- |
-| background | `#F7F6F2` | Warm off-white canvas |
-| ink | `#1A1A19` | Primary text and dark surfaces |
-| violet | `#7464B5` | Single accent family; refine visually |
-| violetSoft | `#E9E4F6` | Quiet accent background |
+| background | `#F5F1E9` | Warm paper canvas |
+| raised | `#FCFAF5` | Capture and high-trust surfaces |
+| ink | `#191816` | Primary text and dark surfaces |
+| muted | `#6F6A64` | Secondary text |
+| hairline | `#DDD6CC` | Quiet structure |
+| violet | `#705BB6` | Active companion state |
+| violetDeep | `#55428F` | Accessible accent text |
+| violetSoft | `#E8E1F5` | Quiet accent background |
 | amber | `#B98542` | Restrained caution |
 | coral | `#BD6F65` | Restrained error |
 | radiusSmall | `14` | Minor controls |
@@ -19,7 +23,18 @@ Premium calm companion: a quiet room with a soft, recognizable presence. Use whi
 | radiusLarge | `28` | Major surfaces |
 | radiusPill | `999` | Pills and orb controls |
 
-Functional type: Manrope or a similarly legible sans-serif. Use large titles and generous line-height. Build with tokens so dark mode can be added later; polish light mode first. Meet usable touch-target sizes and readable contrast.
+Functional type: Manrope. Use large titles and generous line-height. Build with tokens so dark mode can be added later; polish light mode first. Meet usable touch-target sizes and readable contrast.
+
+## Home composition
+
+Home is the relief loop in one surface. The user should understand within seconds that they can speak or type without first navigating elsewhere.
+
+- Empty or clear state: brand promise followed by an expanded dump composer.
+- Returning state: compact composer remains above NOW; it never moves behind a floating button or secondary page.
+- Composer: functional orb, direct prompt, editable transcript, Speak/Done control, and one “Let Coby hold it” action.
+- NOW: one large obligation with a small truthful explanation and two compact actions.
+- NEXT: at most two quiet rows. Plan is the route to everything else.
+- Use one raised capture surface. NOW and NEXT remain on the paper canvas rather than becoming a stack of cards.
 
 ## Screens
 

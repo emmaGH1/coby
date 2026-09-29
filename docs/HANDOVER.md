@@ -2,44 +2,40 @@
 
 ## Status
 
-Core P0 flows are implemented. The GitHub Android debug build passed and the hosted release app passed Android emulator capture; the validated 1179×2556 screenshot is included in the repository and task outputs.
+P0 is **in progress**. The earlier implementation proved the core data and integration plumbing but did not meet the product canon for capture prominence, voice trust, or visual quality. See `docs/P0_AUDIT.md` for the screen-by-screen assessment.
 
-Local device verification passes on a Pixel 6 AVD running Android 16 / API 36 with Google APIs and x86_64. The CI-built debug APK opened through the local loopback-only Metro connection. Fixture and Gemini text capture, SQLite persistence across app restart, NOW recomputation after completion, Plan List/Calendar, focus start/end, and an immediate local nudge were exercised. Test items and the active test notification were cleared afterward.
+The first recovery slice is implemented: Coby now opens on an adaptive brain-dump composer, keeps capture visible above NOW/NEXT, uses the orb as an idle/listening/thinking/settled indicator, and handles Android speech availability, segmented transcription, typed-text preservation, explicit completion, and recoverable errors. Home, orb, icons, theme, and speech helpers are separated from the remaining screen coordinator.
 
-The base app/screenshot commit is db0fc3f, before the documentation checkpoints. The local Gradle build still needs a complete NDK 27.1.12297006 install: the SDK folder exists but is missing source.properties (CXX1101), so emulator runs used the CI-built APK.
+This slice passes TypeScript, lint, and 19 unit tests. Android render and spoken transcription are not yet verified. Local native compilation is blocked while Gradle downloads NDK `27.1.12297006`; the clean reinstall began but failed with a connection reset.
 
-## Completed
+## Verified baseline retained
 
-- Product canon, implementation plan, design system, guardrails, test matrix, demo plan, decisions, handover, and environment template.
-- Expo TypeScript app with local SQLite capture, receipt, Home, completion, Plan List/Calendar, and focus.
-- Deterministic prioritization, NOW/NEXT limits, clock abstraction, Gentle/Persistent nudge rules, local notification scheduler, and Coby Lab.
-- Voice capture with text fallback, fixture parser, Gemini extraction adapter, RevenueCat Plus paywall/purchase/restore adapter.
-- Date-only deadlines stay separate from exact times; missing dates and durations stay null.
-- Coby app icon, README, MIT license, GitHub Android build and screenshot workflows, and the verified Home screenshot asset.
+- Fixture and live Gemini demo extraction previously passed on Pixel 6 without inventing an hour for a date-only task or a date for an undated item.
+- SQLite persistence, completion recomputation, Plan List/Calendar behavior, focus start/end/complete, and an immediate notification previously passed on Pixel 6.
+- RevenueCat Test Store product `coby_plus_monthly` is $4.99/month, attached to `coby_plus`, and a purchase previously unlocked Persistent reminders.
+- Deterministic ranking, explanation, clock, parser guardrails, and nudge planning remain covered by unit tests.
 
-## Evidence
+## Recovery slice evidence
 
-- npm run typecheck, npm run lint, and npm test (17 tests): passed. ESLint skips the generated Android prebuild tree.
-- Fixture and live Gemini extraction on the Pixel 6: passed. Each sample produced three items; the date-only assignment had no invented hour, and “buy data” stayed undated.
-- Saved items and completion state survived force-stop and app restart after reconnecting the development build.
-- Completing the NOW call surfaced the assignment; Home showed one NOW and at most two NEXT.
-- Plan List showed active items. Calendar showed the assignment on Sep 30, 2026; undated items remained in List.
-- Focus showed one item; End focus returned to Home, and Complete persisted the call as done and recomputed NOW to the assignment.
-- Coby Lab’s immediate nudge appeared in Android notifications as “Call Daniel” / “This is a good time to start.” Scheduled future timing, cancellation, and frequency limits remain unverified.
-- Android granted microphone permission and started speech recognition; with no audio input, recognition returned no speech and Coby showed its text fallback. Spoken transcription remains unverified.
-- RevenueCat Test Store: product coby_plus_monthly is $4.99/month and attached to entitlement coby_plus. The default offering monthly package now uses that product; Yearly and Lifetime packages stayed unchanged. A valid Test Store purchase unlocked coby_plus and the app returned to Home with Persistent reminders enabled. Coby Lab confirmed Plus active. Restore remains untested. See [RevenueCat Test Store documentation](https://www.revenuecat.com/docs/test-and-launch/sandbox/test-store).
-- Coby Lab cleared the seeded tasks and local reminders after verification. The RevenueCat Test Store sandbox customer remains Plus active from the simulated purchase.
-- Android JavaScript bundle export and native prebuild: passed.
-- [GitHub Android debug build](https://github.com/emmaGH1/coby/actions/runs/36581594892): passed.
-- [Latest Android screenshot run](https://github.com/emmaGH1/coby/actions/runs/36586728480): release compile, emulator capture, and 1179×2556 PNG validation passed. Visual review confirms the capture and Plan actions fit on the first screen.
-- Local Gradle compilation did not complete because the Android NDK download remained at 0 bytes; this was an SDK download issue, not a source compile failure.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed.
+- `npm test`: 19/19 passed, including typed-text preservation and actionable voice error copy.
+- Pixel 6 AVD is connected on Android 16 / API 36.
+- Android default recognition service resolves to Google TTS recognition, and Google speech packages are installed.
+- Local Gradle reached automatic NDK installation after Java and Android SDK paths were supplied. The NDK download ended with `java.net.SocketException: Connection reset`, so no current APK or screenshot was produced.
 
-## Human setup
+## Known P0 gaps
 
-RevenueCat configuration is complete: the $4.99 monthly product coby_plus_monthly is attached to coby_plus and the default offering. The Test Store purchase and Persistent reminder gate passed. Restore remains to be verified.
+- Spoken multi-clause transcription, stop/retry, and denied-permission flows need real Android verification.
+- Receipt still edits titles only; date/time, duration, kind, and clarification correction remain.
+- Plan, Focus, paywall, and Lab still use the prototype visual system.
+- Scheduled nudge timing/cancellation/frequency and RevenueCat restore remain unverified.
+- The checked-in submission screenshot shows the rejected prototype Home and must be replaced after visual approval.
 
-For a local Gradle build, install or repair NDK 27.1.12297006 through Android Studio SDK Manager. The existing directory is incomplete: source.properties is missing and Gradle reports CXX1101.
+## Environment note
+
+For local Android commands in a fresh PowerShell session, provide Android Studio's bundled Java and SDK paths. NDK `27.1.12297006` still needs a complete install. The previous empty directory was moved to `C:\Users\Emma0\AppData\Local\Android\Sdk\ndk\27.1.12297006.incomplete-20260929` before Gradle attempted a clean reinstall.
 
 ## NEXT ACTION
 
-Install NDK 27.1.12297006 through Android Studio SDK Manager or sdkmanager, then rerun the local Gradle debug build.
+Complete NDK `27.1.12297006`, build the recovery slice on the Pixel 6, and verify the empty and populated Home composer plus a real spoken multi-clause dump before redesigning Receipt.

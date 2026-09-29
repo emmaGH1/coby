@@ -30,7 +30,8 @@
     "plugins": [
       "expo-sqlite",
       "expo-notifications",
-      "expo-speech-recognition"
+      "expo-speech-recognition",
+      "expo-font"
     ]
   }
 }

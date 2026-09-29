@@ -2,22 +2,28 @@
 
 ## Status
 
-Project foundation in progress. Local folder was empty at task start. The referenced ChatGPT implementation plan and the user's explicit requirements are the product source. GitHub access from this environment has not yet been confirmed.
+Documentation foundation committed as `b85a081`. Initial offline app slice is implemented and ready for checkpoint commit. GitHub remains unreachable from this environment. No Android SDK, `adb`, or emulator was found, so native runtime behavior is unverified.
 
 ## Completed
 
-- Product canon and scope translated into repository documents.
-- Working contracts, implementation sequence, design direction, guardrails, test and demo plans established.
+- Expo SDK 57 TypeScript app scaffolded with SQLite and development client dependencies.
+- Text dump → explicit fixture extraction → editable receipt → SQLite save → one NOW and at most two NEXT → completion implemented.
+- Clock, parser, ranking, and storage are separate modules. Unknown fixture details remain null.
 
 ## Evidence
 
-- Local folder inspected: empty and not a Git repository at start.
-- Repository initialized locally. App/device verification has not started.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed.
+- `npm test`: 4 passed.
+- `npx expo export --platform android`: bundle succeeded (614 modules).
+- Android device/emulator run: pending; no Android SDK or `adb` detected.
 
 ## Blocked human
 
-- None required for the initial offline vertical slice. Gemini and RevenueCat credentials are needed only at their integration checkpoints.
+- Android SDK/emulator or USB-connected device access is needed for on-device verification.
+- Later: Gemini development API key and RevenueCat Test Store public SDK key/account setup.
+- GitHub network connection or a manual push is needed to publish commits.
 
 ## NEXT ACTION
 
-Complete the documentation foundation commit, then scaffold Expo and implement the text + fixture-parser vertical slice: dump → receipt → SQLite → NOW → completion.
+Add Plan List/Calendar inspection, focus flow, and a complete deterministic ranking explanation; then verify and commit that checkpoint.

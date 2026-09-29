@@ -1,0 +1,174 @@
+import { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, TextInput, View } from 'react-native';
+import { SystemClock } from './src/domain/clock';
+import { DEMO_DUMP, FixtureBrainDumpParser } from './src/domain/parser';
+import { rankItems, reasonText } from './src/domain/ranking';
+import type { CobyItem, ParsedItem } from './src/domain/types';
+import { completeItem, listItems, saveItems } from './src/data/items';
+
+type Screen = 'arrival' | 'home' | 'capture' | 'receipt';
+const clock = new SystemClock();
+const parser = new FixtureBrainDumpParser();
+
+function CobyOrb({ size = 112 }: { size?: number }) {
+  return <View style={[styles.orbOuter, { width: size, height: size, borderRadius: size / 2 }]}>
+    <View style={[styles.orbInner, { width: size * .65, height: size * .65, borderRadius: size }]} />
+  </View>;
+}
+
+function Button({ label, onPress, kind = 'primary', disabled = false }: { label: string; onPress: () => void; kind?: 'primary' | 'quiet'; disabled?: boolean }) {
+  return <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={disabled} onPress={onPress}
+    style={[styles.button, kind === 'quiet' && styles.quietButton, disabled && styles.disabledButton]}>
+    <Text style={[styles.buttonText, kind === 'quiet' && styles.quietButtonText]}>{label}</Text>
+  </Pressable>;
+}
+
+export default function App() {
+  const [screen, setScreen] = useState<Screen>('arrival');
+  const [items, setItems] = useState<CobyItem[]>([]);
+  const [dump, setDump] = useState('');
+  const [draft, setDraft] = useState<ParsedItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showReason, setShowReason] = useState(false);
+
+  useEffect(() => {
+    listItems().then((stored) => { setItems(stored); setScreen(stored.length ? 'home' : 'arrival'); })
+      .catch(() => setError('Coby could not open local storage. Please restart the app.'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const ranked = useMemo(() => rankItems(items, clock), [items]);
+  const now = ranked[0];
+  const next = ranked.slice(1, 3);
+
+  async function understand() {
+    setError(null);
+    setBusy(true);
+    try {
+      const result = await parser.parse(dump, { clock, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
+      if (!result.items.length) { setError('Write what is on your mind first.'); return; }
+      setDraft(result.items);
+      setScreen('receipt');
+    } catch { setError('Coby could not understand that yet. Your words are still here.'); }
+    finally { setBusy(false); }
+  }
+
+  async function holdItems() {
+    setError(null);
+    setBusy(true);
+    try {
+      const timestamp = clock.now().toISOString();
+      const captured = draft.map((entry, index): CobyItem => ({
+        ...entry, id: `${clock.now().getTime()}-${index}-${Math.random().toString(36).slice(2)}`,
+        sourceText: dump, createdAt: timestamp, status: 'captured',
+        commitmentMode: 'none', completedAt: null,
+      }));
+      await saveItems(captured);
+      setItems(await listItems());
+      setDump(''); setDraft([]); setScreen('home');
+    } catch { setError('Coby could not save this. Please try again.'); }
+    finally { setBusy(false); }
+  }
+
+  async function finishNow() {
+    if (!now) return;
+    setError(null); setBusy(true);
+    try { await completeItem(now.item, clock.now().toISOString()); setItems(await listItems()); setShowReason(false); }
+    catch { setError('Coby could not mark this complete. Please try again.'); }
+    finally { setBusy(false); }
+  }
+
+  if (loading) return <View style={styles.loading}><ActivityIndicator color={colors.violet} /></View>;
+
+  return <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+    <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
+      {screen === 'arrival' && <View style={styles.arrival}>
+        <Text style={styles.wordmark}>coby</Text>
+        <CobyOrb size={150} />
+        <Text style={styles.hero}>carry less.</Text>
+        <Text style={styles.subhead}>Out of your head. Into good hands.</Text>
+        <Button label="Come in" onPress={() => setScreen('home')} />
+      </View>}
+
+      {screen === 'home' && <>
+        <View style={styles.topline}><Text style={styles.wordmark}>coby</Text><Text style={styles.motto}>carry less.</Text></View>
+        <View style={styles.homeOrb}><CobyOrb /></View>
+        <Text style={styles.kicker}>NOW</Text>
+        {now ? <>
+          <Text style={styles.nowTitle}>{now.item.title}</Text>
+          {now.item.dueAt && <Text style={styles.meta}>Due {new Date(now.item.dueAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</Text>}
+          <Pressable accessibilityRole="button" onPress={() => setShowReason(!showReason)}><Text style={styles.reasonLink}>Why this now?</Text></Pressable>
+          {showReason && <Text style={styles.reason}>{reasonText(now.reasonCodes)}</Text>}
+          <Button label={busy ? 'Finishing…' : 'Complete'} disabled={busy} onPress={finishNow} />
+        </> : <>
+          <Text style={styles.nowTitle}>You’re clear for now.</Text>
+          <Text style={styles.support}>Coby is ready when something comes to mind.</Text>
+        </>}
+        {next.length > 0 && <View style={styles.nextArea}>
+          <Text style={styles.kicker}>NEXT</Text>
+          {next.map(({ item }) => <Text key={item.id} style={styles.nextItem}>·  {item.title}</Text>)}
+          <Text style={styles.support}>Everything else is safe with Coby.</Text>
+        </View>}
+        <View style={styles.bottomAction}><Button label="Get it out of my head" onPress={() => { setError(null); setScreen('capture'); }} /></View>
+      </>}
+
+      {screen === 'capture' && <>
+        <Pressable onPress={() => setScreen('home')} accessibilityRole="button"><Text style={styles.back}>← Home</Text></Pressable>
+        <View style={styles.captureOrb}><CobyOrb size={88} /></View>
+        <Text style={styles.pageTitle}>What’s on your mind?</Text>
+        <Text style={styles.support}>Put it all here. Coby will hold it.</Text>
+        <TextInput style={styles.dumpInput} multiline placeholder="I need to finish my assignment tomorrow…"
+          placeholderTextColor="#8E8B92" value={dump} onChangeText={setDump} accessibilityLabel="Brain dump" textAlignVertical="top" />
+        <Button label={busy ? 'Understanding…' : 'Understand'} onPress={understand} disabled={busy} />
+        <Pressable accessibilityRole="button" onPress={() => setDump(DEMO_DUMP)}><Text style={styles.demoLink}>Use a sample dump</Text></Pressable>
+      </>}
+
+      {screen === 'receipt' && <>
+        <Pressable onPress={() => setScreen('capture')} accessibilityRole="button"><Text style={styles.back}>← Edit dump</Text></Pressable>
+        <View style={styles.receiptOrb}><CobyOrb size={72} /></View>
+        <Text style={styles.pageTitle}>I’ve got it.</Text>
+        <Text style={styles.support}>I’m holding {draft.length} {draft.length === 1 ? 'thing' : 'things'}. Tap a title to correct it.</Text>
+        <View style={styles.receiptList}>{draft.map((entry, index) => <View style={styles.receiptRow} key={index}>
+          <TextInput style={styles.receiptTitle} value={entry.title} accessibilityLabel={`Item ${index + 1} title`}
+            onChangeText={(title) => setDraft((current) => current.map((item, i) => i === index ? { ...item, title } : item))} />
+          <Text style={styles.receiptMeta}>{entry.dueAt ? new Date(entry.dueAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : 'No time set'}</Text>
+        </View>)}</View>
+        <Button label={busy ? 'Saving…' : 'Looks right'} onPress={holdItems} disabled={busy || draft.some((entry) => !entry.title.trim())} />
+        <Button label="Edit what I said" kind="quiet" onPress={() => setScreen('capture')} />
+      </>}
+
+      {error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
+    </ScrollView>
+  </KeyboardAvoidingView>;
+}
+
+const colors = { background: '#F7F6F2', ink: '#1A1A19', violet: '#7464B5', violetSoft: '#E9E4F6', muted: '#77727A' };
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.background }, loading: { flex: 1, justifyContent: 'center', backgroundColor: colors.background },
+  page: { flexGrow: 1, paddingHorizontal: 28, paddingTop: 58, paddingBottom: 42 },
+  wordmark: { color: colors.ink, fontSize: 31, fontWeight: '700', letterSpacing: -2 },
+  motto: { fontSize: 14, color: colors.muted }, topline: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  arrival: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 25 },
+  hero: { color: colors.ink, fontSize: 42, fontWeight: '700', letterSpacing: -2.2, marginTop: 10 },
+  subhead: { color: colors.muted, fontSize: 16, textAlign: 'center', marginBottom: 28 },
+  orbOuter: { backgroundColor: '#DFD7F3', alignItems: 'center', justifyContent: 'center', shadowColor: colors.violet, shadowOpacity: .14, shadowRadius: 22, elevation: 6 },
+  orbInner: { backgroundColor: '#A898D1' }, homeOrb: { alignItems: 'center', marginTop: 64, marginBottom: 58 },
+  kicker: { fontSize: 12, fontWeight: '700', color: colors.violet, letterSpacing: 2.2, marginBottom: 15 },
+  nowTitle: { fontSize: 34, lineHeight: 40, fontWeight: '600', color: colors.ink, letterSpacing: -1.4, marginBottom: 13 },
+  meta: { fontSize: 15, color: colors.muted, marginBottom: 17 }, reasonLink: { color: colors.violet, fontSize: 14, fontWeight: '600', marginBottom: 14 },
+  reason: { color: colors.muted, fontSize: 14, marginBottom: 15 }, support: { color: colors.muted, fontSize: 15, lineHeight: 22 },
+  nextArea: { marginTop: 44 }, nextItem: { color: colors.ink, fontSize: 16, marginBottom: 14 }, bottomAction: { marginTop: 'auto', paddingTop: 44 },
+  button: { minHeight: 56, backgroundColor: colors.ink, borderRadius: 20, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, marginTop: 14 },
+  buttonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' }, quietButton: { backgroundColor: colors.violetSoft }, quietButtonText: { color: colors.ink }, disabledButton: { opacity: .45 },
+  back: { color: colors.muted, fontSize: 15 }, captureOrb: { alignSelf: 'center', marginTop: 68, marginBottom: 38 }, receiptOrb: { alignSelf: 'center', marginTop: 36, marginBottom: 34 },
+  pageTitle: { color: colors.ink, fontSize: 34, fontWeight: '700', letterSpacing: -1.3, marginBottom: 12 },
+  dumpInput: { minHeight: 210, borderRadius: 26, backgroundColor: '#FFFFFF', padding: 20, fontSize: 18, color: colors.ink, marginTop: 30, marginBottom: 10, lineHeight: 26 },
+  demoLink: { color: colors.violet, fontSize: 14, alignSelf: 'center', marginTop: 22 },
+  receiptList: { marginTop: 28, marginBottom: 8 }, receiptRow: { backgroundColor: '#FFFFFF', paddingHorizontal: 20, paddingVertical: 14, borderRadius: 20, marginBottom: 10 },
+  receiptTitle: { fontSize: 17, fontWeight: '600', color: colors.ink, minHeight: 32 }, receiptMeta: { fontSize: 13, color: colors.muted, marginTop: 3 },
+  error: { color: '#A24D48', fontSize: 14, marginTop: 18 },
+});
+

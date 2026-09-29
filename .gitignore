@@ -10,3 +10,4 @@ ios/
 *.keystore
 *.jks
 *.log
+.expo-export-check/

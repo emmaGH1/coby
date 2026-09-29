@@ -5,7 +5,7 @@ Record date, device/emulator, build, result, and evidence for every executed row
 | Area | Scenario | Target | Status |
 | --- | --- | --- | --- |
 | Android build | Compile debug APK | GitHub Actions | Passed 2026-09-29 |
-| Android screenshot | Install fixture release APK and capture 1179×2556 Home | GitHub Android emulator | First capture passed; Home spacing adjusted, recapture pending |
+| Android screenshot | Install fixture release APK and capture 1179×2556 Home | GitHub Android emulator | Passed 2026-09-29; screenshot included in assets/submission |
 | Capture | Text dump parses fixture, transcript remains editable | Unit + Android | Planned |
 | Receipt | Correct items displayed, unknown due/duration absent, correction before save | Unit + Android | Planned |
 | Persistence | Saved items survive app kill/restart | Android | Planned |
@@ -22,8 +22,8 @@ Record date, device/emulator, build, result, and evidence for every executed row
 | Gemini | Schema, nulls, failures, offline fallback behavior | Unit + Android dev build | Planned |
 | RevenueCat | Test Store purchase, restore, entitlement, free vs Plus gates | Android development build | Planned |
 | Lab | Seed, clear, advance time, trigger nudge, parser fixture, billing state | Android dev build | Planned |
-| Quality | Typecheck, lint, meaningful tests, visual review, accessibility | CI/local + Android | Partial: typecheck, lint, and 11 unit tests passed; revised visual and device checks pending |
+| Quality | Typecheck, lint, meaningful tests, visual review, accessibility | CI/local + Android | Partial: typecheck, lint, and 11 unit tests passed; local native checks pending |
 
 ## Latest run
 
-2026-09-29: TypeScript, lint, and 11 unit tests passed. Live Gemini sample passed with no invented time for a date-only item. Android bundle export, native prebuild, and GitHub debug APK compilation passed. The hosted release app ran on Android and generated a valid 1179×2556 screenshot. Visual review found the Home capture action below the first screen, so Home spacing has been reduced and the screenshot is queued for recapture. Local AVD/phone runtime, RevenueCat purchase, speech, persistence, and notifications still need device verification.
+2026-09-29: TypeScript, lint, and 11 unit tests passed. Live Gemini sample passed with no invented time for a date-only item. Android bundle export, native prebuild, and GitHub debug APK compilation passed. The hosted release app ran on Android; the current 1179×2556 screenshot visually shows one NOW, two NEXT, and both primary Home actions without scrolling. Local AVD/phone runtime, RevenueCat purchase, speech, persistence, and notifications still need device verification.

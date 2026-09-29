@@ -16,5 +16,8 @@ Goal: a clear Android recording under two minutes. Use the Coby Lab sample: “F
 
 Record a fresh deterministic path twice before final capture. Keep notification permission and RevenueCat Test Store already configured. Use a clean screen and no personal data. If a native integration is unreliable, show the validated offline path and explain the limitation honestly; do not fake behavior.
 
-Submission checklist to verify against the current event page before delivery: working Android app, public source/setup/license, demo under two minutes, 1024×1024 icon, at least one 1179×2556 screenshot, and RevenueCat integration. The referenced plan stated these requirements; recheck event details before final submission.
+## Android screenshot
 
+The verified Home screenshot is [assets/submission/screenshot-home.png](../assets/submission/screenshot-home.png). It was captured from a fixture-powered Android 16 / API 36 emulator at 1179×2556 pixels. The Home screenshot shows one NOW, two NEXT, and both primary actions without scrolling. The app's deterministic demo video and local-device verification remain to be recorded.
+
+Submission checklist to verify against the current event page before delivery: working Android app, public source/setup/license, demo under two minutes, 1024×1024 icon, at least one 1179×2556 screenshot, and RevenueCat integration. The referenced plan stated these requirements; recheck event details before final submission.

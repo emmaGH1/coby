@@ -4,6 +4,12 @@
 
 Coby is an Android-first, voice-first companion for handing over mental load. It extracts what you said, confirms it, holds it locally, and shows one NOW item. Plan keeps the full set visible whenever you want it. See [PRODUCT.md](docs/PRODUCT.md) for the locked scope.
 
+## Current Android screen
+
+![Coby Home screenshot](assets/submission/screenshot-home.png)
+
+Captured on an Android 16 / API 36 emulator at 1179 × 2556 pixels. The fixture data is synthetic.
+
 ## Development setup
 
 1. Install Node.js, Android Studio, Android SDK Platform 36, Android Build-Tools, Platform-Tools, and an Android emulator. Set `ANDROID_HOME` and add `platform-tools` to your Windows `Path`. Follow [Expo’s Android development build setup](https://docs.expo.dev/get-started/set-up-your-environment/?buildEnv=local&device=simulated&mode=development-build&platform=android).

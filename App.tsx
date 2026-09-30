@@ -171,7 +171,8 @@ export default function App() {
         requiresOnDeviceRecognition: offlineReady,
         interimResults: true,
         volumeChangeEventOptions: { enabled: true, intervalMillis: 120 },
-        continuous: Platform.OS === 'android',
+        // Online recognizers use the standard microphone path; segmented audio needs offline support.
+        continuous: Platform.OS === 'android' && offlineReady,
         androidIntentOptions: { EXTRA_LANGUAGE_MODEL: 'free_form' },
       });
     } catch { setError('Voice could not start. Check the emulator microphone, then try again or type below.'); }

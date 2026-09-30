@@ -49,7 +49,11 @@ The user reported the network error after host microphone forwarding was enabled
 
 Coby now checks the actual installed offline English locale before choosing requiresOnDeviceRecognition. A supported locale alone never counts as installed. The native query is bounded and failures keep online voice available. On a network error, Home offers offline English setup. Setup has separate state, keeps text/task use available, and bounds waiting; readiness is rechecked before any success message. Lab exposes check/setup controls.
 
-The current emulator did not confirm a usable offline English model. Its download request was rejected with native client error 5, so voice is still NOT passed. The download failure was captured from the ExpoSpeechService native error log without user audio or keys. A reboot/retry is in progress. Typecheck, lint, and all 27 tests passed, including unavailable/unsupported/installed language and query failure/timeout cases.
+The current emulator did not confirm a usable offline English model. Its download request was rejected with native client error 5, so voice is still NOT passed. The download failure was captured from the ExpoSpeechService native error log without user audio or keys. A data-preserving cold boot restored Android app services, but System UI and Pixel Launcher repeatedly became unresponsive. Device disk has 8.2 GB free and hardware acceleration reports usable; the OS stall cause is not established. This session cannot provide a reliable voice acceptance result. Typecheck, lint, and all 27 tests passed, including unavailable/unsupported/installed language and query failure/timeout cases.
+
+## Standard microphone compatibility checkpoint
+
+Online recognition now uses the standard native microphone session. The installed Android module implements continuous mode with a custom audio recorder and segmented audio-source intent on Android 13+, which may be incompatible with the default online service. Continuous mode is enabled only for a confirmed installed offline model. This is a compatibility correction, not a proven root cause. Current source bundled successfully; typecheck, lint, and all 27 tests passed. Spoken transcription remains unverified because the emulator launcher continues to show ANR dialogs.
 
 ## NEXT ACTION
 

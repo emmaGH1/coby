@@ -55,3 +55,10 @@ The stylus tutorial was dismissed. Current Pixel 6 development build passed bott
 - New code: prefer offline recognition only for a confirmed installed English model; recover from network failure with setup action; keep text/tasks usable during bounded setup. Lab check/setup added.
 - Typecheck, lint, 27 tests passed. New tests cover installed versus merely supported locales, locale normalization, missing/unsupported model, native query error and timeout.
 - Pixel 6 native model check did not confirm English ready; native model download rejected with client error 5. No successful spoken transcription claimed. Emulator reboot/retry pending.
+
+## Standard native microphone compatibility
+
+- Online voice switched to standard capture; continuous mode requires a verified installed offline model.
+- Typecheck, lint, and 27 tests passed; current Android bundle generated successfully.
+- Data-preserving cold boot restored app services, but System UI/Pixel Launcher ANRs recur. Spoken acceptance remains blocked by an unreliable emulator session; no transcript success claimed.
+- Synthetic microphone injection could not complete: emulator RPC timed out and the connection reset; ADB then waited for the disconnected device. This is not a voice pass. Recheck host microphone forwarding when restarting the AVD.

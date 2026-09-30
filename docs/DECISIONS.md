@@ -86,3 +86,7 @@ The emulator's hw.audioInput was enabled but its gRPC MicrophoneState.realAudioE
 Do not infer that the user's whole internet connection is off from a speech network error. Coby now names the speech-service connection failure and exposes a recovery action. Prefer native on-device recognition only after the device reports en-US installed; otherwise preserve online recognition and typed words. English setup uses the module's native model-download API, confirms installed status afterward, and keeps the rest of the app usable while it waits. The native model lookup and download wait are bounded. No LLM transcription provider was introduced.
 
 The installed expo-speech-recognition source documents getSupportedLocales/installedLocales and androidTriggerOfflineModelDownload; Android defines native client error 5 separately from network errors: https://developer.android.com/reference/android/speech/SpeechRecognizer. The current emulator rejected the model request with client error 5; this is a remaining device/service failure, not a passed voice feature.
+
+## 2026-09-30 — Native online microphone path
+
+Use standard single-session capture for online recognition. Installed ExpoSpeechService.kt sends continuous Android capture through a custom recorder with EXTRA_AUDIO_SOURCE and EXTRA_SEGMENTED_SESSION; reserve that mode for confirmed offline recognition. Preserve typed and captured text across pauses and retry. This addresses a concrete compatibility risk but the root cause remains unproven until spoken testing succeeds.

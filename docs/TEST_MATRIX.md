@@ -108,3 +108,10 @@ The stylus tutorial was dismissed. Current Pixel 6 development build passed bott
 - OnePlus A6010 paired over Android Studio wireless debugging; adb device state is connected without USB.
 - Wireless reverse tcp:8082 established. Metro remains localhost-only; 873-module Android bundle loaded on the phone.
 - Editor visible on-device. Home typing, live utterance retention and synthetic-item deletion remain pending acceptance; no edits/deletions of real items performed by agent.
+
+## Latest user acceptance and Clear list
+
+- User explicitly confirmed: both keyboard-visible typing and minute-long voice dump now work on the wireless OnePlus A6010. This supersedes the pending acceptance for those two conditions; offline/other-device speech remains unverified.
+- Clear list added to Plan List with count/scope confirmation. Cancel selected open-item reminders before transactional deletion of those IDs, preserving completed/archived history. Cancellation failure leaves items and reports potentially stopped reminders.
+- Typecheck, lint, all 47 tests pass after bulk-clear implementation. Live Clear list confirmation/cancel and synthetic-item deletion/persistence still pending. No real list cleared.
+- Nudges remain P0: prior immediate delivery is historical evidence; future/background delivery, reschedule/cancel and Persistent cadence still need device checks.

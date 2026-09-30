@@ -44,6 +44,13 @@ export async function clearItems(): Promise<void> {
 }
 
 export async function deleteItem(id: string): Promise<void> {
+  await deleteItems([id]);
+}
+
+export async function deleteItems(ids: string[]): Promise<void> {
+  if (!ids.length) return;
   const db = await database();
-  await db.runAsync('DELETE FROM items WHERE id = ?', id);
+  await db.withTransactionAsync(async () => {
+    for (const id of ids) await db.runAsync('DELETE FROM items WHERE id = ?', id);
+  });
 }

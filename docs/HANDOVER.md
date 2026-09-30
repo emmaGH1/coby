@@ -99,6 +99,12 @@ The USB device disconnected. The user paired the OnePlus A6010 through Android S
 
 Current editor was observed on-device; the user is making an edit, so do not overwrite it. Asked the user to finish the edit and check Home typing plus a minute-long paused voice dump. No live pass has been reported yet for the three latest corrections. Deletion testing must use an isolated synthetic task.
 
+## Current accepted capture and progress audit
+
+The user clarified that keyboard-open typing and the minute-long voice dump both work now on the wireless OnePlus. Those specific cases pass; broader voice/offline claims remain unverified. P0 is still in progress, including real future nudge behavior, restore, complete saved-item controls and the premium companion experience. See docs/STATUS.md for the user-facing built/verified/remaining/P1 mapping. Manual edit/delete/clear, usable feedback and basic live orb response are P0; richer motion/haptics, dark mode, Locked/rescue code and natural-language editing are P1.
+
+Clear list is implemented in Plan List. Count/scope confirmation covers all held items across calendar days. Snapshot open IDs, cancel their reminders, delete those rows transactionally and recompute Home/Plan. Preserve completed/archived history. Failure keeps items and warns some reminders may have stopped. Typecheck, lint and 47 tests pass. Requested readiness to reload without losing the user's dump; only inspect/cancel the real-list confirmation. Never clear real tasks for agent testing. Current Metro session remains 99741 until restarted for this patch.
+
 ## NEXT ACTION
 
-Finish physical-phone checks of visible typing, a minute-long multi-utterance dump, and synthetic-item delete/cancel/persistence on the wireless connection; address any remaining failure before claiming reliability.
+Finish Plan clear/edit/delete/Focus phone acceptance using synthetic items, then verify a real future Gentle notification and its reschedule/cancel behavior before companion polish.

@@ -9,7 +9,7 @@ import { rankItems } from './src/domain/ranking';
 import { planNudges } from './src/domain/nudges';
 import type { CobyItem, ItemStatus, ParsedItem } from './src/domain/types';
 import { applyItemEdit, leaveFocusItem } from './src/domain/itemActions';
-import { clearItems, completeItem, deleteItem, listItems, saveItems } from './src/data/items';
+import { clearItems, completeItem, deleteItem, deleteItems, listItems, saveItems } from './src/data/items';
 import { cancelItemNudges, clearAllCobyNudges, syncItemNudges, triggerLabNudge } from './src/notifications/scheduler';
 import { loadBilling, purchaseMonthly, restoreBilling, type BillingState } from './src/billing/revenuecat';
 import { HomeScreen } from './src/ui/HomeScreen';
@@ -389,6 +389,25 @@ export default function App() {
   }, [screen, busy, endFocus, cancelEdit]);
 
   const openItems = items.filter((item) => item.status !== 'completed' && item.status !== 'archived');
+  async function clearHeldList(targets: CobyItem[]) {
+    setBusy(true); setError(null);
+    try {
+      for (const item of targets) await cancelItemNudges(item.id);
+      const ids = new Set(targets.map((item) => item.id));
+      await deleteItems([...ids]);
+      setItems((current) => current.filter((item) => !ids.has(item.id)));
+      setShowReason(false);
+    } catch { setError('Coby could not finish clearing your list. Your items remain, but some reminders may have stopped. Try again.'); }
+    finally { setBusy(false); }
+  }
+  function confirmClearList() {
+    if (busy || !openItems.length) return;
+    const targets = [...openItems];
+    Alert.alert('Clear your list?', `Delete all ${targets.length} held ${targets.length === 1 ? 'item' : 'items'} and their reminders? This includes every calendar day.`, [
+      { text: 'Keep my list', style: 'cancel' },
+      { text: 'Clear list', style: 'destructive', onPress: () => void clearHeldList(targets) },
+    ]);
+  }
   const calendarDays = Array.from({ length: 7 }, (_, offset) => {
     const day = activeClock.now(); day.setDate(day.getDate() + offset); return day;
   });
@@ -535,6 +554,7 @@ export default function App() {
           <Pressable accessibilityRole="button" onPress={() => setPlanMode('list')} style={[styles.modeButton, planMode === 'list' && styles.modeSelected]}><Text style={styles.modeText}>List</Text></Pressable>
           <Pressable accessibilityRole="button" onPress={() => setPlanMode('calendar')} style={[styles.modeButton, planMode === 'calendar' && styles.modeSelected]}><Text style={styles.modeText}>Calendar</Text></Pressable>
         </View>
+        {planMode === 'list' && openItems.length > 0 && <Pressable accessibilityRole="button" disabled={busy} onPress={confirmClearList} style={styles.actionLink}><Text style={styles.reasonLink}>Clear list</Text></Pressable>}
         {planMode === 'calendar' && <View style={styles.dayStrip}>{calendarDays.map((day) =>
           <Pressable key={day.toDateString()} accessibilityRole="button" accessibilityLabel={day.toDateString()} onPress={() => setSelectedDay(day.toDateString())}
             style={[styles.dayButton, selectedDay === day.toDateString() && styles.daySelected]}>
@@ -548,7 +568,7 @@ export default function App() {
             <Text style={styles.receiptMeta}>{dueText(item)}</Text>
             <Pressable accessibilityRole="button" accessibilityLabel={`Edit details for ${item.title}`} disabled={busy} onPress={() => { setEditingItem(item); setError(null); setScreen('edit'); }} style={styles.actionLink}><Text style={styles.reasonLink}>Edit details</Text></Pressable>
             <Pressable accessibilityRole="button" disabled={busy} onPress={() => startFocus(item)} style={styles.actionLink}><Text style={styles.reasonLink}>Focus on this →</Text></Pressable>
-          </View>) : <Text style={styles.planEmpty}>Nothing here. Coby is holding the rest.</Text>;
+          </View>) : <Text style={styles.planEmpty}>{openItems.length ? 'Nothing on this day. The rest is in List.' : 'Your list is clear. Add whatever comes next.'}</Text>;
         })()}
         {planMode === 'calendar' && <Text style={styles.support}>Items without a date are in List.</Text>}
         <View style={styles.bottomAction}><Button label="Add more" onPress={() => setScreen('home')} /></View>

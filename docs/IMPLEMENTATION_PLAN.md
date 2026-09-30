@@ -39,3 +39,9 @@ Provide the Gemini development key and RevenueCat Test Store project/API key whe
 
 Each checkpoint needs a device or emulator observation where available, typecheck/lint/test results, an updated test matrix, one NEXT ACTION, and a commit. Do not describe unverified native integrations as working.
 
+
+## Saved corrections and Focus recovery
+
+Basic manual correction of held items is P0 trust work requested by the user. Reuse receipt validation for Plan > Edit details. Save against the existing SQLite item ID; preserve capture history, priority, commitment, and lifecycle. Cancel leaves persistence unchanged. Resynchronize the item's notifications after saving, reporting notification failure separately from save success. Natural-language corrections remain P1.
+
+Focus records the originating screen and prior held status. Back/End focus restores that status and returns to the origin without completion. Android Back uses the same action; saving disables navigation until the operation finishes.

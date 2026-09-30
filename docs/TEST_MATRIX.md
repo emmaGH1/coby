@@ -80,3 +80,9 @@ The stylus tutorial was dismissed. Current Pixel 6 development build passed bott
 - Longer silence hints are provider-dependent. The continuation logic must preserve the dump when native boundaries still occur.
 
 - Background/return smoke check: returning Home showed Speak, not continued listening. Startup foreground guard added for preparation races; all 38 tests/typecheck/lint passed afterward. This is a short smoke check, not a full background-duration test.
+## Saved details and accidental Focus recovery
+
+- Typecheck, lint, and all 42 tests pass.
+- New domain cases preserve the same ID/source/history/lifecycle/commitment when editing, validate corrected timing, shift nudge timestamps, clear unknown timing to null with no nudges, and restore captured/planned status without completion after Focus.
+- Current Android bundle loaded on the connected OnePlus A6010; Plan's Edit details controls observed. No phone data clearing or seeding.
+- Pending live interaction acceptance: edit/save a time, cancel an unsaved edit, return via visible and Android Back from Focus, persist corrections after relaunch, and observe a revised notification replacing the prior schedule.

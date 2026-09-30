@@ -106,3 +106,9 @@ A native speech recognition boundary is not the end of a Coby dump. Keep a user 
 Request longer silence windows, but do not rely on those extras: Android documents that recognizer implementations may ignore them (https://developer.android.com/reference/android/speech/RecognizerIntent). Enable the library's legacy continuous hints on Android below API 33; keep the Android 13+ online path free of custom segmented audio pipes. This correction remains inside voice capture P0.
 
 The user confirmed the 7-second initial wait and ~30-second paused dump captured all three errands. Foreground checks apply both before initial native start and before a scheduled restart. Leaving and returning showed the mic idle. Multi-minute/provider and offline/emulator acceptance are not established by this test.
+
+## 2026-09-30 — Correct saved details and recover from accidental Focus
+
+The user cannot correct a confirmed task's time or leave accidental Focus. Basic manual saved-item corrections are P0 trust work under this explicit request; natural-language correction remains P1. Reuse the receipt form and validation rather than add a task-management subsystem. A correction keeps the item's ID, capture source, creation time, status and commitment; SQLite replacement updates the held item and notification synchronization cancels old reminders before scheduling revised ones. Notification failure is reported independently after save success.
+
+Focus retains the originating Home/Plan and prior held status. Visible Back, End focus and Android Back leave without completion. React state holds the navigation context because it also drives the visible return label. Screen changes reset scroll so a previously scrolled Plan cannot hide Focus's exit. Cancel/Android Back in the editor discards its unsaved draft.

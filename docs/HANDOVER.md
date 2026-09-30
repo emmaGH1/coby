@@ -67,6 +67,17 @@ The user reported that the first voice checkpoint still stopped after about two 
 
 Typecheck, lint, and all 38 tests pass. Four new scenarios cover initial silence across multiple cycles, clause/partial retention across boundaries, Done in a gap or silence, and fatal/background cancellation. The user confirmed the physical phone waits through 7 seconds of initial silence and captures all three errands over about 30 seconds with 3–4 second pauses, followed by Done. Leaving and returning to Coby showed Speak with no resumed capture. Startup now also checks foreground state after asynchronous preparation. Typecheck, lint, and all 38 tests passed again after that guard. Offline/emulator speech remains unverified.
 
+## Saved-item correction and Focus exit checkpoint
+
+Scope follows the user's new report: correct a confirmed task's timing and recover from accidental Focus. Plan List/Calendar rows now expose Edit details. The existing receipt form opens with details visible and validates title, kind, local date/time and duration. Save replaces the same SQLite ID, retains source/history, lifecycle and commitment, and synchronizes that item's nudges. Cancel/Android Back discards unsaved edits. A notification failure is reported separately from save success.
+
+Focus has a visible Back to Plan/Home control. It and End focus/Android Back restore the prior held status and return to the originating screen without completing the task. Completing Focus retains the existing completion path. Screen transitions reset scroll so the exit is reachable.
+
+Typecheck, lint, and all 42 tests pass. New tests cover identity/history preservation, time correction shifting deterministic nudges, blank timing removing nudges, validation and focus exit without completion. The Android bundle generated and loaded through USB localhost reverse on the OnePlus A6010. Plan's new edit controls were observed on-device. User interaction acceptance is pending for changing/saving a time and leaving Focus. Notification cancellation is wired through the existing same-ID scheduler; actual revised delivery has not been observed. Metro session 11152 serves port 8082 in CI mode (restart after source edits). Private phone data was not cleared or seeded.
+
 ## NEXT ACTION
 
-Verify a longer multi-minute voice dump on the physical phone and check for dropped words across provider boundaries; keep offline/emulator acceptance separate.
+Diagnose the renewed voice cutoff on the physical phone, distinguish recognizer gaps from transcript replacement, and verify a correction before resuming saved-item acceptance.
+## Live voice regression reported during saved-item acceptance
+
+The user reports capture cutting off mid-dump and starting another segment. This supersedes the previous short spoken acceptance as a reliability conclusion. Saved-item interaction acceptance is still pending; no failure or success of editing was established. Prioritize voice boundary diagnosis while retaining the editing changes. No voice code changed in the saved-item checkpoint.

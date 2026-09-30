@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, AppState, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, AppState, BackHandler, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import { useFonts, Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold } from '@expo-google-fonts/manrope';
 import { DemoClock, SystemClock, type Clock } from './src/domain/clock';
@@ -7,7 +7,8 @@ import { DEMO_DUMP, FixtureBrainDumpParser } from './src/domain/parser';
 import { createGeminiBrainDumpParser } from './src/domain/parserFactory';
 import { rankItems } from './src/domain/ranking';
 import { planNudges } from './src/domain/nudges';
-import type { CobyItem, ParsedItem } from './src/domain/types';
+import type { CobyItem, ItemStatus, ParsedItem } from './src/domain/types';
+import { applyItemEdit, leaveFocusItem } from './src/domain/itemActions';
 import { clearItems, completeItem, listItems, saveItems } from './src/data/items';
 import { clearAllCobyNudges, syncItemNudges, triggerLabNudge } from './src/notifications/scheduler';
 import { loadBilling, purchaseMonthly, restoreBilling, type BillingState } from './src/billing/revenuecat';
@@ -18,7 +19,7 @@ import { speechErrorMessage } from './src/voice/speech';
 import { offlineVoiceAvailable } from './src/voice/offline';
 import { VoiceSession, type VoicePhase } from './src/voice/session';
 
-type Screen = 'home' | 'receipt' | 'plan' | 'focus' | 'lab' | 'paywall';
+type Screen = 'home' | 'receipt' | 'plan' | 'focus' | 'lab' | 'paywall' | 'edit';
 const clock = new SystemClock();
 const fixtureParser = new FixtureBrainDumpParser();
 const configuredParser = createGeminiBrainDumpParser();
@@ -66,6 +67,8 @@ export default function App() {
   const [planMode, setPlanMode] = useState<'list' | 'calendar'>('list');
   const [selectedDay, setSelectedDay] = useState(() => clock.now().toDateString());
   const [focusItem, setFocusItem] = useState<CobyItem | null>(null);
+  const [focusContext, setFocusContext] = useState<{ returnTo: 'home' | 'plan'; previousStatus: ItemStatus } | null>(null);
+  const [editingItem, setEditingItem] = useState<CobyItem | null>(null);
   const [activeClock, setActiveClock] = useState<Clock>(() => new SystemClock());
   const [labMessage, setLabMessage] = useState('Fixture parser · RevenueCat not connected');
   const [parserMode, setParserMode] = useState<'fixture' | 'configured'>(process.env.EXPO_PUBLIC_COBY_AI_PROVIDER === 'gemini' ? 'configured' : 'fixture');
@@ -303,6 +306,7 @@ export default function App() {
     try {
       const active: CobyItem = { ...item, status: 'active' };
       await saveItems([active]);
+      setFocusContext({ returnTo: screen === 'plan' ? 'plan' : 'home', previousStatus: item.status });
       setItems(await listItems()); setFocusItem(active); setScreen('focus');
     } catch { setError('Coby could not start focus. Please try again.'); }
     finally { setBusy(false); }
@@ -313,21 +317,51 @@ export default function App() {
     setError(null); setBusy(true);
     try {
       await completeItem(focusItem, activeClock.now().toISOString());
-      setItems(await listItems()); setFocusItem(null); setScreen('home'); setShowReason(false);
+      setItems(await listItems()); setFocusItem(null); setFocusContext(null); setScreen('home'); setShowReason(false);
       await cancelCompletedNudges(focusItem);
     } catch { setError('Coby could not mark this complete. Please try again.'); }
     finally { setBusy(false); }
   }
 
-  async function endFocus() {
+  const endFocus = useCallback(async () => {
     if (!focusItem) return;
     setError(null); setBusy(true);
     try {
-      await saveItems([{ ...focusItem, status: 'planned' }]);
-      setItems(await listItems()); setFocusItem(null); setScreen('home');
+      const context = focusContext;
+      await saveItems([leaveFocusItem(focusItem, context?.previousStatus ?? 'planned')]);
+      setItems(await listItems()); setFocusItem(null); setScreen(context?.returnTo ?? 'home');
+      setFocusContext(null);
     } catch { setError('Coby could not end focus. Please try again.'); }
     finally { setBusy(false); }
+  }, [focusItem, focusContext]);
+
+  const cancelEdit = useCallback(() => { setEditingItem(null); setError(null); setScreen('plan'); }, []);
+
+  async function saveEditedItem(accepted: ParsedItem[]) {
+    if (!editingItem || !accepted[0] || busy) return;
+    setBusy(true); setError(null);
+    const changed = applyItemEdit(editingItem, accepted[0]);
+    try {
+      await saveItems([changed]);
+      setItems(await listItems()); setEditingItem(null); setScreen('plan');
+      try {
+        if (!await syncItemNudges(changed, activeClock)) setError('Changes saved. Notifications are off, so no reminder was scheduled.');
+      } catch { setError('Changes saved, but Coby could not update the reminders. Please check notification access.'); }
+    } catch { setError('Coby could not save your changes. Your edits are still here; try again.'); }
+    finally { setBusy(false); }
   }
+
+  useEffect(() => {
+    const back = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (screen === 'home') return false;
+      if (busy) return true;
+      if (screen === 'focus') { void endFocus(); return true; }
+      if (screen === 'edit') { cancelEdit(); return true; }
+      setError(null); setScreen('home');
+      return true;
+    });
+    return () => back.remove();
+  }, [screen, busy, endFocus, cancelEdit]);
 
   const openItems = items.filter((item) => item.status !== 'completed' && item.status !== 'archived');
   const calendarDays = Array.from({ length: 7 }, (_, offset) => {
@@ -431,7 +465,7 @@ export default function App() {
       onUnderstand={() => void understand()}
       showLab={demoToolsEnabled}
       showReason={showReason}
-    /> : <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
+    /> : <ScrollView key={screen} contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
       {screen === 'lab' && demoToolsEnabled && <>
         <Pressable onPress={() => setScreen('home')} accessibilityRole="button"><Text style={styles.back}>← Home</Text></Pressable>
         <Text style={[styles.pageTitle, styles.planTitle]}>Coby Lab</Text>
@@ -487,7 +521,8 @@ export default function App() {
           return shown.length ? shown.map((item) => <View key={item.id} style={styles.planRow}>
             <Text style={styles.planItemTitle}>{item.title}</Text>
             <Text style={styles.receiptMeta}>{dueText(item)}</Text>
-            <Pressable accessibilityRole="button" onPress={() => startFocus(item)}><Text style={styles.reasonLink}>Focus on this →</Text></Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel={`Edit details for ${item.title}`} disabled={busy} onPress={() => { setEditingItem(item); setError(null); setScreen('edit'); }} style={styles.actionLink}><Text style={styles.reasonLink}>Edit details</Text></Pressable>
+            <Pressable accessibilityRole="button" disabled={busy} onPress={() => startFocus(item)} style={styles.actionLink}><Text style={styles.reasonLink}>Focus on this →</Text></Pressable>
           </View>) : <Text style={styles.planEmpty}>Nothing here. Coby is holding the rest.</Text>;
         })()}
         {planMode === 'calendar' && <Text style={styles.support}>Items without a date are in List.</Text>}
@@ -495,6 +530,7 @@ export default function App() {
       </>}
 
       {screen === 'focus' && focusItem && <View style={styles.focusScreen}>
+        <Pressable accessibilityRole="button" disabled={busy} onPress={endFocus} style={styles.actionLink}><Text style={styles.reasonLink}>← Back to {focusContext?.returnTo === 'plan' ? 'Plan' : 'Home'}</Text></Pressable>
         <CobyOrb size={88} />
         <Text style={styles.kicker}>ONE THING NOW</Text>
         <Text style={[styles.nowTitle, styles.focusTitle]}>{focusItem.title}</Text>
@@ -506,6 +542,7 @@ export default function App() {
       </View>}
 
       {screen === 'receipt' && <ReceiptScreen draft={draft} busy={busy} onEditDump={() => setScreen('home')} onHold={(accepted) => void holdItems(accepted)} />}
+      {screen === 'edit' && editingItem && <ReceiptScreen key={editingItem.id} mode="edit" draft={[editingItem]} busy={busy} onEditDump={cancelEdit} onHold={(accepted) => void saveEditedItem(accepted)} />}
 
       {error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
     </ScrollView>}
@@ -531,7 +568,7 @@ const styles = StyleSheet.create({
   nextArea: { marginTop: 32 }, nextItem: { color: colors.ink, fontSize: 16, marginBottom: 10 }, bottomAction: { marginTop: 'auto', paddingTop: 24 },
   button: { minHeight: 56, backgroundColor: colors.ink, borderRadius: 20, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, marginTop: 14 },
   buttonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' }, quietButton: { backgroundColor: colors.violetSoft }, quietButtonText: { color: colors.ink }, disabledButton: { opacity: .45 },
-  back: { color: colors.muted, fontSize: 15 }, captureOrb: { alignSelf: 'center', marginTop: 68, marginBottom: 38 }, receiptOrb: { alignSelf: 'center', marginTop: 36, marginBottom: 34 },
+  actionLink: { minHeight: 48, justifyContent: 'center', alignSelf: 'flex-start' }, back: { color: colors.muted, fontSize: 15 }, captureOrb: { alignSelf: 'center', marginTop: 68, marginBottom: 38 }, receiptOrb: { alignSelf: 'center', marginTop: 36, marginBottom: 34 },
   pageTitle: { color: colors.ink, fontSize: 34, fontWeight: '700', letterSpacing: -1.3, marginBottom: 12 },
   dumpInput: { minHeight: 210, borderRadius: 26, backgroundColor: '#FFFFFF', padding: 20, fontSize: 18, color: colors.ink, marginTop: 30, marginBottom: 10, lineHeight: 26 },
   demoLink: { color: colors.violet, fontSize: 14, alignSelf: 'center', marginTop: 22 },

@@ -52,3 +52,7 @@ Four states: idle (slow breath), listening (responsive), thinking (gentle pulse)
 ## Avoid
 
 Glassmorphism, neon, generic AI dashboards, constant gradients, rainbow categories, unnecessary nested cards, dense controls, guilt language, and animation that asks for attention when the user needs focus.
+
+## Saved details and Focus exit
+
+Each Plan row in List and Calendar offers Edit details beside the existing Focus action. Details open only on request, with date/time/duration immediately visible and an explicit Save changes/Cancel pair. Reuse the receipt's quiet styling and validation. Focus has a visible Back to Plan/Home control above the orb; Android Back exits through the same path. Reset scroll on screen changes so the exit control is reachable.

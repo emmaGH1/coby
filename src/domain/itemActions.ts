@@ -1,0 +1,17 @@
+import type { CobyItem, ItemStatus, ParsedItem } from './types';
+
+// A correction updates the held item, retaining its identity and capture history.
+export function applyItemEdit(item: CobyItem, corrected: ParsedItem): CobyItem {
+  return {
+    ...item,
+    title: corrected.title, kind: corrected.kind,
+    dueDate: corrected.dueDate, dueAt: corrected.dueAt,
+    durationMinutes: corrected.durationMinutes,
+    needsClarification: corrected.needsClarification,
+    clarificationQuestion: corrected.clarificationQuestion,
+  };
+}
+
+export function leaveFocusItem(item: CobyItem, previousStatus: ItemStatus): CobyItem {
+  return { ...item, status: previousStatus === 'active' ? 'planned' : previousStatus };
+}

@@ -23,7 +23,7 @@ The populated Home passed a 1179×2556 Android release capture and an inline fin
 - Android release capture: passed at https://github.com/emmaGH1/coby/actions/runs/36631406071.
 - The checked-in `assets/submission/screenshot-home.png` is the reviewed 1179×2556 recovery Home.
 - Pixel 6 AVD is connected on Android 16 / API 36 and exposes Google's default recognition service.
-- Local Gradle reached automatic NDK installation after Java and Android SDK paths were supplied. The NDK download ended with `java.net.SocketException: Connection reset`, so live speech remains blocked locally until the native build can be refreshed.
+- NDK 27.1.12297006, API 36, Build Tools 35, and CMake 3.22.1 are now installed. Microsoft OpenJDK 17 is installed. The Java 25 attempt failed in native configuration and worker startup; the interrupted Java 17 retry left no APK. The successful CI development APK (run 36631379645) was installed with adb. Metro is running on port 8082 in CI mode after a OneDrive watcher timeout. The emulator stayed on its launcher despite start intents; reboot recovery is in progress.
 
 ## Known P0 gaps
 
@@ -36,7 +36,7 @@ The populated Home passed a 1179×2556 Android release capture and an inline fin
 
 ## Environment note
 
-For local Android commands in a fresh PowerShell session, provide Android Studio's bundled Java and SDK paths. NDK `27.1.12297006` still needs a complete install. The previous empty directory was moved to `C:\Users\Emma0\AppData\Local\Android\Sdk\ndk\27.1.12297006.incomplete-20260929` before Gradle attempted a clean reinstall.
+For local Android commands, use Microsoft OpenJDK 17 at `C:\Program Files\Microsoft\jdk-17.0.20.101-hotspot` and the SDK at `C:\Users\Emma0\AppData\Local\Android\Sdk`. NDK `27.1.12297006` is installed. The previous empty directory was moved to `C:\Users\Emma0\AppData\Local\Android\Sdk\ndk\27.1.12297006.incomplete-20260929` before Gradle attempted a clean reinstall.
 
 ## NEXT ACTION
 

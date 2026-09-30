@@ -41,6 +41,6 @@ P0 is now **in progress**. The first recovery slice replaces the old Arrival/Hom
 
 ## Current blockers
 
-- Local Android compilation reaches the SDK but the NDK `27.1.12297006` download resets before completion. The prior empty package directory was moved to `27.1.12297006.incomplete-20260929`; Gradle attempted a clean reinstall and reported the connection reset.
+- The NDK, API 36, Build Tools 35, CMake, and Java 17 are installed. The local Java 17 build was interrupted before producing an APK. The prior empty package directory was moved to `27.1.12297006.incomplete-20260929`; Gradle attempted a clean reinstall and reported the connection reset.
 - Spoken transcription cannot be claimed until a real voice reaches the emulator/device recognizer.
 - The populated Home has passed release rendering and visual review; the empty state and keyboard interaction still need local Pixel 6 verification.

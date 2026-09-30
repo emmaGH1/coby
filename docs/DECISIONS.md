@@ -58,3 +58,8 @@
 - **Treat Android capture as product evidence:** the release screenshot must come from an API 36 emulator at the required 1179×2556 size; a browser or JavaScript bundle is not visual proof.
 - **Keep secondary actions touchable:** Plan, explanation, and reminder actions meet the 48 dp Android touch-target floor even when their visual treatment stays quiet.
 - **Approve Home as the visual reference, not P0 as a whole:** Receipt, Plan, Focus, paywall, and Lab must inherit the system, while speech and remaining integration checks stay open.
+
+## 2026-09-30 — Local Android recovery
+
+- Use Microsoft OpenJDK 17 for local Gradle, matching CI; Android Studio's Java 25 caused native configuration failures.
+- Install the successful CI development APK for runtime verification while avoiding another full local native compile. Metro still serves the current local app code.

@@ -61,6 +61,12 @@ Scope is voice only. VoiceSession now keeps capture locked through preparation/s
 
 The emulator had sustained high load, CPU saturation, and recurring launcher/app ANRs. Testing moved to the user's connected OnePlus A6010, Android 11/API 30, arm64, default Google app recognition service. The development APK installed and current bundle loaded over localhost USB reverse. The user confirmed both clauses of the requested synthetic phrase appeared correctly. The user also confirmed retry appends new words while preserving the previous capture, with manual Done. Native permission denial was exercised on the phone: the expected access-off message appeared and the field accepted typed text. Microphone access was restored after testing. Typecheck, lint, all 34 tests, and diff checks pass.
 
+## Natural-pause voice correction
+
+The user reported that the first voice checkpoint still stopped after about two seconds of initial silence and cut a longer utterance after 3–5 seconds. The short-phrase pass did not establish a usable brain-dump session. Coby now distinguishes a user dump from individual recognizer cycles: normal native end and no-speech/speech-timeout resume after release, preserving final and partial words. Done stops the whole dump, including during a pending restart. Fatal errors and background/navigation cancel restart. Older Android uses its legacy continuous silence hints; Android 13+ online capture retains the standard microphone path. Android receives a 20-second minimum and 15-second silence request, but providers can ignore these hints, so session continuation is still required.
+
+Typecheck, lint, and all 38 tests pass. Four new scenarios cover initial silence across multiple cycles, clause/partial retention across boundaries, Done in a gap or silence, and fatal/background cancellation. The user confirmed the physical phone waits through 7 seconds of initial silence and captures all three errands over about 30 seconds with 3–4 second pauses, followed by Done. Leaving and returning to Coby showed Speak with no resumed capture. Startup now also checks foreground state after asynchronous preparation. Typecheck, lint, and all 38 tests passed again after that guard. Offline/emulator speech remains unverified.
+
 ## NEXT ACTION
 
-Verify longer voice dumps with natural pauses and background cancellation on the physical phone; keep emulator/offline engine failures separate from the passed online capture path.
+Verify a longer multi-minute voice dump on the physical phone and check for dropped words across provider boundaries; keep offline/emulator acceptance separate.

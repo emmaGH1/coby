@@ -4,6 +4,57 @@ import { offlineVoiceAvailable } from '../src/voice/offline';
 import { VoiceSession } from '../src/voice/session';
 import { speechErrorMessage } from '../src/voice/speech';
 
+test('silence before the first word keeps the dump open across native cycles', () => {
+  const session = new VoiceSession();
+  session.begin('Typed first.', true); session.starting(); session.ready();
+  for (let i = 0; i < 5; i++) {
+    session.fail(true);
+    assert.equal(session.continues, true);
+    assert.equal(session.end()?.restart, true);
+    assert.equal(session.begin('second tap'), false);
+    session.ready();
+  }
+  assert.equal(session.result('Remember to water the plants.', true), 'Typed first. Remember to water the plants.');
+  session.stop();
+  assert.deepEqual(session.end(), { text: 'Typed first. Remember to water the plants.', empty: false });
+});
+
+test('recognizer boundaries preserve all clauses until manual Done', () => {
+  const session = new VoiceSession();
+  session.begin('', true); session.starting(); session.ready();
+  session.result('water the plants', true);
+  assert.equal(session.end()?.text, 'water the plants');
+  session.ready(); session.result('take out', false);
+  assert.equal(session.end()?.text, 'water the plants take out');
+  session.ready();
+  assert.equal(session.result('the bins and buy milk', true), 'water the plants take out the bins and buy milk');
+  session.stop();
+  assert.deepEqual(session.end(), { text: 'water the plants take out the bins and buy milk', empty: false });
+});
+
+test('Done during silence or a restart gap prevents another native cycle', () => {
+  const session = new VoiceSession();
+  session.begin('', true); session.starting(); session.ready(); session.fail(true);
+  assert.equal(session.stop(), true);
+  assert.equal(session.end()?.restart, undefined);
+  session.begin('held words', true); session.starting(); session.ready(); session.end();
+  assert.equal(session.phase, 'restarting');
+  assert.equal(session.stop(), true);
+  assert.equal(session.end()?.restart, undefined);
+  session.ready();
+  assert.equal(session.phase, 'idle');
+});
+
+test('fatal errors and leaving the app never restart the microphone', () => {
+  const session = new VoiceSession();
+  session.begin('', true); session.starting(); session.ready();
+  session.result('keep these words', false); session.fail();
+  assert.deepEqual(session.end(), { text: 'keep these words', empty: false });
+  session.begin('keep these words', true); session.starting(); session.ready(); session.end(); session.cancel();
+  assert.equal(session.continues, false);
+  assert.equal(session.end(), null);
+});
+
 test('one voice attempt stays locked through startup and finalization', () => {
   const session = new VoiceSession();
   assert.equal(session.begin('Already typed.'), true);

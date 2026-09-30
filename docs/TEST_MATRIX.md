@@ -71,3 +71,12 @@ The stylus tutorial was dismissed. Current Pixel 6 development build passed bott
 - Stop/retry preserving prior words: PASSED by user confirmation; a second spoken phrase appended to the first without replacement or lost words.
 - Permission denial/text fallback: PASSED on the physical phone. Runtime microphone permission was denied; the access-off message appeared, the field accepted typed input, and microphone access was restored afterward. Background cancellation and native volume response remain unverified.
 - No persisted audio, real personal dumps, or credentials are committed. Emulator voice remains unverified; Android system/app ANRs prevented reliable testing.
+
+## Natural pauses and longer voice capture
+
+- User regression: initial silence ends capture after ~2 seconds and longer speech is cut at 3–5 seconds. Prior short-phrase acceptance did not cover this.
+- Typecheck, lint, all 38 tests pass. Session tests cover repeated silent cycles, multi-cycle final/interim text preservation, Done while silent/restarting, and fatal/background cancellation.
+- Current Android bundle generated and loaded on the OnePlus phone. Live acceptance PASSED by user confirmation: 7-second wait before the first word, ~30-second dump with 3–4 second pauses, all three errands captured, and manual Done.
+- Longer silence hints are provider-dependent. The continuation logic must preserve the dump when native boundaries still occur.
+
+- Background/return smoke check: returning Home showed Speak, not continued listening. Startup foreground guard added for preparation races; all 38 tests/typecheck/lint passed afterward. This is a short smoke check, not a full background-duration test.

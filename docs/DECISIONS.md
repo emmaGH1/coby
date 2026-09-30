@@ -98,3 +98,11 @@ Keep a voice session active until native end, with visible preparation/finalizat
 Use the user's physical OnePlus A6010 for spoken acceptance because the Pixel 6 emulator saturates CPU and its launcher becomes unresponsive. Live two-clause capture passed by user confirmation on Android 11/API 30 with the default Google app service. This does not establish the emulator's engine works.
 
 Physical acceptance also passed manual stop/retry with prior words preserved, and actual OS microphone denial with usable text fallback. Permission was restored after the denial test. Voice-only changes are ready for the verified online path; longer pauses/background behavior and offline engine support remain separate acceptance limits.
+
+## 2026-09-30 — User-controlled voice dump lifetime
+
+A native speech recognition boundary is not the end of a Coby dump. Keep a user session open until Done, fatal error, or leaving/backgrounding the app. Restart after a normal end or silence timeout only after native release, with a short delay to avoid busy errors. Preserve partial and final words at each boundary. Done during a restart gap cancels the scheduled start. Network, permission, client, and busy errors do not cause automatic retry loops.
+
+Request longer silence windows, but do not rely on those extras: Android documents that recognizer implementations may ignore them (https://developer.android.com/reference/android/speech/RecognizerIntent). Enable the library's legacy continuous hints on Android below API 33; keep the Android 13+ online path free of custom segmented audio pipes. This correction remains inside voice capture P0.
+
+The user confirmed the 7-second initial wait and ~30-second paused dump captured all three errands. Foreground checks apply both before initial native start and before a scheduled restart. Leaving and returning showed the mic idle. Multi-minute/provider and offline/emulator acceptance are not established by this test.

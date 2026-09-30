@@ -32,3 +32,14 @@ Record date, device/emulator, build, result, and evidence for every executed row
 ## 2026-09-30 receipt slice
 
 Typecheck, lint, and 24 tests passed. Receipt validation covers unknown timing, invalid dates, local time round trips, clearing timing, invalid durations, and explicit review of ambiguous extraction. Current receipt Android interaction/visual review is pending while the local emulator reports System UI ANR and the development client reports a Metro connection error.
+
+## 2026-09-30 — User-requested Home revision
+
+- Typecheck, lint, and all 24 tests passed after the Home/orb/speech event changes.
+- Pixel 6 API 36 development build loaded the current bundle through localhost Metro. Empty Home rendered with central sphere and a fixed bottom composer; status-bar inset is correct. The development-client gear overlay is not production UI.
+- User reported no captured words in the previous live voice attempt: failed, not passed.
+- SDK emulator microphone-state RPC returned host forwarding off; enabling it returned success and a second read returned on.
+- Native volume response, actual multi-clause spoken transcription, denied permission, stop/retry, and reduced-motion device behavior remain pending.
+- Prior release screenshot represents the superseded Home layout; do not submit it as the final UI.
+
+Current emulator interaction caveat: Android/Gboard opened a stylus onboarding overlay during automated text entry. Text-to-receipt verification is not passed. Metro also reported emulator DNS failures resolving api.revenuecat.com in this session; prior successful billing evidence remains historical, not a current connectivity pass.

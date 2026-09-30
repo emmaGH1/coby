@@ -72,3 +72,11 @@
 
 - Keep Metro on localhost with IPv4 preferred for ADB reverse. CI=true avoids the OneDrive watch timeout. LAN mode was rejected by automatic approval review because it could expose development keys.
 - Apply the Android status-bar inset to the root after the local empty-state capture exposed a wordmark overlap.
+
+## 2026-09-30 — Centered companion and bottom capture
+
+The user rejected the earlier Home and supplied an orb-led reference. Home now centers a pearlescent violet sphere, places NOW/NEXT above a fixed bottom text/voice dock, and keeps Plan inspectable. This explicit user correction supersedes the older layout rule. Functional recording-state motion is within P0; no P1 modes or features were added. The sphere was generated for Coby and is a transparent local asset, with native transform animation and reduced-motion support.
+
+Speech volumechange events drive the sphere's recording response. Ending a recognition attempt with no transcript now gives an explicit no-words recovery message, rather than silently returning to idle.
+
+The emulator's hw.audioInput was enabled but its gRPC MicrophoneState.realAudioEnabled was false. Using the installed SDK emulator_controller.proto API, scripts/emulator-microphone.cjs --enable changed and re-read it as true. This confirms host microphone forwarding configuration; it does not prove spoken transcription. The script uses the running emulator's local token in memory and never prints or commits it.

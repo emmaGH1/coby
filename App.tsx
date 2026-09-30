@@ -72,11 +72,18 @@ export default function App() {
   const [pendingPersistentId, setPendingPersistentId] = useState<string | null>(null);
   const voiceBase = useRef('');
   const voiceFinal = useRef('');
+  const voiceHadResult = useRef(false);
+  const [inputLevel, setInputLevel] = useState(0);
 
   useSpeechRecognitionEvent('start', () => setListening(true));
-  useSpeechRecognitionEvent('end', () => setListening(false));
+  useSpeechRecognitionEvent('end', () => {
+    setListening(false); setInputLevel(0);
+    if (!voiceHadResult.current) setError((current) => current ?? "No words came through. Check microphone access, then try again or type below.");
+  });
+  useSpeechRecognitionEvent('volumechange', ({ value }) => setInputLevel(Math.max(0, Math.min(1, value / 10))));
   useSpeechRecognitionEvent('result', (event) => {
     const transcript = event.results[0]?.transcript ?? '';
+    if (transcript.trim()) voiceHadResult.current = true;
     if (event.isFinal) {
       voiceFinal.current = appendTranscript(voiceFinal.current, transcript);
       setDump(appendTranscript(voiceBase.current, voiceFinal.current));
@@ -148,9 +155,12 @@ export default function App() {
       if (!permission.granted) { setError('Microphone access is off. Allow it in Android settings, or type below.'); return; }
       voiceBase.current = dump;
       voiceFinal.current = '';
+      voiceHadResult.current = false;
+      setInputLevel(0);
       ExpoSpeechRecognitionModule.start({
         lang: 'en-US',
         interimResults: true,
+        volumeChangeEventOptions: { enabled: true, intervalMillis: 120 },
         continuous: Platform.OS === 'android',
         androidIntentOptions: { EXTRA_LANGUAGE_MODEL: 'free_form' },
       });
@@ -297,6 +307,7 @@ export default function App() {
       dump={dump}
       error={error}
       listening={listening}
+      inputLevel={inputLevel}
       next={next}
       now={now}
       onChangeDump={(value) => { setDump(value); if (error) setError(null); }}

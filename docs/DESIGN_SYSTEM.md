@@ -29,12 +29,12 @@ Functional type: Manrope. Use large titles and generous line-height. Build with 
 
 Home is the relief loop in one surface. The user should understand within seconds that they can speak or type without first navigating elsewhere.
 
-- Empty or clear state: brand promise followed by an expanded dump composer.
-- Returning state: compact composer remains above NOW; it never moves behind a floating button or secondary page.
-- Composer: functional orb, direct prompt, editable transcript, Speak/Done control, and one “Let Coby hold it” action.
-- NOW: one large obligation with a small truthful explanation and two compact actions.
-- NEXT: at most two quiet rows. Plan is the route to everything else.
-- Use one raised capture surface. NOW and NEXT remain on the paper canvas rather than becoming a stack of cards.
+- Empty state: large central pearlescent violet orb and the brand promise, with generous whitespace.
+- Returning state: centered smaller orb, exactly one NOW and at most two NEXT in the scrollable content above capture.
+- Capture is a persistent bottom dock with an immediately visible text placeholder, Speak/Done, and a send action. It grows for editable transcript/text; the Android keyboard resizes the content above it.
+- NOW remains one large obligation with a truthful explanation and focus/completion controls. Plan reveals the rest.
+- Use one quiet capture surface; obligations stay directly on paper.
+- The user's September 30 reference supersedes the earlier composer-above-NOW composition. This is P0 capture/visual recovery, not scope expansion.
 
 ## Screens
 
@@ -47,7 +47,7 @@ Home is the relief loop in one surface. The user should understand within second
 
 ## Orb
 
-Four states: idle (slow breath), listening (responsive), thinking (gentle pulse), settled (small compression). Its presence should reassure without becoming a cartoon. Respect reduced-motion preferences. Motion must not obstruct the task.
+Four states: idle (slow breath), listening (responsive), thinking (gentle pulse), settled (quiet breath). Use the transparent generated pearlescent sphere in assets/coby-orb.png. Listening responds to native microphone volume in addition to a slow breath; thinking gently turns. Motion is not proof of transcription. Its presence should reassure without becoming a cartoon. Respect reduced-motion preferences. Motion must not obstruct the task.
 
 ## Avoid
 

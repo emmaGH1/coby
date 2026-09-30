@@ -44,3 +44,7 @@ P0 is now **in progress**. The first recovery slice replaces the old Arrival/Hom
 - The NDK, API 36, Build Tools 35, CMake, and Java 17 are installed. The local Java 17 build was interrupted before producing an APK. The prior empty package directory was moved to `27.1.12297006.incomplete-20260929`; Gradle attempted a clean reinstall and reported the connection reset.
 - Spoken transcription cannot be claimed until a real voice reaches the emulator/device recognizer.
 - The populated Home has passed release rendering and visual review; the empty state and keyboard interaction still need local Pixel 6 verification.
+
+## September 30 correction from the user
+
+The prior Home layout is rejected despite earlier internal visual review. The new reference requires central orb presence, animated recording feedback, and bottom capture with obligations above it. These requirements are implemented in the new Home. Empty Android rendering is verified; populated/keyboard interaction verification is in progress. Voice failed for the user; the emulator host microphone was subsequently found disabled and enabled through its SDK API. Real spoken transcription is still an open acceptance gate.

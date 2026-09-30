@@ -35,7 +35,7 @@ Repository: C:\Users\Emma0\OneDrive\Documents\GitHub\coby. Pixel 6 AVD is connec
 
 Metro runs locally on port 8082 with CI=true and NODE_OPTIONS=--dns-result-order=ipv4first; adb reverse routes tcp:8082. CI mode avoids the OneDrive watcher failure, but edits require restarting Metro. Keep the server localhost-only. Do not print raw Expo JSON logs or .env values: these may contain credentials.
 
-Use `node scripts/emulator-microphone.cjs` to inspect host forwarding, or add `--enable` to enable and verify it. It reads the local running emulator token only in memory. This is emulator configuration, not an app speech guarantee. The user is asleep; no further human input is expected tonight.
+Use `node scripts/emulator-microphone.cjs` to inspect host forwarding, or add `--enable` to enable and verify it. It reads the local running emulator token only in memory. This is emulator configuration, not an app speech guarantee. The user subsequently retried Speak and reported the network-error message.
 
 ## Latest Android interaction evidence
 
@@ -43,6 +43,14 @@ After dismissing Android/Gboard stylus onboarding, the bottom field accepted the
 
 Metro reported emulator DNS failures resolving api.revenuecat.com during this session. Earlier successful billing checks remain historical; current online services are not verified.
 
+## Speech network recovery checkpoint
+
+The user reported the network error after host microphone forwarding was enabled. Android now reports VALIDATED internet connectivity, DNS resolved google.com, no HTTP proxy is configured, and host forwarding remained on. This does not prove every speech endpoint is reachable. Installed recognizers are Google Speech Recognition/Synthesis (default com.google.android.tts) and Android System Intelligence (com.google.android.as).
+
+Coby now checks the actual installed offline English locale before choosing requiresOnDeviceRecognition. A supported locale alone never counts as installed. The native query is bounded and failures keep online voice available. On a network error, Home offers offline English setup. Setup has separate state, keeps text/task use available, and bounds waiting; readiness is rechecked before any success message. Lab exposes check/setup controls.
+
+The current emulator did not confirm a usable offline English model. Its download request was rejected with native client error 5, so voice is still NOT passed. The download failure was captured from the ExpoSpeechService native error log without user audio or keys. A reboot/retry is in progress. Typecheck, lint, and all 27 tests passed, including unavailable/unsupported/installed language and query failure/timeout cases.
+
 ## NEXT ACTION
 
-Verify real multi-clause spoken transcription, stop/retry, and permission fallback on Pixel 6 now that host microphone forwarding is enabled.
+Resolve native Android speech-service rejection and verify real multi-clause transcription, stop/retry, and permission fallback.

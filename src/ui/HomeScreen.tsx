@@ -14,6 +14,9 @@ type Props = {
   onToggleVoice: () => void;
   listening: boolean;
   inputLevel: number;
+  voiceNotice?: string | null;
+  preparingVoice?: boolean;
+  onPrepareOfflineVoice?: () => void;
   busy: boolean;
   error: string | null;
   now?: RankedItem;
@@ -37,11 +40,13 @@ function ActionButton({ label, onPress, quiet = false, disabled = false, icon }:
   </Pressable>;
 }
 
-function CaptureComposer({ dump, onChangeDump, onUnderstand, onToggleVoice, listening, busy, error }: Pick<Props, 'dump' | 'onChangeDump' | 'onUnderstand' | 'onToggleVoice' | 'listening' | 'busy' | 'error'>) {
+function CaptureComposer({ dump, onChangeDump, onUnderstand, onToggleVoice, listening, busy, error, onPrepareOfflineVoice, voiceNotice, preparingVoice }: Pick<Props, 'dump' | 'onChangeDump' | 'onUnderstand' | 'onToggleVoice' | 'listening' | 'busy' | 'error' | 'onPrepareOfflineVoice' | 'voiceNotice' | 'preparingVoice'>) {
   const [focused, setFocused] = useState(false);
   const canUnderstand = dump.trim().length > 0 && !busy && !listening;
   return <View style={styles.dock}>
+    {voiceNotice && <Text accessibilityLiveRegion="polite" style={styles.voiceNotice}>{voiceNotice}</Text>}
     {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
+    {onPrepareOfflineVoice && <Pressable accessibilityRole="button" disabled={busy || preparingVoice} onPress={onPrepareOfflineVoice} style={styles.voiceRecovery}><Text style={styles.reasonLink}>{preparingVoice ? 'Preparing English voice…' : 'Enable offline English voice'}</Text></Pressable>}
     <View style={styles.composer}>
       <TextInput accessibilityLabel="Brain dump" editable={!busy && !listening} multiline
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} onChangeText={onChangeDump}
@@ -128,6 +133,8 @@ const styles = StyleSheet.create({
   companionEmpty: { flex: 1, justifyContent: 'center', paddingTop: 24, paddingBottom: 24 },
   companionTitle: { color: colors.ink, fontFamily: type.semibold, fontSize: 26, lineHeight: 34, letterSpacing: -0.7, textAlign: 'center', marginTop: 14 },
   companionHint: { color: colors.muted, fontFamily: type.regular, fontSize: 16, lineHeight: 24, textAlign: 'center', marginTop: 4 },
+  voiceNotice: { color: colors.violetDeep, fontFamily: type.medium, fontSize: 13, lineHeight: 18, marginBottom: 10 },
+  voiceRecovery: { minHeight: 48, justifyContent: 'center', alignSelf: 'flex-start' },
   dock: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 18, backgroundColor: colors.paper },
   composer: { backgroundColor: colors.paperRaised, borderRadius: 24, padding: 12, borderWidth: 1, borderColor: colors.hairline },
   input: { minHeight: 42, maxHeight: 130, color: colors.ink, fontFamily: type.regular, fontSize: 16, lineHeight: 24, paddingHorizontal: 8, paddingTop: 8, paddingBottom: 8 },

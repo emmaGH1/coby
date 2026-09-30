@@ -80,3 +80,9 @@ The user rejected the earlier Home and supplied an orb-led reference. Home now c
 Speech volumechange events drive the sphere's recording response. Ending a recognition attempt with no transcript now gives an explicit no-words recovery message, rather than silently returning to idle.
 
 The emulator's hw.audioInput was enabled but its gRPC MicrophoneState.realAudioEnabled was false. Using the installed SDK emulator_controller.proto API, scripts/emulator-microphone.cjs --enable changed and re-read it as true. This confirms host microphone forwarding configuration; it does not prove spoken transcription. The script uses the running emulator's local token in memory and never prints or commits it.
+
+## Native speech network recovery
+
+Do not infer that the user's whole internet connection is off from a speech network error. Coby now names the speech-service connection failure and exposes a recovery action. Prefer native on-device recognition only after the device reports en-US installed; otherwise preserve online recognition and typed words. English setup uses the module's native model-download API, confirms installed status afterward, and keeps the rest of the app usable while it waits. The native model lookup and download wait are bounded. No LLM transcription provider was introduced.
+
+The installed expo-speech-recognition source documents getSupportedLocales/installedLocales and androidTriggerOfflineModelDownload; Android defines native client error 5 separately from network errors: https://developer.android.com/reference/android/speech/SpeechRecognizer. The current emulator rejected the model request with client error 5; this is a remaining device/service failure, not a passed voice feature.

@@ -47,3 +47,11 @@ Current emulator interaction caveat: Android/Gboard opened a stylus onboarding o
 ### Follow-up device evidence
 
 The stylus tutorial was dismissed. Current Pixel 6 development build passed bottom-dock typed input, fixture parsing to receipt, accepting an undated item, local save/read to NOW, and completion returning to empty Home. Test phrase: "Remember to water the plants" (synthetic). Empty and one-item Home were inspected inline. This does not verify spoken transcription, software-keyboard resize, multi-item NEXT rendering, or full receipt correction fields.
+
+## Speech network error recovery
+
+- User retry failed with native speech network error; voice remains failed/unverified.
+- Host mic forwarding was re-read as on; Android networks reported VALIDATED; google.com DNS resolved. ICMP ping had no response, which does not prove HTTPS failure. No HTTP proxy configured.
+- New code: prefer offline recognition only for a confirmed installed English model; recover from network failure with setup action; keep text/tasks usable during bounded setup. Lab check/setup added.
+- Typecheck, lint, 27 tests passed. New tests cover installed versus merely supported locales, locale normalization, missing/unsupported model, native query error and timeout.
+- Pixel 6 native model check did not confirm English ready; native model download rejected with client error 5. No successful spoken transcription claimed. Emulator reboot/retry pending.

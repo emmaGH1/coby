@@ -15,6 +15,7 @@ import { HomeScreen } from './src/ui/HomeScreen';
 import { ReceiptScreen } from './src/ui/ReceiptScreen';
 import { CobyOrb } from './src/ui/CobyOrb';
 import { appendTranscript, speechErrorMessage } from './src/voice/speech';
+import { offlineVoiceAvailable } from './src/voice/offline';
 
 type Screen = 'home' | 'receipt' | 'plan' | 'focus' | 'lab' | 'paywall';
 const clock = new SystemClock();
@@ -74,6 +75,10 @@ export default function App() {
   const voiceFinal = useRef('');
   const voiceHadResult = useRef(false);
   const [inputLevel, setInputLevel] = useState(0);
+  const [voiceNetworkError, setVoiceNetworkError] = useState(false);
+  const [voiceNotice, setVoiceNotice] = useState<string | null>(null);
+  const voiceStarting = useRef(false);
+  const [preparingVoice, setPreparingVoice] = useState(false);
 
   useSpeechRecognitionEvent('start', () => setListening(true));
   useSpeechRecognitionEvent('end', () => {
@@ -94,6 +99,7 @@ export default function App() {
   useSpeechRecognitionEvent('nomatch', () => setError("I didn't catch anything. Tap the mic and try again, or type below."));
   useSpeechRecognitionEvent('error', (event) => {
     setListening(false);
+    setVoiceNetworkError(event.error === 'network');
     const message = speechErrorMessage(event.error);
     if (message) setError(message);
   });
@@ -141,7 +147,9 @@ export default function App() {
   }
 
   async function startListening() {
-    setError(null);
+    if (voiceStarting.current) return;
+    voiceStarting.current = true;
+    setError(null); setVoiceNotice(null); setVoiceNetworkError(false);
     try {
       if (!ExpoSpeechRecognitionModule.isRecognitionAvailable()) {
         setError('Android speech recognition is unavailable. Enable Speech Recognition & Synthesis, or type below.');
@@ -153,18 +161,46 @@ export default function App() {
       }
       const permission = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
       if (!permission.granted) { setError('Microphone access is off. Allow it in Android settings, or type below.'); return; }
+      const offlineReady = Platform.OS === 'android' && await offlineVoiceAvailable(ExpoSpeechRecognitionModule);
       voiceBase.current = dump;
       voiceFinal.current = '';
       voiceHadResult.current = false;
       setInputLevel(0);
       ExpoSpeechRecognitionModule.start({
         lang: 'en-US',
+        requiresOnDeviceRecognition: offlineReady,
         interimResults: true,
         volumeChangeEventOptions: { enabled: true, intervalMillis: 120 },
         continuous: Platform.OS === 'android',
         androidIntentOptions: { EXTRA_LANGUAGE_MODEL: 'free_form' },
       });
     } catch { setError('Voice could not start. Check the emulator microphone, then try again or type below.'); }
+    finally { voiceStarting.current = false; }
+  }
+
+  async function prepareOfflineVoice() {
+    if (preparingVoice) return;
+    setPreparingVoice(true); setError(null); setVoiceNotice('Preparing offline English voice… You can keep typing.');
+    try {
+      if (!ExpoSpeechRecognitionModule.supportsOnDeviceRecognition()) {
+        setVoiceNotice(null);
+        setError('This Android speech service does not support offline voice. Try another connection, or type below.'); return;
+      }
+      if (!await offlineVoiceAvailable(ExpoSpeechRecognitionModule)) {
+        let timeout: ReturnType<typeof setTimeout> | undefined;
+        try {
+          await Promise.race([
+            ExpoSpeechRecognitionModule.androidTriggerOfflineModelDownload({ locale: 'en-US' }),
+            new Promise<void>((resolve) => { timeout = setTimeout(resolve, 60000); }),
+          ]);
+        } finally { if (timeout) clearTimeout(timeout); }
+      }
+      const ready = await offlineVoiceAvailable(ExpoSpeechRecognitionModule);
+      setVoiceNetworkError(!ready);
+      if (ready) setVoiceNotice('Offline English voice is ready. Tap Speak to try it.');
+      else { setVoiceNotice(null); setError('Android has not finished installing English voice. Try again after the download, or type below.'); }
+    } catch { setVoiceNetworkError(true); setVoiceNotice(null); setError('Android could not prepare offline English voice. You can retry setup or keep typing.'); }
+    finally { setPreparingVoice(false); }
   }
 
   async function holdItems(accepted: ParsedItem[] = draft) {
@@ -308,6 +344,9 @@ export default function App() {
       error={error}
       listening={listening}
       inputLevel={inputLevel}
+      voiceNotice={voiceNotice}
+      preparingVoice={preparingVoice}
+      onPrepareOfflineVoice={Platform.OS === 'android' && voiceNetworkError ? () => void prepareOfflineVoice() : undefined}
       next={next}
       now={now}
       onChangeDump={(value) => { setDump(value); if (error) setError(null); }}
@@ -329,6 +368,11 @@ export default function App() {
         <Text style={styles.support}>Local demo controls. Nothing here is sent online.</Text>
         <Text style={styles.labStatus}>{labMessage}</Text>
         <Text style={styles.support}>Clock: {activeClock.now().toLocaleString()}</Text>
+        <Button label="Check offline voice" kind="quiet" disabled={busy} onPress={async () => {
+          const ready = await offlineVoiceAvailable(ExpoSpeechRecognitionModule);
+          setLabMessage(ready ? 'English voice model installed. Speak will use on-device recognition.' : 'English offline voice model not available.');
+        }} />
+        <Button label={preparingVoice ? "Preparing English voice…" : "Prepare offline English voice"} kind="quiet" disabled={busy || preparingVoice} onPress={() => void prepareOfflineVoice()} />
         <Button label="Seed demo data" disabled={busy} onPress={seedLab} />
         <Button label="Advance time by 60 minutes" disabled={busy} kind="quiet" onPress={() => { const demo = new DemoClock(activeClock.now()); demo.advanceMinutes(60); setActiveClock(demo); setLabMessage('Demo clock advanced by one hour.'); }} />
         <Button label="Advance to next nudge" disabled={busy} kind="quiet" onPress={() => {

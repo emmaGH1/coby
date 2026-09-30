@@ -4,7 +4,7 @@
 
 Coby is a calm, voice-first companion for people carrying too much in their heads. Users dump thoughts naturally; Coby understands and quietly holds them, organizes them, surfaces only what deserves attention now, and proactively intervenes before important things slip. Everything remains inspectable on demand, but the user rarely needs to manage it.
 
-**Brand:** `coby` / **carry less.**  
+**Brand:** `coby`. **Arrival copy:** **Unload your mind.** The user retired “carry less.” from the Home header and arrival on September 30.
 **Supporting copy:** Out of your head. Into good hands.  
 **UX principle:** minimal by default, transparent on demand.  
 **Core loop:** Dump → Understand → Hold → Surface → Act.
@@ -25,10 +25,10 @@ Coby optimizes for reduced cognitive load and trust, not maximum information den
 | Receipt | Calm confirmation of every extracted item; user can correct errors before saving. |
 | Hold | Local persistence survives app restart. |
 | Home | Exactly one NOW item when available and at most two NEXT items. A clear state when none exists. |
-| Plan | All held items inspectable in List and simple Calendar/day views. Saved items expose Edit details for title, kind, date, time, and duration corrections, plus individual deletion and confirmed Clear list with reminder cancellation. |
+| Plan | All held items inspectable in List and seven-day Calendar views, with previous/next week inspection and a quiet Completed history view with restoration. Saved items expose Edit details for title, kind, date, time, and duration corrections, plus individual deletion and confirmed Clear list with reminder cancellation. |
 | Focus | One item at a time, with completion and a clear exit. Back returns to the originating Home/Plan without completing the item; Android Back does the same. |
 | Rank | Deterministic priority with a truthful “Why this now?” explanation. |
-| Nudge | Deadline-aware local notifications; recalculate when relevant fields change. |
+| Nudge | Deadline-aware local notifications; recalculate when relevant fields change. Notification buttons postpone the reminder by 15 minutes, 30 minutes or one hour without moving the task deadline. Tapping the notification opens a calm check-in with Focus, completion and correction controls. |
 | Commitment | Gentle and Persistent modes. Persistent is a Plus entitlement. |
 | Billing | RevenueCat Test Store, `coby_plus` entitlement, monthly product and working purchase/restore path. |
 | Experience | Cohesive premium Coby visual system and deterministic demo path. |

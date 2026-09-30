@@ -81,6 +81,21 @@ test('unknown deadlines and completed items never receive nudges', () => {
   assert.deepEqual(planNudges({ ...stored('a', '2026-09-29T14:00:00Z', 'completed'), commitmentMode: 'gentle' }, clock), []);
 });
 
+test('enabling Gentle close to a deadline still schedules a truthful future nudge', () => {
+  const item = { ...stored('a', '2026-09-29T12:05:00Z'), durationMinutes: 30, commitmentMode: 'gentle' as const };
+  const nudges = planNudges(item, clock);
+  assert.equal(nudges.length, 1);
+  assert.equal(nudges[0].at.toISOString(), '2026-09-29T12:01:00.000Z');
+  assert.equal(nudges[0].body, 'Your deadline is approaching.');
+});
+
+test('a reminder enabled seconds before the deadline is still before that deadline', () => {
+  const nudges = planNudges({ ...stored('a', '2026-09-29T12:00:10Z'), commitmentMode: 'persistent' }, clock);
+  assert.equal(nudges.length, 1);
+  assert.equal(nudges[0].at.toISOString(), '2026-09-29T12:00:05.000Z');
+  assert.deepEqual(planNudges({ ...stored('a', '2026-09-29T11:59:00Z'), commitmentMode: 'gentle' }, clock), []);
+});
+
 test('Gemini response validator discards unsupported dates and durations', () => {
   const result = validateParseResult({ items: [{
     title: 'Study operating systems', sourceFragment: 'Study operating systems',

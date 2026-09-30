@@ -117,3 +117,13 @@ The stylus tutorial was dismissed. Current Pixel 6 development build passed bott
 - Nudges remain P0: prior immediate delivery is historical evidence; future/background delivery, reschedule/cancel and Persistent cadence still need device checks.
 
 - Clear list phone follow-up: updated bundle loaded after waiting for Metro startup. Plan List exposes the action. Native confirmation reports the held-item count and all-calendar-days scope, with Keep my list/Clear list. Keep my list dismissed the dialog and retained the populated Plan. Actual bulk deletion/reminder cancellation/persistence was not exercised against real user items.
+
+
+## September 30 — Nudge actions and weekly inspection
+
+- PASS: typecheck, lint, 56 tests; close-deadline fallback, deadline-preserving 15/30/60-minute postponement, duplicate/stale action guards, edit cancellation, completed-item suppression and seven-day/previous-next week generation.
+- PASS: Android Hermes bundle includes the approved companion and new screens. This is bundle verification, not physical-device acceptance.
+- PASS: browser preview header/arrival, seven dates, previous week/Today, Completed restore and simulated notification delay/check-in, plus prior safe task controls and mobile width.
+- PENDING: real future/background heads-up delivery, each delay choice changing the native schedule, notification body opening the correct item, action after app termination, disabling reminders and edit/complete/delete/clear cancellation. Verify actual unchanged deadline and persisted reminder time.
+- PENDING: native Plan/arrival/Settings/check-in rendering, saved completion restore after restart, keyboard visibility and the previously accepted minute-long paused voice dump after this UI integration. SpeechSession code was not changed.
+- BLOCKED DEVICE: no current adb or mDNS device. User has been asked to reconnect and save unsent words before reload. Test only clearly labelled synthetic items; no real held list may be cleared.

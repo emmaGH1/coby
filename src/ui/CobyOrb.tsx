@@ -26,11 +26,11 @@ export function CobyOrb({ size = 68, state = 'idle', inputLevel = 0 }: { size?: 
     const animation = Animated.timing(level, { toValue: state === 'listening' && !reduceMotion ? inputLevel : 0, duration: 140, useNativeDriver: true });
     animation.start(); return () => animation.stop();
   }, [level, inputLevel, reduceMotion, state]);
-  const breathing = motion.interpolate({ inputRange: [0, 1], outputRange: [0.98, 1.025] });
-  const response = level.interpolate({ inputRange: [0, 1], outputRange: [1, 1.1], extrapolate: 'clamp' });
-  const rotation = motion.interpolate({ inputRange: [0, 1], outputRange: state === 'thinking' ? ['-9deg', '9deg'] : ['-3deg', '3deg'] });
+  const breathing = motion.interpolate({ inputRange: [0, 1], outputRange: [0.994, 1.006] });
+  const response = level.interpolate({ inputRange: [0, 1], outputRange: [1, 1.05], extrapolate: 'clamp' });
+  const rotation = motion.interpolate({ inputRange: [0, 1], outputRange: state === 'thinking' ? ['-2deg', '2deg'] : ['-1.4deg', '1.4deg'] });
   return <View accessibilityLabel={`Coby is ${state}`} style={[styles.frame, { width: size, height: size }]}>
-    <Animated.Image source={require('../../assets/coby-orb.png')} resizeMode="contain" style={{ width: size * 1.2, height: size * 1.2, transform: [{ scale: Animated.multiply(breathing, response) }, { rotate: rotation }] }} />
+    <Animated.Image source={require('../../assets/coby-companion.png')} resizeMode="contain" style={{ width: size * 1.2, height: size * 1.2, transform: [{ scale: Animated.multiply(breathing, response) }, { rotate: rotation }] }} />
   </View>;
 }
 const styles = StyleSheet.create({ frame: { alignItems: 'center', justifyContent: 'center' } });

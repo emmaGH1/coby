@@ -4,7 +4,7 @@ import type { RankedItem } from '../domain/ranking';
 import { reasonText } from '../domain/ranking';
 import type { CobyItem } from '../domain/types';
 import { CobyOrb, type OrbState } from './CobyOrb';
-import { ArrowIcon, CheckIcon, MicIcon } from './icons';
+import { ArrowIcon, CheckIcon, MicIcon, StopIcon } from './icons';
 import { colors, radius, type } from './theme';
 import type { VoicePhase } from '../voice/session';
 
@@ -30,6 +30,7 @@ type Props = {
   onGentle: (item: CobyItem) => void;
   onPersistent: (item: CobyItem) => void;
   onOpenPlan: () => void;
+  onOpenSettings: () => void;
   onOpenLab: () => void;
   showLab: boolean;
   dueText: (item: { dueAt: string | null; dueDate: string | null }) => string;
@@ -46,7 +47,7 @@ function CaptureComposer({ dump, onChangeDump, onUnderstand, onToggleVoice, list
   const [focused, setFocused] = useState(false);
   const canUnderstand = dump.trim().length > 0 && !busy && voicePhase === 'idle';
   const voiceTransition = voicePhase === 'preparing' || voicePhase === 'starting' || voicePhase === 'stopping';
-  const voiceLabel = voicePhase === 'stopping' ? 'Finishing…' : voiceTransition ? 'Starting…' : listening ? 'Done' : 'Speak';
+  const voiceLabel = voicePhase === 'stopping' ? 'Finishing…' : voiceTransition ? 'Starting…' : listening ? 'Stop' : 'Speak';
   return <View style={styles.dock}>
     {voiceNotice && <Text accessibilityLiveRegion="polite" style={styles.voiceNotice}>{voiceNotice}</Text>}
     {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
@@ -57,16 +58,16 @@ function CaptureComposer({ dump, onChangeDump, onUnderstand, onToggleVoice, list
         placeholder={listening ? 'Your words will appear here…' : 'What’s on your mind?'}
         placeholderTextColor={colors.muted} style={[styles.input, (focused || dump.length > 0 || listening) && styles.inputExpanded]}
         textAlignVertical="top" value={dump} />
-      <View style={styles.composerActions}>
-        <Pressable accessibilityRole="button" accessibilityLabel={voiceLabel === 'Speak' ? 'Start voice dump' : voiceLabel === 'Done' ? 'Finish voice dump' : voiceLabel} disabled={busy || voiceTransition || preparingVoice} onPress={onToggleVoice}
+      <View style={[styles.composerActions,listening && styles.speakingActions]}>
+        <Pressable accessibilityRole="button" accessibilityLabel={voiceLabel === 'Speak' ? 'Start voice dump' : voiceLabel === 'Stop' ? 'Finish voice dump' : voiceLabel} disabled={busy || voiceTransition || preparingVoice} onPress={onToggleVoice}
           style={({ pressed }) => [styles.micButton, listening && styles.micButtonActive, (busy || voiceTransition || preparingVoice) && styles.disabled, pressed && styles.pressed]}>
-          <MicIcon active={listening} /><Text style={[styles.micLabel, listening && styles.micLabelActive]}>{voiceLabel}</Text>
+          {listening ? <StopIcon/> : <MicIcon/>}<Text style={[styles.micLabel, listening && styles.micLabelActive]}>{voiceLabel}</Text>
         </Pressable>
-        <Text style={styles.dockHint}>{listening ? 'Tap Done when finished' : 'Messy is fine.'}</Text>
+        {!listening && <><Text style={styles.dockHint}>Messy is fine.</Text>
         <Pressable accessibilityRole="button" accessibilityLabel="Let Coby understand this" disabled={!canUnderstand} onPress={onUnderstand}
           style={({ pressed }) => [styles.sendButton, !canUnderstand && styles.sendDisabled, pressed && canUnderstand && styles.pressed]}>
           <ArrowIcon color={canUnderstand ? colors.white : colors.muted} />
-        </Pressable>
+        </Pressable></>}
       </View>
     </View>
   </View>;
@@ -77,18 +78,19 @@ export function HomeScreen(props: Props) {
   const orbState: OrbState = props.listening ? 'listening' : props.busy ? 'thinking' : props.dump.trim() ? 'settled' : 'idle';
   return <View style={styles.screen}><ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
     <View style={styles.header}>
-      <View><Text style={styles.wordmark}>coby</Text><Text style={styles.motto}>carry less.</Text></View>
-      <Pressable accessibilityRole="button" accessibilityLabel="Open Plan" hitSlop={4} onPress={props.onOpenPlan} style={styles.planButton}>
-        <Text style={styles.planButtonText}>Plan</Text><ArrowIcon color={colors.violetDeep} />
+      <Text style={styles.wordmark}>coby</Text>
+      <Pressable accessibilityRole="button" accessibilityLabel="Settings" hitSlop={4} onPress={props.onOpenSettings} style={styles.settingsButton}>
+        <Text style={styles.settingsGlyph}>⚙</Text>
       </Pressable>
     </View>
 
-    <View style={[styles.companion, !hasItems && styles.companionEmpty]}>
-      <CobyOrb size={hasItems ? 180 : 268} state={orbState} inputLevel={props.inputLevel} />
+    <View style={[styles.companion, (!hasItems || props.listening) && styles.companionEmpty]}>
+      <CobyOrb size={hasItems && !props.listening ? 180 : 268} state={orbState} inputLevel={props.inputLevel} />
       <Text style={styles.companionTitle}>{props.listening ? 'I’m listening.' : props.busy ? 'Making sense of it…' : hasItems ? 'One thing at a time.' : 'Out of your head.'}</Text>
       <Text style={styles.companionHint}>{props.listening ? 'Say it as it comes.' : hasItems ? 'The rest is held.' : 'Into good hands.'}</Text>
     </View>
 
+    {!props.listening && <>
     {hasItems && <View style={styles.rule} />}
     {props.now && <Text style={styles.sectionLabel}>NOW</Text>}
     {props.now ? <>
@@ -121,8 +123,8 @@ export function HomeScreen(props: Props) {
       <Text style={styles.heldCopy}>Everything else is safe in Plan.</Text>
     </View>}
 
-    {props.showLab && <Pressable accessibilityRole="button" onPress={props.onOpenLab}><Text style={styles.labLink}>Coby Lab</Text></Pressable>}
-  </ScrollView><CaptureComposer {...props} /></View>;
+    </>}
+  </ScrollView><CaptureComposer {...props} /><View style={styles.bottomNav}><Text style={styles.navActive}>Home</Text><Pressable accessibilityRole="button" onPress={props.onOpenPlan} style={styles.navTarget}><Text style={styles.navText}>Plan</Text></Pressable></View></View>;
 }
 
 const styles = StyleSheet.create({
@@ -130,6 +132,8 @@ const styles = StyleSheet.create({
   page: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 18, paddingBottom: 16 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   wordmark: { color: colors.ink, fontFamily: type.bold, fontSize: 30, letterSpacing: -1.5, lineHeight: 31 },
+  settingsButton: { minHeight:48, width:48, alignItems:'center', justifyContent:'center' }, settingsGlyph: { color:colors.ink,fontSize:26 },
+  bottomNav:{flexDirection:'row',justifyContent:'space-evenly',alignItems:'center',height:48,backgroundColor:colors.paper},navTarget:{minHeight:44,minWidth:90,alignItems:'center',justifyContent:'center'},navActive:{fontFamily:type.semibold,fontSize:12,color:colors.violetDeep},navText:{fontFamily:type.medium,fontSize:12,color:colors.muted},
   motto: { color: colors.muted, fontFamily: type.medium, fontSize: 11, letterSpacing: 0.1, marginTop: 2 },
   planButton: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 7, paddingLeft: 16, paddingRight: 13, borderRadius: radius.pill, backgroundColor: colors.violetMist },
   planButtonText: { color: colors.violetDeep, fontFamily: type.semibold, fontSize: 14 },
@@ -145,14 +149,15 @@ const styles = StyleSheet.create({
   inputExpanded: { minHeight: 80 },
   composerActions: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 4 },
   micButton: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 7, borderRadius: radius.pill, paddingHorizontal: 14, backgroundColor: colors.violetSoft },
-  micButtonActive: { backgroundColor: colors.violet },
+  micButtonActive: { backgroundColor: colors.violet, width:64, height:64, borderRadius:32, flexDirection:'column', justifyContent:'center', gap:3 },
+  speakingActions: { justifyContent:'center' },
   micLabel: { color: colors.ink, fontFamily: type.semibold, fontSize: 14 },
   micLabelActive: { color: colors.white },
   dockHint: { flex: 1, color: colors.muted, fontFamily: type.regular, fontSize: 11, textAlign: 'center' },
   sendButton: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center', borderRadius: radius.pill, backgroundColor: colors.ink },
   sendDisabled: { backgroundColor: colors.paper },
   error: { color: colors.error, fontFamily: type.medium, fontSize: 13, lineHeight: 18, marginBottom: 10 },
-  rule: { height: 1, backgroundColor: colors.hairline, marginTop: 6, marginBottom: 20 },
+  rule: { height: 1, backgroundColor: colors.hairline, marginTop: 18, marginBottom: 20 },
   sectionLabel: { color: colors.violetDeep, fontFamily: type.bold, fontSize: 11, letterSpacing: 2.1, marginBottom: 14 },
   nowTitle: { color: colors.ink, fontFamily: type.semibold, fontSize: 31, lineHeight: 37, letterSpacing: -1.3, maxWidth: '94%' },
   due: { color: colors.muted, fontFamily: type.regular, fontSize: 14, marginTop: 10 },

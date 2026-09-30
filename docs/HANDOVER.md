@@ -4,7 +4,7 @@
 
 P0 remains **in progress**. The user rejected the earlier capture-above-tasks layout on September 30 and provided a central-orb reference with bottom controls. Their correction supersedes the earlier internal Home visual review.
 
-## Current checkpoint
+## Earlier visual checkpoint (historical)
 
 Home now has a large central pearlescent violet orb, quiet brand copy, a smaller orb for returning users, one NOW and at most two NEXT above a fixed bottom capture dock. Speak/Done and editable text remain directly visible. The orb breathes and gently turns by state; native microphone-volume events drive its recording response. Reduced-motion preferences disable motion. This is P0 recovery requested by the user, not new P1 scope.
 
@@ -105,6 +105,22 @@ The user clarified that keyboard-open typing and the minute-long voice dump both
 
 Clear list is implemented in Plan List. Count/scope confirmation covers all held items across calendar days. Snapshot open IDs, cancel their reminders, delete those rows transactionally and recompute Home/Plan. Preserve completed/archived history. Failure keeps items and warns some reminders may have stopped. Typecheck, lint and 47 tests pass. Requested readiness to reload without losing the user's dump; only inspect/cancel the real-list confirmation. Never clear real tasks for agent testing. Metro session 72345 now serves the updated patch on localhost 8082. The first reload raced server startup and showed a development loading error; wait for /status to report packager-status:running before launching after future restarts. Reopening after startup loaded successfully. Clear list confirmation and Keep my list cancellation passed on the phone; populated Plan remained. Bulk removal and cancellation delivery are still unverified, and no real held items were deleted.
 
+## September 30 — Proactive nudge and approved design recovery
+
+The user correctly identified that proactive support had not been made visible. Reminder scheduling existed but had no notification categories/action handler, and enabling Gentle after its original intervention point could silently create no notification. Close deadlines now get one truthful future reminder before the deadline.
+
+Android has a new high-importance reminder channel, default system alert, 15/30/60-minute category actions, foreground/cold-start response handling and a fixed-language nudge screen. Postponement persists in the item's SQLite payload, retains its deadline, replaces its old schedule and guards duplicate/stale actions. Completing/deleting removes scheduled and presented notifications. OS action buttons open Coby to process the selected delay; background-only processing with no app opening is not claimed.
+
+Reminder setup is visible for each Plan item. Gentle is free; Persistent still goes through RevenueCat entitlement. Undated/date-only items receive no invented notification time. Custom reminder time is deferred.
+
+Approved Soft Fold companion and blue/pink/off-white direction are integrated without a new native dependency. Home has coby left, Settings right, no tagline under the name, spacing above the divider, tasks hidden during capture, circular Stop, and bottom Home/Plan navigation. Loading shows companion/coby/Unload your mind. Launcher/native splash assets still need final replacement. Plan has seven-day weeks, previous/next and Today, circular date selection, separate edit/delete, completion strikethrough/restoration and Completed history.
+
+Typecheck, lint and 56 tests pass. Android Hermes bundle generated successfully after sandbox execution of hermesc was granted. Browser checks passed for the new arrival, seven-day navigation, history restoration and simulated nudge postponement, alongside existing preview controls. Actual Android rendering, keyboard/voice after integration and future/background notification/action/cold-start acceptance remain pending. No phone currently appears in adb devices or mDNS services. No real held data was cleared or edited. Metro is still running on 8082 with the old CI bundle; do not reload until the user says their dump is saved and the phone is connected.
+
+The working cutoff is October 1 at 07:00 Lagos time, ahead of the previously stated submission deadline. Journal/streak features are deferred/out of scope. P0 remains incomplete.
+
+Metro was restarted successfully for the approved reload. Session 91679 serves localhost:8082, and /status returns packager-status:running. The phone is still absent from host ADB/mDNS after the user reported reconnection; requested its wireless IP:port or USB debugging authorization. Do not claim the update is on the phone yet.
+
 ## NEXT ACTION
 
-Finish Plan clear/edit/delete/Focus phone acceptance using synthetic items, then verify a real future Gentle notification and its reschedule/cancel behavior before companion polish.
+Reconnect the phone and, after reload readiness, verify one isolated future Gentle nudge, notification delay/body tap/cold-start handling, cancellation after completion/edit/delete, and voice/keyboard regression on the new Android UI.

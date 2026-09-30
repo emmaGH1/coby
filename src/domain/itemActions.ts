@@ -9,6 +9,7 @@ export function applyItemEdit(item: CobyItem, corrected: ParsedItem): CobyItem {
     durationMinutes: corrected.durationMinutes,
     needsClarification: corrected.needsClarification,
     clarificationQuestion: corrected.clarificationQuestion,
+    reminderAt: corrected.dueAt === item.dueAt ? item.reminderAt : null,
   };
 }
 

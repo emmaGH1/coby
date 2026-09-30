@@ -15,7 +15,7 @@ P0 is the complete first usable Coby, including dependable capture, nudges and a
 | Clear list | Implemented in Plan > List with confirmation, scoped notification cancellation and one SQLite deletion transaction. Removes all open items across calendar days; retains completed/archived history. Loaded on the wireless phone; confirmation and Keep my list cancellation passed. Actual bulk removal/persistence remains unverified. |
 | Nudges | Deterministic Gentle/Persistent rules and native scheduling exist. Immediate local notification previously delivered on Pixel 6. Real future delivery, edit rescheduling, completion/delete/clear cancellation and background behavior remain unverified. |
 | Billing | RevenueCat Test Store, $4.99 monthly coby_plus product, purchase and Persistent unlock previously verified. Restore remains unverified. |
-| Quality/harness | Typecheck/lint and 47 tests pass. Fixture parser, SystemClock/DemoClock and Lab controls exist; the complete demo path remains to rehearse. |
+| Quality/harness | Typecheck/lint and 56 tests pass. Fixture parser, SystemClock/DemoClock and Lab controls exist; the complete demo path remains to rehearse. |
 | Repository/assets | README/setup and license exist; orb and icon assets exist. Final asset review, fresh screenshot and final demo recording remain. |
 
 ## Remaining P0, in working order
@@ -35,3 +35,8 @@ P0 is the complete first usable Coby, including dependable capture, nudges and a
 - Natural-language corrections, such as “move that to tomorrow at five.” Manual field editing is P0.
 
 Notifications, basic orb responsiveness, keyboard fixes, editing, deletion, clearing, navigation and cohesive premium design are P0. Google login, calendar/Gmail sync, cloud sync, feeds, projects/tags, habits/streaks, app blocking and autonomous agents remain outside the submission scope; they are not promised P1 features.
+
+
+## Latest implementation checkpoint
+
+Approved companion, header/arrival, weekly Plan and Completed restoration are now in Android code. Nudge actions and the check-in screen are implemented, including close-deadline recovery and deadline-preserving postponement. Typecheck/lint/56 tests and the Android Hermes bundle pass. Physical acceptance is pending because the phone is currently disconnected. Restore billing, cancellation/delivery matrix, final launcher/splash assets, screenshot and demo remain. P0 is not complete.

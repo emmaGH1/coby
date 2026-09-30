@@ -25,4 +25,6 @@ export type CobyItem = ParsedItem & {
   status: ItemStatus;
   commitmentMode: CommitmentMode;
   completedAt: string | null;
+  reminderAt?: string | null;
+  lastNudgeResponseId?: string;
 };

@@ -1,26 +1,29 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, AppState, BackHandler, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { Alert, AppState, BackHandler, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
+import * as Notifications from 'expo-notifications';
 import { useFonts, Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold } from '@expo-google-fonts/manrope';
 import { DemoClock, SystemClock, type Clock } from './src/domain/clock';
 import { DEMO_DUMP, FixtureBrainDumpParser } from './src/domain/parser';
 import { createGeminiBrainDumpParser } from './src/domain/parserFactory';
 import { rankItems } from './src/domain/ranking';
-import { planNudges } from './src/domain/nudges';
+import { planNudges, postponeNudge } from './src/domain/nudges';
 import type { CobyItem, ItemStatus, ParsedItem } from './src/domain/types';
 import { applyItemEdit, leaveFocusItem } from './src/domain/itemActions';
 import { clearItems, completeItem, deleteItem, deleteItems, listItems, saveItems } from './src/data/items';
-import { cancelItemNudges, clearAllCobyNudges, syncItemNudges, triggerLabNudge } from './src/notifications/scheduler';
+import { cancelItemNudges, clearAllCobyNudges, NUDGE_ACTIONS, prepareNudgeNotifications, syncItemNudges, triggerLabNudge } from './src/notifications/scheduler';
 import { loadBilling, purchaseMonthly, restoreBilling, type BillingState } from './src/billing/revenuecat';
 import { HomeScreen } from './src/ui/HomeScreen';
 import { ReceiptScreen } from './src/ui/ReceiptScreen';
+import { NudgeScreen } from './src/ui/NudgeScreen';
+import { PlanScreen } from './src/ui/PlanScreen';
 import { CobyOrb } from './src/ui/CobyOrb';
 import { speechErrorMessage } from './src/voice/speech';
 import { offlineVoiceAvailable } from './src/voice/offline';
 import { VoiceSession, type VoicePhase } from './src/voice/session';
 import { androidVoiceOptions } from './src/voice/options';
 
-type Screen = 'home' | 'receipt' | 'plan' | 'focus' | 'lab' | 'paywall' | 'edit';
+type Screen = 'home' | 'receipt' | 'plan' | 'focus' | 'lab' | 'paywall' | 'edit' | 'nudge' | 'settings';
 const clock = new SystemClock();
 const fixtureParser = new FixtureBrainDumpParser();
 const configuredParser = createGeminiBrainDumpParser();
@@ -65,8 +68,6 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showReason, setShowReason] = useState(false);
-  const [planMode, setPlanMode] = useState<'list' | 'calendar'>('list');
-  const [selectedDay, setSelectedDay] = useState(() => clock.now().toDateString());
   const [focusItem, setFocusItem] = useState<CobyItem | null>(null);
   const [focusContext, setFocusContext] = useState<{ returnTo: 'home' | 'plan'; previousStatus: ItemStatus } | null>(null);
   const [editingItem, setEditingItem] = useState<CobyItem | null>(null);
@@ -76,6 +77,10 @@ export default function App() {
   const [listening, setListening] = useState(false);
   const [billing, setBilling] = useState<BillingState>({ configured: false, plus: false, monthlyPrice: null, message: 'Checking Coby Plus…' });
   const [pendingPersistentId, setPendingPersistentId] = useState<string | null>(null);
+  const [nudgeItemId, setNudgeItemId] = useState<string | null>(null);
+  const [nudgeMessage, setNudgeMessage] = useState<string | null>(null);
+  const handledNudgeResponses = useRef(new Set<string>());
+  const nudgeQueue = useRef(Promise.resolve());
   const voice = useRef(new VoiceSession());
   const [voicePhase, setVoicePhase] = useState<VoicePhase>('idle');
   const voiceTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -187,6 +192,82 @@ export default function App() {
   }, []);
 
   useEffect(() => { loadBilling().then(setBilling); }, []);
+
+  useEffect(() => {
+    if (loading) return;
+    void prepareNudgeNotifications().catch(() => setError('Coby could not prepare notification controls. Your items are still held.'));
+    function enqueue(response: Notifications.NotificationResponse) {
+      const key = `${response.notification.request.identifier}:${response.actionIdentifier}:${response.notification.date}`;
+      if (handledNudgeResponses.current.has(key)) return;
+      handledNudgeResponses.current.add(key);
+      nudgeQueue.current = nudgeQueue.current.then(async () => {
+        const id = response.notification.request.content.data?.itemId;
+        if (typeof id !== 'string') return;
+        const stored = await listItems();
+        const item = stored.find(entry => entry.id === id);
+        if (!item || item.status === 'completed' || item.status === 'archived') {
+          setItems(stored); setScreen('home'); setError('That item is already finished or no longer held.'); return;
+        }
+        setNudgeItemId(id); setNudgeMessage(null);
+        const minutes = NUDGE_ACTIONS[response.actionIdentifier as keyof typeof NUDGE_ACTIONS];
+        if (minutes) {
+          const changed = postponeNudge(item, minutes, activeClock, key);
+          const reminderItem = changed ?? (item.lastNudgeResponseId === key ? item : null);
+          if (reminderItem) {
+            if (changed) await saveItems([changed]);
+            setItems(await listItems());
+            if (!await syncItemNudges(reminderItem, activeClock)) setError('Your reminder choice is saved, but notifications are off.');
+            else setNudgeMessage(`I’ll check in again in ${minutes === 60 ? '1 hour' : `${minutes} minutes`}. Your due time is unchanged.`);
+          } else if (item.lastNudgeResponseId !== key) setError('Reminders are off for this item. Choose Gentle to turn them on.');
+        } else setItems(stored);
+        setScreen('nudge');
+        const last = await Notifications.getLastNotificationResponseAsync();
+        if (last?.notification.request.identifier === response.notification.request.identifier && last.actionIdentifier === response.actionIdentifier) {
+          await Notifications.clearLastNotificationResponseAsync();
+        }
+      }).catch(() => { handledNudgeResponses.current.delete(key); setError('Coby could not update that reminder. Open the item and try again.'); });
+    }
+    const subscription = Notifications.addNotificationResponseReceivedListener(enqueue);
+    void Notifications.getLastNotificationResponseAsync().then(response => { if (response) enqueue(response); });
+    return () => subscription.remove();
+  }, [loading, activeClock]);
+
+  const nudgeItem = items.find(item => item.id === nudgeItemId);
+  async function delayNudge(minutes: number) {
+    if (!nudgeItem || busy) return;
+    setBusy(true); setError(null);
+    try {
+      const latest = (await listItems()).find(item => item.id === nudgeItem.id);
+      const changed = latest && postponeNudge(latest, minutes, activeClock, `in-app:${latest.id}:${activeClock.now().getTime()}:${minutes}`);
+      if (!changed) { setError('Choose Gentle or Persistent before postponing a reminder.'); return; }
+      await saveItems([changed]); setItems(await listItems());
+      if (!await syncItemNudges(changed, activeClock)) setError('The reminder choice is saved, but notifications are off.');
+      else setNudgeMessage(`I’ll check in again in ${minutes === 60 ? '1 hour' : `${minutes} minutes`}. Your due time is unchanged.`);
+    } catch { setError('Coby could not postpone that reminder. Please try again.'); }
+    finally { setBusy(false); }
+  }
+
+  async function finishNudge() {
+    if (!nudgeItem || busy) return;
+    setBusy(true); setError(null);
+    try { await completeItem(nudgeItem, activeClock.now().toISOString()); await cancelCompletedNudges(nudgeItem); setItems(await listItems()); setNudgeItemId(null); setScreen('home'); }
+    catch { setError('Coby could not finish this item. Please try again.'); }
+    finally { setBusy(false); }
+  }
+
+  async function toggleComplete(item: CobyItem) {
+    if (busy) return;
+    setBusy(true); setError(null);
+    try {
+      const changed: CobyItem = item.status === 'completed'
+        ? { ...item, status: 'planned', completedAt: null }
+        : { ...item, status: 'completed', completedAt: activeClock.now().toISOString() };
+      await saveItems([changed]); setItems(await listItems());
+      try { await syncItemNudges(changed, activeClock); }
+      catch { setError('The item is saved, but its reminders could not be updated.'); }
+    } catch { setError('Coby could not update that item. Please try again.'); }
+    finally { setBusy(false); }
+  }
 
   const ranked = useMemo(() => rankItems(items, activeClock), [items, activeClock]);
   const now = ranked[0];
@@ -408,18 +489,16 @@ export default function App() {
       { text: 'Clear list', style: 'destructive', onPress: () => void clearHeldList(targets) },
     ]);
   }
-  const calendarDays = Array.from({ length: 7 }, (_, offset) => {
-    const day = activeClock.now(); day.setDate(day.getDate() + offset); return day;
-  });
 
-  async function setCommitment(item: CobyItem, mode: 'gentle' | 'persistent') {
+  async function setCommitment(item: CobyItem, mode: 'none' | 'gentle' | 'persistent') {
     setError(null); setBusy(true);
     try {
-      const changed: CobyItem = { ...item, commitmentMode: mode };
+      const changed: CobyItem = { ...item, commitmentMode: mode, reminderAt: null };
       await saveItems([changed]);
       const enabled = await syncItemNudges(changed, activeClock);
       setItems(await listItems());
       if (!enabled) setError('Notifications are off. Coby still has your item.');
+      else if (mode !== 'none' && !planNudges(changed, activeClock).length) setError('Choose a future date and time before Coby can schedule a nudge.');
     } catch { setError('Coby saved the item but could not schedule a reminder.'); }
     finally { setBusy(false); }
   }
@@ -480,7 +559,7 @@ export default function App() {
     finally { setBusy(false); }
   }
 
-  if (loading || !fontsLoaded) return <View style={styles.loading}><ActivityIndicator color={colors.violet} /></View>;
+  if (loading || !fontsLoaded) return <View style={styles.loading}><CobyOrb size={165} /><Text style={styles.arrivalName}>coby</Text><Text style={styles.arrivalCopy}>Unload your mind.</Text></View>;
 
   return <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
     <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
@@ -502,6 +581,7 @@ export default function App() {
       onGentle={(item) => void setCommitment(item, 'gentle')}
       onOpenLab={() => setScreen('lab')}
       onOpenPlan={() => setScreen('plan')}
+      onOpenSettings={() => setScreen('settings')}
       onPersistent={requestPersistent}
       onStartFocus={(item) => void startFocus(item)}
       onToggleReason={() => setShowReason(!showReason)}
@@ -546,32 +626,35 @@ export default function App() {
         <Button label="Restore purchase" kind="quiet" disabled={busy || !billing.configured} onPress={restorePlus} />
       </>}
 
-      {screen === 'plan' && <>
-        <Pressable onPress={() => setScreen('home')} accessibilityRole="button"><Text style={styles.back}>← Home</Text></Pressable>
-        <Text style={[styles.pageTitle, styles.planTitle]}>Everything I’m holding.</Text>
-        <Text style={styles.support}>Look around whenever you want. Coby has the rest.</Text>
-        <View style={styles.modeBar}>
-          <Pressable accessibilityRole="button" onPress={() => setPlanMode('list')} style={[styles.modeButton, planMode === 'list' && styles.modeSelected]}><Text style={styles.modeText}>List</Text></Pressable>
-          <Pressable accessibilityRole="button" onPress={() => setPlanMode('calendar')} style={[styles.modeButton, planMode === 'calendar' && styles.modeSelected]}><Text style={styles.modeText}>Calendar</Text></Pressable>
-        </View>
-        {planMode === 'list' && openItems.length > 0 && <Pressable accessibilityRole="button" disabled={busy} onPress={confirmClearList} style={styles.actionLink}><Text style={styles.reasonLink}>Clear list</Text></Pressable>}
-        {planMode === 'calendar' && <View style={styles.dayStrip}>{calendarDays.map((day) =>
-          <Pressable key={day.toDateString()} accessibilityRole="button" accessibilityLabel={day.toDateString()} onPress={() => setSelectedDay(day.toDateString())}
-            style={[styles.dayButton, selectedDay === day.toDateString() && styles.daySelected]}>
-            <Text style={styles.dayText}>{day.toLocaleDateString(undefined, { weekday: 'short' })}</Text>
-            <Text style={styles.dayNumber}>{day.getDate()}</Text>
-          </Pressable>)}</View>}
-        {(() => {
-          const shown = planMode === 'list' ? openItems : openItems.filter((item) => item.dueAt ? new Date(item.dueAt).toDateString() === selectedDay : item.dueDate ? new Date(`${item.dueDate}T12:00:00`).toDateString() === selectedDay : false);
-          return shown.length ? shown.map((item) => <View key={item.id} style={styles.planRow}>
-            <Text style={styles.planItemTitle}>{item.title}</Text>
-            <Text style={styles.receiptMeta}>{dueText(item)}</Text>
-            <Pressable accessibilityRole="button" accessibilityLabel={`Edit details for ${item.title}`} disabled={busy} onPress={() => { setEditingItem(item); setError(null); setScreen('edit'); }} style={styles.actionLink}><Text style={styles.reasonLink}>Edit details</Text></Pressable>
-            <Pressable accessibilityRole="button" disabled={busy} onPress={() => startFocus(item)} style={styles.actionLink}><Text style={styles.reasonLink}>Focus on this →</Text></Pressable>
-          </View>) : <Text style={styles.planEmpty}>{openItems.length ? 'Nothing on this day. The rest is in List.' : 'Your list is clear. Add whatever comes next.'}</Text>;
-        })()}
-        {planMode === 'calendar' && <Text style={styles.support}>Items without a date are in List.</Text>}
-        <View style={styles.bottomAction}><Button label="Add more" onPress={() => setScreen('home')} /></View>
+      {screen === 'plan' && <PlanScreen items={items} clock={activeClock} busy={busy} dueText={dueText}
+        onHome={() => setScreen('home')}
+        onEdit={item => { setEditingItem(item); setError(null); setScreen('edit'); }}
+        onDelete={item => Alert.alert('Delete this item?', 'It will be removed from Coby along with its reminders.', [
+          { text: 'Keep it', style: 'cancel' }, { text: 'Delete', style: 'destructive', onPress: () => void removeHeldItem(item) }])}
+        onFocus={item => void startFocus(item)} onToggleComplete={item => void toggleComplete(item)}
+        onReminders={item => { setNudgeItemId(item.id); setNudgeMessage(null); setError(null); setScreen('nudge'); }}
+        onClear={confirmClearList} />}
+
+      {screen === 'settings' && <>
+        <Button label="← Home" kind="quiet" onPress={() => setScreen('home')} />
+        <Text style={styles.pageTitle}>Settings</Text>
+        <Text style={styles.support}>Gentle is one timely nudge. Persistent adds follow-through as a deadline approaches.</Text>
+        <Button label="Notification access" kind="quiet" onPress={async () => {
+          const permission = await Notifications.requestPermissionsAsync();
+          setError(permission.granted ? 'Notifications are allowed. Choose a commitment from an item in Plan.' : 'Notifications are off. Enable them in Android app settings to receive nudges.');
+        }} />
+        <Button label="Plan and reminder choices" kind="quiet" onPress={() => setScreen('plan')} />
+        <Button label="Coby Plus" kind="quiet" onPress={() => setScreen('paywall')} />
+        {demoToolsEnabled && <Button label="Coby Lab" kind="quiet" onPress={() => setScreen('lab')} />}
+      </>}
+
+      {screen === 'nudge' && nudgeItem && <>
+        <NudgeScreen item={nudgeItem} busy={busy} message={nudgeMessage} dueText={dueText}
+          onBack={() => { setError(null); setScreen('home'); }} onFocus={() => void startFocus(nudgeItem)}
+          onDone={() => void finishNudge()} onDelay={minutes => void delayNudge(minutes)}
+          onEdit={() => { setEditingItem(nudgeItem); setScreen('edit'); }}
+          onGentle={() => void setCommitment(nudgeItem, 'gentle')}
+          onPersistent={() => requestPersistent(nudgeItem)} onOff={() => void setCommitment(nudgeItem, 'none')} />
       </>}
 
       {screen === 'focus' && focusItem && <View style={styles.focusScreen}>
@@ -594,10 +677,11 @@ export default function App() {
   </KeyboardAvoidingView>;
 }
 
-const colors = { background: '#F7F6F2', ink: '#1A1A19', violet: '#7464B5', violetSoft: '#E9E4F6', muted: '#77727A' };
+const colors = { background: '#F2F2F2', ink: '#1A1A1A', violet: '#2268CD', violetSoft: '#EAF2FF', muted: '#62676D' };
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight ?? 0 : 0 }, loading: { flex: 1, justifyContent: 'center', backgroundColor: colors.background },
-  page: { flexGrow: 1, paddingHorizontal: 28, paddingTop: 58, paddingBottom: 42 },
+  root: { flex: 1, backgroundColor: colors.background, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight ?? 0 : 0 }, loading: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
+  arrivalName: { fontSize: 43, fontWeight: '700', color: colors.ink, marginTop: 18 }, arrivalCopy: { fontSize: 16, color: colors.muted, marginTop: 12 },
+  page: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 42 },
   homePage: { paddingTop: 34, paddingBottom: 24 },
   wordmark: { color: colors.ink, fontSize: 31, fontWeight: '700', letterSpacing: -2 },
   motto: { fontSize: 14, color: colors.muted }, topline: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

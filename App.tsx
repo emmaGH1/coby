@@ -627,8 +627,8 @@ export default function App() {
         <View style={styles.captureOrb}><CobyOrb size={88} /></View>
         <Text style={styles.pageTitle}>A little more support.</Text>
         <Text style={styles.support}>Coby Plus adds Persistent reminders as a deadline gets close. Brain dumps, NOW, Plan and Gentle stay free.</Text>
-        <Text style={styles.labStatus}>{billing.message}</Text>
-        <Button label={billing.monthlyPrice ? `Try Plus monthly · ${billing.monthlyPrice}` : 'Monthly test product unavailable'} disabled={busy || !billing.configured || !billing.monthlyPrice} onPress={buyPlus} />
+        <Text style={styles.labStatus}>{billing.plus ? 'Coby Plus is active. Persistent reminders are available.' : billing.message}</Text>
+        <Button label={billing.plus ? 'Plus is active' : billing.monthlyPrice ? `Try Plus monthly · ${billing.monthlyPrice}` : 'Monthly test product unavailable'} disabled={busy || billing.plus || !billing.configured || !billing.monthlyPrice} onPress={buyPlus} />
         <Button label="Restore purchase" kind="quiet" disabled={busy || !billing.configured} onPress={restorePlus} />
       </>}
 

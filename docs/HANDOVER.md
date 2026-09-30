@@ -147,6 +147,16 @@ Phone automation paused because Coby stopped being the foreground app. The user 
 
 Next lighter work is exporting the approved circular C launcher icon from outputs/coby-preview/assets/coby-icon.svg and build/asset preparation. The user requested a lower-model switch before routine work; flag that phase rather than silently consuming the design model. Full subjective approval, final screenshot/demo, release-safe configuration and submission remain open.
 
+## September 30 — Physical Focus, deletion and Plus checkpoint
+
+Wireless OnePlus A6010 reconnected as transport 34. Metro was restarted; session 57654 serves localhost 8082 in CI mode. Saved bf79e24 loaded (875-module Android bundle); native GitHub build 36783330575 also passed. Restart Metro after source edits and preserve unsaved words before reload.
+
+Only Coby nudge test was exercised. Visible Back to Plan and Android Back each restored planned without completion. The $4.99 coby_plus_monthly Test Store simulation succeeded. Restore initially reported no active purchase; after purchase it succeeded and returned Home. Persistent was gated before purchase, then saved on the test task. Editing its explicit date to October 1 at 22:43 left two pending native reminders. This verifies scheduling, not delivery of both reminders.
+
+Keep it preserved the task and both reminders. Confirmed Delete removed the synthetic row, pending requests and its presented notification; deletion persisted after restart. Aggregate non-test payload digests matched before/after deletion and restart. No private payload was saved or printed. Coby nudge test is cleaned up; no real item was changed or removed.
+
+The purchased paywall still invited Try Plus. It now explicitly shows Plus is active and disables purchase while active. Typecheck, lint and all 56 tests pass. This small correction is not loaded on the phone yet; the user is rechecking keyboard-visible typing and a minute-long paused dump on the preceding approved UI. Do not interrupt unsaved capture. Offline/device speech, isolated bulk clear, OS 30/60-minute buttons, full Persistent delivery, final assets/demo and subjective approval remain open. P0 is not complete.
+
 ## NEXT ACTION
 
-After phone readiness, load the tested feedback/typography correction and finish synthetic-only deletion/Focus and billing restore checks, clean up Coby nudge test, then recheck keyboard/voice before moving to launcher assets and final build preparation.
+Record the user's new-UI keyboard/voice result and safely load the active-Plus display correction, then flag the requested lower-model switch before launcher exports, isolated bulk-clear verification and final build/demo preparation.

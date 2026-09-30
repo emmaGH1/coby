@@ -2,6 +2,18 @@
 
 Record date, device/emulator, build, result, and evidence for every executed row. “Planned” is not “passed.”
 
+## Current physical checkpoint — September 30, 23:42 Lagos
+
+- PASS: bf79e24 loaded on wireless OnePlus A6010/API 30; GitHub Android debug build 36783330575 passed. Supersedes earlier disconnected-device notes.
+- PASS: synthetic Focus entry, visible Back to Plan and Android Back; both restore planned without completion.
+- PASS: $4.99 coby_plus_monthly Test Store purchase and subsequent Restore purchase. Before purchase, Persistent opens the paywall and restore reports no active purchase.
+- PASS: synthetic future-date correction preserves identity/Persistent; exactly two native requests exist. Delivery of both Persistent requests remains unverified.
+- PASS: Keep it preserves the task and both reminders. Delete removes task and scheduled/presented notifications; restart retains deletion with zero pending requests. Aggregate non-test payload digest unchanged. Synthetic task cleaned up.
+- PASS: active-Plus display correction passes typecheck/lint/56 tests; physical reload pending.
+- PENDING: new-UI keyboard/minute-long voice regression, isolated bulk clear, 30/60-minute OS actions, Persistent delivery, final assets/demo/subjective approval.
+
+Older dated sections below are historical evidence; this is the latest device checkpoint.
+
 | Area | Scenario | Target | Status |
 | --- | --- | --- | --- |
 | Android build | Compile debug APK | GitHub Actions | Passed 2026-09-29 |

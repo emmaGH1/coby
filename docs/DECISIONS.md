@@ -1,5 +1,9 @@
 # Decision log
 
+## September 30 — Active entitlement and safe acceptance
+
+Show active Plus explicitly and disable its purchase button while active. A successful Test Store purchase must not leave the app inviting another purchase. Restore and Persistent scheduling passed on the physical OnePlus; distinguish two scheduled native reminders from actual cadence delivery. Delete acceptance used only Coby nudge test with aggregate non-test payload digest comparison; never clear the user's real list to satisfy a test gate.
+
 ## 2026-09-29 — Product and first slice
 
 - **Android-first Expo + TypeScript:** matches the agreed implementation direction and permits a fast local build. Native integrations will use a development build.

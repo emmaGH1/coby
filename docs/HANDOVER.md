@@ -93,6 +93,12 @@ Android KeyboardAvoidingView now uses height behavior, keeping the bottom compos
 
 Typecheck, lint and all 47 tests pass. Physical checks are not yet completed for this correction. Asked the user to save unsaved words and reply ready before reload. Do not clear or seed the user's phone. Use an isolated synthetic item to verify deletion. Never capture unrelated foreground apps: check resumed package before screenshots. Native metadata comparisons were performed without printing transcript words. Previous short live acceptance is superseded by the user's continuing failures.
 
+## Wireless Android connection
+
+The USB device disconnected. The user paired the OnePlus A6010 through Android Studio wireless debugging. ADB now lists adb-3a040b08-dcoypf._adb-tls-connect._tcp (transport 16) as device. Names/ports may change; inspect adb devices before each connection. Wireless adb reverse tcp:8082 routes the phone to localhost Metro without exposing the development server to the LAN. The updated 873-module Android bundle loaded successfully. Metro session 99741 serves 8082 with CI=true; restart after source edits.
+
+Current editor was observed on-device; the user is making an edit, so do not overwrite it. Asked the user to finish the edit and check Home typing plus a minute-long paused voice dump. No live pass has been reported yet for the three latest corrections. Deletion testing must use an isolated synthetic task.
+
 ## NEXT ACTION
 
-After readiness, load the three corrections on the phone and verify visible typing with the keyboard open, a minute-long multi-utterance dump retaining all text, and synthetic-item delete/cancel/persistence before claiming reliability.
+Finish physical-phone checks of visible typing, a minute-long multi-utterance dump, and synthetic-item delete/cancel/persistence on the wireless connection; address any remaining failure before claiming reliability.

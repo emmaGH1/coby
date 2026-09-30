@@ -102,3 +102,9 @@ The stylus tutorial was dismissed. Current Pixel 6 development build passed bott
 - Keyboard correction: Android height avoidance plus explicit resize config. Device visibility/cursor/send verification pending.
 - Deletion: cancel item-specific notifications, delete one SQLite ID, refresh Home/Plan. Confirmation Cancel, isolated synthetic delete, untouched other tasks and persistence after relaunch remain pending physical checks.
 - Await user readiness before reload to preserve unsaved dump text. No real held item was deleted during agent work.
+
+## Wireless device setup
+
+- OnePlus A6010 paired over Android Studio wireless debugging; adb device state is connected without USB.
+- Wireless reverse tcp:8082 established. Metro remains localhost-only; 873-module Android bundle loaded on the phone.
+- Editor visible on-device. Home typing, live utterance retention and synthetic-item deletion remain pending acceptance; no edits/deletions of real items performed by agent.

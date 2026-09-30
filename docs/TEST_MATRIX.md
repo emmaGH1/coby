@@ -115,3 +115,5 @@ The stylus tutorial was dismissed. Current Pixel 6 development build passed bott
 - Clear list added to Plan List with count/scope confirmation. Cancel selected open-item reminders before transactional deletion of those IDs, preserving completed/archived history. Cancellation failure leaves items and reports potentially stopped reminders.
 - Typecheck, lint, all 47 tests pass after bulk-clear implementation. Live Clear list confirmation/cancel and synthetic-item deletion/persistence still pending. No real list cleared.
 - Nudges remain P0: prior immediate delivery is historical evidence; future/background delivery, reschedule/cancel and Persistent cadence still need device checks.
+
+- Clear list phone follow-up: updated bundle loaded after waiting for Metro startup. Plan List exposes the action. Native confirmation reports the held-item count and all-calendar-days scope, with Keep my list/Clear list. Keep my list dismissed the dialog and retained the populated Plan. Actual bulk deletion/reminder cancellation/persistence was not exercised against real user items.

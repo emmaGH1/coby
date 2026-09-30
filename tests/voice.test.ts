@@ -3,6 +3,30 @@ import test from 'node:test';
 import { offlineVoiceAvailable } from '../src/voice/offline';
 import { VoiceSession } from '../src/voice/session';
 import { speechErrorMessage } from '../src/voice/speech';
+import { androidVoiceOptions } from '../src/voice/options';
+
+test('legacy voice retains the long continuous window; modern online avoids audio pipes', () => {
+  const legacy = androidVoiceOptions(30, false);
+  assert.equal(legacy.continuous, true);
+  assert.equal(legacy.androidIntentOptions.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 600000);
+  assert.equal(legacy.androidIntentOptions.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 600000);
+  assert.equal(legacy.androidIntentOptions.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 600000);
+  assert.equal(androidVoiceOptions(36, false).continuous, false);
+  assert.equal(androidVoiceOptions(36, true).continuous, true);
+});
+
+test('duplicate end and late previous-cycle results cannot reset a pending restart', () => {
+  const session = new VoiceSession();
+  session.begin('', true); session.starting(); session.ready();
+  session.result('keep these words', true);
+  assert.equal(session.end()?.restart, true);
+  assert.equal(session.end(), null);
+  assert.equal(session.result('keep these words', true), null);
+  session.ready();
+  assert.equal(session.result('and buy milk', true), 'keep these words and buy milk');
+  session.stop();
+  assert.deepEqual(session.end(), { text: 'keep these words and buy milk', empty: false });
+});
 
 test('silence before the first word keeps the dump open across native cycles', () => {
   const session = new VoiceSession();

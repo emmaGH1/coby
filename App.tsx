@@ -18,6 +18,7 @@ import { CobyOrb } from './src/ui/CobyOrb';
 import { speechErrorMessage } from './src/voice/speech';
 import { offlineVoiceAvailable } from './src/voice/offline';
 import { VoiceSession, type VoicePhase } from './src/voice/session';
+import { androidVoiceOptions } from './src/voice/options';
 
 type Screen = 'home' | 'receipt' | 'plan' | 'focus' | 'lab' | 'paywall' | 'edit';
 const clock = new SystemClock();
@@ -79,6 +80,10 @@ export default function App() {
   const [voicePhase, setVoicePhase] = useState<VoicePhase>('idle');
   const voiceTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const voiceOptions = useRef<Parameters<typeof ExpoSpeechRecognitionModule.start>[0] | null>(null);
+  const voiceStartedAt = useRef(0);
+  const traceVoice = useCallback((event: string) => {
+    if (__DEV__) console.info(`[CobyVoice] ${event} phase=${voice.current.phase} elapsedMs=${Math.round(performance.now() - voiceStartedAt.current)}`);
+  }, []);
   const [inputLevel, setInputLevel] = useState(0);
   const [voiceNetworkError, setVoiceNetworkError] = useState(false);
   const [voiceNotice, setVoiceNotice] = useState<string | null>(null);
@@ -98,10 +103,12 @@ export default function App() {
     ExpoSpeechRecognitionModule.abort();
   }, [clearVoiceTimer]);
   useSpeechRecognitionEvent('start', () => {
+    traceVoice('native-start');
     if (voice.current.phase !== 'starting' && voice.current.phase !== 'restarting') return;
     clearVoiceTimer(); voice.current.ready(); setVoicePhase(voice.current.phase); setListening(true);
   });
   function finishVoiceCycle() {
+    traceVoice('native-end');
     const ended = voice.current.end();
     if (!ended) return;
     clearVoiceTimer(); setInputLevel(0); setDump(ended.text);
@@ -111,19 +118,21 @@ export default function App() {
         if (voice.current.phase !== 'restarting') return;
         if (AppState.currentState !== 'active' || !voiceOptions.current) { cancelVoice(); return; }
         voiceTimeout('Android voice did not resume. Your words are still here. Tap Speak to retry.', 12000);
-        try { ExpoSpeechRecognitionModule.start(voiceOptions.current); }
+        try { traceVoice('restart-request'); ExpoSpeechRecognitionModule.start(voiceOptions.current); }
         catch { cancelVoice(); setError('Voice could not resume. Your words are still here. Tap Speak to retry.'); }
-      }, 350);
+      }, 0);
       return;
     }
     setVoicePhase('idle'); setListening(false);
     if (ended.empty) setError((current) => current ?? "No words came through. Check microphone access, then try again or type below.");
   }
   useSpeechRecognitionEvent('end', finishVoiceCycle);
+  useSpeechRecognitionEvent('speechend', () => traceVoice('speech-end'));
   useSpeechRecognitionEvent('volumechange', ({ value }) => {
     if (voice.current.phase === 'listening') setInputLevel(Math.max(0, Math.min(1, value / 10)));
   });
   useSpeechRecognitionEvent('result', (event) => {
+    if (event.isFinal) traceVoice('final-result');
     const text = voice.current.result(event.results[0]?.transcript ?? '', event.isFinal);
     if (text !== null) setDump(text);
   });
@@ -131,6 +140,7 @@ export default function App() {
     if (voice.current.phase !== 'idle' && !voice.current.continues) setError("I didn't catch anything. Tap the mic and try again, or type below.");
   });
   useSpeechRecognitionEvent('error', (event) => {
+    traceVoice(`error=${event.error} code=${event.code ?? 'unknown'}`);
     if (voice.current.phase === 'idle' || voice.current.phase === 'preparing') return;
     const silence = event.error === 'no-speech' || event.error === 'speech-timeout';
     if (silence && voice.current.continues) {
@@ -201,6 +211,7 @@ export default function App() {
 
   async function startListening() {
     if (preparingVoice || !voice.current.begin(dump, Platform.OS === 'android')) return;
+    voiceStartedAt.current = performance.now(); traceVoice('user-start');
     setVoicePhase(voice.current.phase);
     setError(null); setVoiceNotice(null); setVoiceNetworkError(false);
     try {
@@ -227,14 +238,7 @@ export default function App() {
         requiresOnDeviceRecognition: offlineReady,
         interimResults: true,
         volumeChangeEventOptions: { enabled: true, intervalMillis: 120 },
-        // Older Android uses silence hints, without the Android 13+ custom audio pipe.
-        continuous: Platform.OS === 'android' && (offlineReady || Number(Platform.Version) < 33),
-        androidIntentOptions: {
-          EXTRA_LANGUAGE_MODEL: 'free_form',
-          EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS: 20000,
-          EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS: 15000,
-          EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS: 15000,
-        },
+        ...(Platform.OS === 'android' ? androidVoiceOptions(Number(Platform.Version), offlineReady) : { continuous: false }),
       };
       ExpoSpeechRecognitionModule.start(voiceOptions.current);
     } catch { cancelVoice(); setError('Voice could not start. Check microphone access, then try again or type below.'); }

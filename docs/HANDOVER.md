@@ -73,11 +73,18 @@ Scope follows the user's new report: correct a confirmed task's timing and recov
 
 Focus has a visible Back to Plan/Home control. It and End focus/Android Back restore the prior held status and return to the originating screen without completing the task. Completing Focus retains the existing completion path. Screen transitions reset scroll so the exit is reachable.
 
-Typecheck, lint, and all 42 tests pass. New tests cover identity/history preservation, time correction shifting deterministic nudges, blank timing removing nudges, validation and focus exit without completion. The Android bundle generated and loaded through USB localhost reverse on the OnePlus A6010. Plan's new edit controls were observed on-device. User interaction acceptance is pending for changing/saving a time and leaving Focus. Notification cancellation is wired through the existing same-ID scheduler; actual revised delivery has not been observed. Metro session 11152 serves port 8082 in CI mode (restart after source edits). Private phone data was not cleared or seeded.
+Typecheck, lint, and all 42 tests pass. New tests cover identity/history preservation, time correction shifting deterministic nudges, blank timing removing nudges, validation and focus exit without completion. The Android bundle generated and loaded through USB localhost reverse on the OnePlus A6010. Plan's new edit controls were observed on-device. User interaction acceptance is pending for changing/saving a time and leaving Focus. Notification cancellation is wired through the existing same-ID scheduler; actual revised delivery has not been observed. Metro session 26739 serves port 8082 in CI mode (restart after source edits). Private phone data was not cleared or seeded.
 
-## NEXT ACTION
-
-Diagnose the renewed voice cutoff on the physical phone, distinguish recognizer gaps from transcript replacement, and verify a correction before resuming saved-item acceptance.
 ## Live voice regression reported during saved-item acceptance
 
 The user reports capture cutting off mid-dump and starting another segment. This supersedes the previous short spoken acceptance as a reliability conclusion. Saved-item interaction acceptance is still pending; no failure or success of editing was established. Prioritize voice boundary diagnosis while retaining the editing changes. No voice code changed in the saved-item checkpoint.
+
+## Voice boundary follow-up candidate
+
+Reviewed the installed native implementation: below API 33 its continuous mode sets three 600000ms hints, but Coby overwrote them with 20000/15000/15000ms. Android intent extras are applied last. Restore the library's legacy window through tested androidVoiceOptions; modern online recognition retains the standard microphone path. These hints may be ignored by the provider and are not proof of uninterrupted recording. Native end occurs after cancel/destroy; remove the extra 350ms application delay and request restart on the next event-loop turn. Duplicate end/late results during a pending restart are ignored to avoid scheduling another restart or duplicating prior words.
+
+Development-only [CobyVoice] traces log event name, phase and elapsed milliseconds, never words/audio. Typecheck, lint and all 44 tests pass. Tests add legacy/modern configuration and duplicate-end/late-result cases. The candidate is NOT yet verified live. Asked the user to save their current dump and reply ready before reload, to avoid losing unsaved text. Awaiting clarification on native stop/start versus transcript replacement. Saved editing and Focus interaction acceptance also remain pending. Metro session 26739 is localhost-only on 8082.
+
+## NEXT ACTION
+
+After the user saves their dump and replies ready, reload the voice candidate and observe a minute-long physical-phone dump with [CobyVoice] timing metadata, checking native gaps and word retention before claiming voice reliable.

@@ -86,3 +86,10 @@ The stylus tutorial was dismissed. Current Pixel 6 development build passed bott
 - New domain cases preserve the same ID/source/history/lifecycle/commitment when editing, validate corrected timing, shift nudge timestamps, clear unknown timing to null with no nudges, and restore captured/planned status without completion after Focus.
 - Current Android bundle loaded on the connected OnePlus A6010; Plan's Edit details controls observed. No phone data clearing or seeding.
 - Pending live interaction acceptance: edit/save a time, cancel an unsaved edit, return via visible and Android Back from Focus, persist corrections after relaunch, and observe a revised notification replacing the prior schedule.
+
+## Renewed voice cutoff follow-up
+
+- User reports mid-dump cutoff/restart; prior 30-second acceptance no longer establishes reliable real use.
+- Typecheck, lint, all 44 tests pass. Added legacy long-window/modern microphone-mode and duplicate end/late-result regression coverage.
+- Candidate restores the legacy continuous hints and removes the extra application restart delay. Timing-only development diagnostics added.
+- Live verification pending: user must save unsaved words before reload, then perform a minute-long paused dump while metadata confirms actual native boundaries. No claim of uninterrupted capture or resolved provider cutoff yet.

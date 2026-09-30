@@ -38,14 +38,14 @@ export class VoiceSession {
     this.phase = 'stopping';
   }
   result(text: string, isFinal: boolean): string | null {
-    if (!['starting', 'listening', 'restarting', 'stopping'].includes(this.phase) || !text.trim()) return null;
+    if (!['starting', 'listening', 'stopping'].includes(this.phase) || !text.trim()) return null;
     this.hadWords = true;
     if (isFinal) { this.final = appendTranscript(this.final, text); this.partial = ''; }
     else this.partial = text;
     return appendTranscript(appendTranscript(this.base, this.final), this.partial);
   }
   end(): { text: string; empty: boolean; restart?: true } | null {
-    if (this.phase === 'idle' || this.phase === 'preparing') return null;
+    if (this.phase === 'idle' || this.phase === 'preparing' || this.phase === 'restarting') return null;
     const result = { text: appendTranscript(appendTranscript(this.base, this.final), this.partial), empty: !this.hadWords && !this.failed };
     if (this.continues) {
       this.base = result.text; this.final = ''; this.partial = '';

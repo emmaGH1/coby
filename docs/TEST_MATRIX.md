@@ -28,3 +28,7 @@ Record date, device/emulator, build, result, and evidence for every executed row
 ## Latest run
 
 2026-09-29 recovery slice: TypeScript, lint, and 19 tests pass. Android release capture https://github.com/emmaGH1/coby/actions/runs/36631406071 produced the reviewed 1179×2556 populated Home, now checked into `assets/submission/screenshot-home.png`. The finish review accepted the capture-first composition and required 48 dp touch targets for secondary Android controls; commits `527a3f9` and `071a5c3` contain the target and alignment fixes. The Pixel 6 AVD exposes Google's recognition service, and the local Android toolchain is now complete, but the Java 17 build was interrupted, so real spoken transcription, empty-state keyboard behavior, and a current local APK remain unverified. Earlier prototype evidence for parsing, persistence, rank, Plan, Focus, notification delivery, and RevenueCat purchase remains valid at the behavior level.
+
+## 2026-09-30 receipt slice
+
+Typecheck, lint, and 24 tests passed. Receipt validation covers unknown timing, invalid dates, local time round trips, clearing timing, invalid durations, and explicit review of ambiguous extraction. Current receipt Android interaction/visual review is pending while the local emulator reports System UI ANR and the development client reports a Metro connection error.

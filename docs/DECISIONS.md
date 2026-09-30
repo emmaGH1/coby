@@ -63,3 +63,12 @@
 
 - Use Microsoft OpenJDK 17 for local Gradle, matching CI; Android Studio's Java 25 caused native configuration failures.
 - Install the successful CI development APK for runtime verification while avoiding another full local native compile. Metro still serves the current local app code.
+
+## 2026-09-30 — Correctable receipt
+
+- Receipt details expand on demand so title, kind, date/time, and duration can be corrected without crowding the initial confirmation.
+- Blank fields stay null; invalid dates, time without a date, nonpositive durations, and unchecked ambiguity cannot be saved. Original source words remain preserved.
+- Five receipt tests cover nulls, invalid dates, local time round trips, clearing dates, and explicit ambiguity review.
+
+- Keep Metro on localhost with IPv4 preferred for ADB reverse. CI=true avoids the OneDrive watch timeout. LAN mode was rejected by automatic approval review because it could expose development keys.
+- Apply the Android status-bar inset to the root after the local empty-state capture exposed a wordmark overlap.

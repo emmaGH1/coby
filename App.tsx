@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import { useFonts, Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold } from '@expo-google-fonts/manrope';
 import { DemoClock, SystemClock, type Clock } from './src/domain/clock';
@@ -12,6 +12,7 @@ import { clearItems, completeItem, listItems, saveItems } from './src/data/items
 import { clearAllCobyNudges, syncItemNudges, triggerLabNudge } from './src/notifications/scheduler';
 import { loadBilling, purchaseMonthly, restoreBilling, type BillingState } from './src/billing/revenuecat';
 import { HomeScreen } from './src/ui/HomeScreen';
+import { ReceiptScreen } from './src/ui/ReceiptScreen';
 import { CobyOrb } from './src/ui/CobyOrb';
 import { appendTranscript, speechErrorMessage } from './src/voice/speech';
 
@@ -156,12 +157,12 @@ export default function App() {
     } catch { setError('Voice could not start. Check the emulator microphone, then try again or type below.'); }
   }
 
-  async function holdItems() {
+  async function holdItems(accepted: ParsedItem[] = draft) {
     setError(null);
     setBusy(true);
     try {
       const timestamp = activeClock.now().toISOString();
-      const captured = draft.map((entry, index): CobyItem => ({
+      const captured = accepted.map((entry, index): CobyItem => ({
         ...entry, id: `${activeClock.now().getTime()}-${index}-${Math.random().toString(36).slice(2)}`,
         sourceText: dump, createdAt: timestamp, status: 'captured',
         commitmentMode: 'none', completedAt: null,
@@ -378,19 +379,7 @@ export default function App() {
         </View>
       </View>}
 
-      {screen === 'receipt' && <>
-        <Pressable onPress={() => setScreen('home')} accessibilityRole="button"><Text style={styles.back}>← Edit dump</Text></Pressable>
-        <View style={styles.receiptOrb}><CobyOrb size={72} state="settled" /></View>
-        <Text style={styles.pageTitle}>I’ve got it.</Text>
-        <Text style={styles.support}>I’m holding {draft.length} {draft.length === 1 ? 'thing' : 'things'}. Tap a title to correct it.</Text>
-        <View style={styles.receiptList}>{draft.map((entry, index) => <View style={styles.receiptRow} key={index}>
-          <TextInput style={styles.receiptTitle} value={entry.title} accessibilityLabel={`Item ${index + 1} title`}
-            onChangeText={(title) => setDraft((current) => current.map((item, i) => i === index ? { ...item, title } : item))} />
-          <Text style={styles.receiptMeta}>{dueText(entry)}</Text>
-        </View>)}</View>
-        <Button label={busy ? 'Saving…' : 'Looks right'} onPress={holdItems} disabled={busy || draft.some((entry) => !entry.title.trim())} />
-        <Button label="Edit what I said" kind="quiet" onPress={() => setScreen('home')} />
-      </>}
+      {screen === 'receipt' && <ReceiptScreen draft={draft} busy={busy} onEditDump={() => setScreen('home')} onHold={(accepted) => void holdItems(accepted)} />}
 
       {error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
     </ScrollView>}
@@ -399,7 +388,7 @@ export default function App() {
 
 const colors = { background: '#F7F6F2', ink: '#1A1A19', violet: '#7464B5', violetSoft: '#E9E4F6', muted: '#77727A' };
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background }, loading: { flex: 1, justifyContent: 'center', backgroundColor: colors.background },
+  root: { flex: 1, backgroundColor: colors.background, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight ?? 0 : 0 }, loading: { flex: 1, justifyContent: 'center', backgroundColor: colors.background },
   page: { flexGrow: 1, paddingHorizontal: 28, paddingTop: 58, paddingBottom: 42 },
   homePage: { paddingTop: 34, paddingBottom: 24 },
   wordmark: { color: colors.ink, fontSize: 31, fontWeight: '700', letterSpacing: -2 },

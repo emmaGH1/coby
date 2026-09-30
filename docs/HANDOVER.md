@@ -23,12 +23,12 @@ The populated Home passed a 1179×2556 Android release capture and an inline fin
 - Android release capture: passed at https://github.com/emmaGH1/coby/actions/runs/36631406071.
 - The checked-in `assets/submission/screenshot-home.png` is the reviewed 1179×2556 recovery Home.
 - Pixel 6 AVD is connected on Android 16 / API 36 and exposes Google's default recognition service.
-- NDK 27.1.12297006, API 36, Build Tools 35, and CMake 3.22.1 are now installed. Microsoft OpenJDK 17 is installed. The Java 25 attempt failed in native configuration and worker startup; the interrupted Java 17 retry left no APK. The successful CI development APK (run 36631379645) was installed with adb. Metro is running on port 8082 in CI mode after a OneDrive watcher timeout. The emulator stayed on its launcher despite start intents; reboot recovery is in progress.
+- NDK 27.1.12297006, API 36, Build Tools 35, and CMake 3.22.1 are now installed. Microsoft OpenJDK 17 is installed. The Java 25 attempt failed in native configuration and worker startup; the interrupted Java 17 retry left no APK. The successful CI development APK (run 36631379645) was installed with adb. Metro is running on port 8082 in CI mode after a OneDrive watcher timeout. After reboot and restarting Metro with CI=true and NODE_OPTIONS=--dns-result-order=ipv4first, the current app bundled and loaded successfully on Pixel 6. The empty Home was captured. A status-bar inset correction is implemented and awaits recapture. Real spoken transcription is awaiting a human microphone check.
 
 ## Known P0 gaps
 
 - Spoken multi-clause transcription, stop/retry, and denied-permission flows need real Android verification.
-- Receipt still edits titles only; date/time, duration, kind, and clarification correction remain.
+- Receipt now supports title, kind, local date/time, duration, and explicit clarification review. Typecheck, lint, and 24 tests pass; Android interaction and visual review remain pending.
 - Plan, Focus, paywall, and Lab still use the prototype visual system.
 - Scheduled nudge timing/cancellation/frequency and RevenueCat restore remain unverified.
 - Empty-state Home and keyboard interaction need a local Pixel 6 pass.
@@ -40,4 +40,4 @@ For local Android commands, use Microsoft OpenJDK 17 at `C:\Program Files\Micros
 
 ## NEXT ACTION
 
-Verify a real multi-clause spoken dump on the local Pixel 6, then redesign Receipt so the user can correct title, kind, date/time, duration, and clarification before saving.
+Verify the current Home and Receipt on Android, including a real spoken multi-clause dump and corrected receipt persistence, then extend the visual system to Plan and Focus.

@@ -6,6 +6,7 @@ import type { CobyItem } from '../domain/types';
 import { CobyOrb, type OrbState } from './CobyOrb';
 import { ArrowIcon, CheckIcon, MicIcon } from './icons';
 import { colors, radius, type } from './theme';
+import type { VoicePhase } from '../voice/session';
 
 type Props = {
   dump: string;
@@ -13,6 +14,7 @@ type Props = {
   onUnderstand: () => void;
   onToggleVoice: () => void;
   listening: boolean;
+  voicePhase: VoicePhase;
   inputLevel: number;
   voiceNotice?: string | null;
   preparingVoice?: boolean;
@@ -40,23 +42,25 @@ function ActionButton({ label, onPress, quiet = false, disabled = false, icon }:
   </Pressable>;
 }
 
-function CaptureComposer({ dump, onChangeDump, onUnderstand, onToggleVoice, listening, busy, error, onPrepareOfflineVoice, voiceNotice, preparingVoice }: Pick<Props, 'dump' | 'onChangeDump' | 'onUnderstand' | 'onToggleVoice' | 'listening' | 'busy' | 'error' | 'onPrepareOfflineVoice' | 'voiceNotice' | 'preparingVoice'>) {
+function CaptureComposer({ dump, onChangeDump, onUnderstand, onToggleVoice, listening, voicePhase, busy, error, onPrepareOfflineVoice, voiceNotice, preparingVoice }: Pick<Props, 'dump' | 'onChangeDump' | 'onUnderstand' | 'onToggleVoice' | 'listening' | 'voicePhase' | 'busy' | 'error' | 'onPrepareOfflineVoice' | 'voiceNotice' | 'preparingVoice'>) {
   const [focused, setFocused] = useState(false);
-  const canUnderstand = dump.trim().length > 0 && !busy && !listening;
+  const canUnderstand = dump.trim().length > 0 && !busy && voicePhase === 'idle';
+  const voiceTransition = voicePhase === 'preparing' || voicePhase === 'starting' || voicePhase === 'stopping';
+  const voiceLabel = voicePhase === 'stopping' ? 'Finishing…' : voiceTransition ? 'Starting…' : listening ? 'Done' : 'Speak';
   return <View style={styles.dock}>
     {voiceNotice && <Text accessibilityLiveRegion="polite" style={styles.voiceNotice}>{voiceNotice}</Text>}
     {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
-    {onPrepareOfflineVoice && <Pressable accessibilityRole="button" disabled={busy || preparingVoice} onPress={onPrepareOfflineVoice} style={styles.voiceRecovery}><Text style={styles.reasonLink}>{preparingVoice ? 'Preparing English voice…' : 'Enable offline English voice'}</Text></Pressable>}
+    {onPrepareOfflineVoice && <Pressable accessibilityRole="button" disabled={busy || preparingVoice || voicePhase !== 'idle'} onPress={onPrepareOfflineVoice} style={styles.voiceRecovery}><Text style={styles.reasonLink}>{preparingVoice ? 'Preparing English voice…' : 'Enable offline English voice'}</Text></Pressable>}
     <View style={styles.composer}>
-      <TextInput accessibilityLabel="Brain dump" editable={!busy && !listening} multiline
+      <TextInput accessibilityLabel="Brain dump" editable={!busy && voicePhase === 'idle'} multiline
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} onChangeText={onChangeDump}
         placeholder={listening ? 'Your words will appear here…' : 'What’s on your mind?'}
         placeholderTextColor={colors.muted} style={[styles.input, (focused || dump.length > 0 || listening) && styles.inputExpanded]}
         textAlignVertical="top" value={dump} />
       <View style={styles.composerActions}>
-        <Pressable accessibilityRole="button" accessibilityLabel={listening ? 'Finish voice dump' : 'Start voice dump'} disabled={busy} onPress={onToggleVoice}
-          style={({ pressed }) => [styles.micButton, listening && styles.micButtonActive, busy && styles.disabled, pressed && styles.pressed]}>
-          <MicIcon active={listening} /><Text style={[styles.micLabel, listening && styles.micLabelActive]}>{listening ? 'Done' : 'Speak'}</Text>
+        <Pressable accessibilityRole="button" accessibilityLabel={voiceLabel === 'Speak' ? 'Start voice dump' : voiceLabel === 'Done' ? 'Finish voice dump' : voiceLabel} disabled={busy || voiceTransition || preparingVoice} onPress={onToggleVoice}
+          style={({ pressed }) => [styles.micButton, listening && styles.micButtonActive, (busy || voiceTransition || preparingVoice) && styles.disabled, pressed && styles.pressed]}>
+          <MicIcon active={listening} /><Text style={[styles.micLabel, listening && styles.micLabelActive]}>{voiceLabel}</Text>
         </Pressable>
         <Text style={styles.dockHint}>{listening ? 'Tap Done when finished' : 'Messy is fine.'}</Text>
         <Pressable accessibilityRole="button" accessibilityLabel="Let Coby understand this" disabled={!canUnderstand} onPress={onUnderstand}

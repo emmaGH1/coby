@@ -90,3 +90,11 @@ The installed expo-speech-recognition source documents getSupportedLocales/insta
 ## 2026-09-30 — Native online microphone path
 
 Use standard single-session capture for online recognition. Installed ExpoSpeechService.kt sends continuous Android capture through a custom recorder with EXTRA_AUDIO_SOURCE and EXTRA_SEGMENTED_SESSION; reserve that mode for confirmed offline recognition. Preserve typed and captured text across pauses and retry. This addresses a concrete compatibility risk but the root cause remains unproven until spoken testing succeeds.
+
+## 2026-09-30 — Voice-only lifecycle repair
+
+Keep a voice session active until native end, with visible preparation/finalization states. A failed or empty final result must retain the latest partial transcript. Bound native startup at 12 seconds and finalization at 6 seconds; abort releases a stalled session. Cancel on background/navigation and ignore inactive events. Tests cover overlap, stop/final result ordering, interim retention, retry, cancellation, and stale end during preparation. Read native numeric error codes for truthful language/server recovery; Lab stores metadata only.
+
+Use the user's physical OnePlus A6010 for spoken acceptance because the Pixel 6 emulator saturates CPU and its launcher becomes unresponsive. Live two-clause capture passed by user confirmation on Android 11/API 30 with the default Google app service. This does not establish the emulator's engine works.
+
+Physical acceptance also passed manual stop/retry with prior words preserved, and actual OS microphone denial with usable text fallback. Permission was restored after the denial test. Voice-only changes are ready for the verified online path; longer pauses/background behavior and offline engine support remain separate acceptance limits.

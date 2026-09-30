@@ -8,7 +8,7 @@ P0 remains **in progress**. The user rejected the earlier capture-above-tasks la
 
 Home now has a large central pearlescent violet orb, quiet brand copy, a smaller orb for returning users, one NOW and at most two NEXT above a fixed bottom capture dock. Speak/Done and editable text remain directly visible. The orb breathes and gently turns by state; native microphone-volume events drive its recording response. Reduced-motion preferences disable motion. This is P0 recovery requested by the user, not new P1 scope.
 
-A voice attempt with no recognized words now ends with an explicit recovery message. Existing typed text and interim/final transcript handling remain intact. **The user's live voice attempt failed.** The emulator's host microphone forwarding was found off even though its audio hardware was enabled. It has been enabled and re-read as on through the installed SDK microphone-state RPC. Actual spoken transcription is still unverified after that correction; do not claim voice is fixed.
+A voice attempt with no recognized words now ends with an explicit recovery message. Existing typed text and interim/final transcript handling remain intact. **The user's live voice attempt failed.** The emulator's host microphone forwarding was found off even though its audio hardware was enabled. It has been enabled and re-read as on through the installed SDK microphone-state RPC. That emulator attempt remained unverified. Live two-clause transcription subsequently passed on a physical OnePlus A6010 with the reviewed voice changes; see the voice-only checkpoint below.
 
 The transparent orb was generated for Coby and stored in assets/coby-orb.png. No new native dependency is needed. The September 30 empty Home rendered on the connected Pixel 6 Android 16/API 36 development build, with correct status-bar inset. The development-client gear overlay is not production UI. The previous submission screenshot is stale and must be replaced after final P0 acceptance.
 
@@ -18,12 +18,12 @@ The transparent orb was generated for Coby and stored in assets/coby-orb.png. No
 - SQLite persistence, completion recomputation, Plan List/Calendar, Focus start/end/complete, and immediate local notification previously passed.
 - RevenueCat Test Store product coby_plus_monthly is $4.99/month and mapped to coby_plus. Purchase previously unlocked Persistent; restore remains pending.
 - Receipt correction covers title, kind, date/time, duration, and explicit review of ambiguity. Unit verification passed; current device interaction is pending.
-- Current typecheck, lint, and all 24 tests passed after Home/orb/speech changes.
+- Current typecheck, lint, and all 34 tests pass after the voice-only review.
 - SDK microphone-state request returned off; enabling returned success; a follow-up read returned on.
 
 ## Known P0 gaps
 
-- Real multi-clause voice transcription, stop/retry, permission denial, and actual audio-reactive motion need verification.
+- Live two-clause transcription, manual stop/retry preserving prior words, and denied-permission text fallback passed on the physical phone. Actual audio-reactive motion and offline/emulator speech remain unverified.
 - Text entry, fixture receipt acceptance, local save-to-NOW, and completion passed on the current Home. Software-keyboard resize and full receipt corrections remain pending.
 - Plan, Focus, paywall, and Lab still use the older visual system.
 - Future nudge timing/rescheduling/cancellation and RevenueCat restore remain pending.
@@ -55,6 +55,12 @@ The current emulator did not confirm a usable offline English model. Its downloa
 
 Online recognition now uses the standard native microphone session. The installed Android module implements continuous mode with a custom audio recorder and segmented audio-source intent on Android 13+, which may be incompatible with the default online service. Continuous mode is enabled only for a confirmed installed offline model. This is a compatibility correction, not a proven root cause. Current source bundled successfully; typecheck, lint, and all 27 tests passed. Spoken transcription remains unverified because the emulator launcher continues to show ANR dialogs.
 
+## Voice-only review and physical-device check
+
+Scope is voice only. VoiceSession now keeps capture locked through preparation/start/stop, preserves partial words when final results are empty or the engine fails, ignores inactive/preparation end events, and allows retry after native end. App has bounded start/stop recovery and cancels capture when backgrounded or leaving Home. The mic shows Starting/Finishing during transitions; text/send cannot race a pending final result. Native error codes distinguish an uninstalled language from server/network failure. Lab displays engine/mode/error metadata without audio or transcript logging. No recording files are persisted.
+
+The emulator had sustained high load, CPU saturation, and recurring launcher/app ANRs. Testing moved to the user's connected OnePlus A6010, Android 11/API 30, arm64, default Google app recognition service. The development APK installed and current bundle loaded over localhost USB reverse. The user confirmed both clauses of the requested synthetic phrase appeared correctly. The user also confirmed retry appends new words while preserving the previous capture, with manual Done. Native permission denial was exercised on the phone: the expected access-off message appeared and the field accepted typed text. Microphone access was restored after testing. Typecheck, lint, all 34 tests, and diff checks pass.
+
 ## NEXT ACTION
 
-Resolve native Android speech-service rejection and verify real multi-clause transcription, stop/retry, and permission fallback.
+Verify longer voice dumps with natural pauses and background cancellation on the physical phone; keep emulator/offline engine failures separate from the passed online capture path.

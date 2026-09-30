@@ -62,3 +62,12 @@ The stylus tutorial was dismissed. Current Pixel 6 development build passed bott
 - Typecheck, lint, and 27 tests passed; current Android bundle generated successfully.
 - Data-preserving cold boot restored app services, but System UI/Pixel Launcher ANRs recur. Spoken acceptance remains blocked by an unreliable emulator session; no transcript success claimed.
 - Synthetic microphone injection could not complete: emulator RPC timed out and the connection reset; ADB then waited for the disconnected device. This is not a voice pass. Recheck host microphone forwarding when restarting the AVD.
+
+## Voice-only review on physical Android
+
+- Typecheck, lint (no warnings), all 34 tests, and diff checks pass.
+- OnePlus A6010, Android 11/API 30, arm64; default com.google.android.googlequicksearchbox recognition service. Development APK installed and current 871-module bundle loaded through localhost USB reverse.
+- Live two-clause synthetic phrase: PASSED by user confirmation; both parts appear correctly in the field.
+- Stop/retry preserving prior words: PASSED by user confirmation; a second spoken phrase appended to the first without replacement or lost words.
+- Permission denial/text fallback: PASSED on the physical phone. Runtime microphone permission was denied; the access-off message appeared, the field accepted typed input, and microphone access was restored afterward. Background cancellation and native volume response remain unverified.
+- No persisted audio, real personal dumps, or credentials are committed. Emulator voice remains unverified; Android system/app ANRs prevented reliable testing.

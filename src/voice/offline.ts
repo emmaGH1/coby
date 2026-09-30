@@ -5,9 +5,9 @@ export type OfflineSpeechService = {
 
 // A supported language is not necessarily an installed, usable offline model.
 export async function offlineVoiceAvailable(service: OfflineSpeechService, locale = 'en-US', timeoutMs = 2500): Promise<boolean> {
-  if (!service.supportsOnDeviceRecognition()) return false;
   let timeout: ReturnType<typeof setTimeout> | undefined;
   try {
+    if (!service.supportsOnDeviceRecognition()) return false;
     const languages = await Promise.race([
       service.getSupportedLocales({}),
       new Promise<never>((_, reject) => { timeout = setTimeout(() => reject(new Error('Speech service timed out')), timeoutMs); }),

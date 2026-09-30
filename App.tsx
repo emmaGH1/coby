@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, AppState, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import { useFonts, Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold } from '@expo-google-fonts/manrope';
 import { DemoClock, SystemClock, type Clock } from './src/domain/clock';
@@ -14,8 +14,9 @@ import { loadBilling, purchaseMonthly, restoreBilling, type BillingState } from 
 import { HomeScreen } from './src/ui/HomeScreen';
 import { ReceiptScreen } from './src/ui/ReceiptScreen';
 import { CobyOrb } from './src/ui/CobyOrb';
-import { appendTranscript, speechErrorMessage } from './src/voice/speech';
+import { speechErrorMessage } from './src/voice/speech';
 import { offlineVoiceAvailable } from './src/voice/offline';
+import { VoiceSession, type VoicePhase } from './src/voice/session';
 
 type Screen = 'home' | 'receipt' | 'plan' | 'focus' | 'lab' | 'paywall';
 const clock = new SystemClock();
@@ -71,38 +72,66 @@ export default function App() {
   const [listening, setListening] = useState(false);
   const [billing, setBilling] = useState<BillingState>({ configured: false, plus: false, monthlyPrice: null, message: 'Checking Coby Plus…' });
   const [pendingPersistentId, setPendingPersistentId] = useState<string | null>(null);
-  const voiceBase = useRef('');
-  const voiceFinal = useRef('');
-  const voiceHadResult = useRef(false);
+  const voice = useRef(new VoiceSession());
+  const [voicePhase, setVoicePhase] = useState<VoicePhase>('idle');
+  const voiceTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [inputLevel, setInputLevel] = useState(0);
   const [voiceNetworkError, setVoiceNetworkError] = useState(false);
   const [voiceNotice, setVoiceNotice] = useState<string | null>(null);
-  const voiceStarting = useRef(false);
   const [preparingVoice, setPreparingVoice] = useState(false);
+  const [voiceStatus, setVoiceStatus] = useState('Voice has not been tested in this session.');
 
-  useSpeechRecognitionEvent('start', () => setListening(true));
+  const clearVoiceTimer = useCallback(() => { if (voiceTimer.current) clearTimeout(voiceTimer.current); voiceTimer.current = undefined; }, []);
+  function voiceTimeout(message: string, timeoutMs: number) {
+    clearVoiceTimer();
+    voiceTimer.current = setTimeout(() => {
+      voice.current.cancel(); setVoicePhase('idle'); setListening(false); setInputLevel(0);
+      ExpoSpeechRecognitionModule.abort(); setError(message);
+    }, timeoutMs);
+  }
+  const cancelVoice = useCallback(() => {
+    clearVoiceTimer(); voice.current.cancel(); setVoicePhase('idle'); setListening(false); setInputLevel(0);
+    ExpoSpeechRecognitionModule.abort();
+  }, [clearVoiceTimer]);
+  useSpeechRecognitionEvent('start', () => {
+    if (voice.current.phase !== 'starting') return;
+    clearVoiceTimer(); voice.current.ready(); setVoicePhase(voice.current.phase); setListening(true);
+  });
   useSpeechRecognitionEvent('end', () => {
-    setListening(false); setInputLevel(0);
-    if (!voiceHadResult.current) setError((current) => current ?? "No words came through. Check microphone access, then try again or type below.");
+    const ended = voice.current.end();
+    if (!ended) return;
+    clearVoiceTimer(); setVoicePhase('idle'); setListening(false); setInputLevel(0); setDump(ended.text);
+    if (ended.empty) setError((current) => current ?? "No words came through. Check microphone access, then try again or type below.");
   });
-  useSpeechRecognitionEvent('volumechange', ({ value }) => setInputLevel(Math.max(0, Math.min(1, value / 10))));
+  useSpeechRecognitionEvent('volumechange', ({ value }) => {
+    if (voice.current.phase === 'listening') setInputLevel(Math.max(0, Math.min(1, value / 10)));
+  });
   useSpeechRecognitionEvent('result', (event) => {
-    const transcript = event.results[0]?.transcript ?? '';
-    if (transcript.trim()) voiceHadResult.current = true;
-    if (event.isFinal) {
-      voiceFinal.current = appendTranscript(voiceFinal.current, transcript);
-      setDump(appendTranscript(voiceBase.current, voiceFinal.current));
-      return;
-    }
-    setDump(appendTranscript(appendTranscript(voiceBase.current, voiceFinal.current), transcript));
+    const text = voice.current.result(event.results[0]?.transcript ?? '', event.isFinal);
+    if (text !== null) setDump(text);
   });
-  useSpeechRecognitionEvent('nomatch', () => setError("I didn't catch anything. Tap the mic and try again, or type below."));
+  useSpeechRecognitionEvent('nomatch', () => {
+    if (voice.current.phase !== 'idle') setError("I didn't catch anything. Tap the mic and try again, or type below.");
+  });
   useSpeechRecognitionEvent('error', (event) => {
+    if (voice.current.phase === 'idle' || voice.current.phase === 'preparing') return;
+    voice.current.fail(); setVoicePhase(voice.current.phase);
     setListening(false);
-    setVoiceNetworkError(event.error === 'network');
-    const message = speechErrorMessage(event.error);
+    setVoiceNetworkError(event.error === 'network' || event.code === 13);
+    setVoiceStatus(`Speech failure: ${event.error} · Android code ${event.code ?? 'unknown'}`);
+    const message = speechErrorMessage(event.error, event.code);
     if (message) setError(message);
+    voiceTimeout(message || 'Voice has stopped. Tap Speak to start again.', 6000);
   });
+
+  useEffect(() => {
+    const session = voice.current;
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state !== 'active' && ['listening', 'stopping'].includes(voice.current.phase)) cancelVoice();
+    });
+    return () => { subscription.remove(); clearVoiceTimer(); session.cancel(); ExpoSpeechRecognitionModule.abort(); };
+  }, [cancelVoice, clearVoiceTimer]);
+  useEffect(() => { if (screen !== 'home' && voice.current.phase !== 'idle') cancelVoice(); }, [screen, cancelVoice]);
 
   useEffect(() => {
     async function hydrate() {
@@ -147,8 +176,8 @@ export default function App() {
   }
 
   async function startListening() {
-    if (voiceStarting.current) return;
-    voiceStarting.current = true;
+    if (preparingVoice || !voice.current.begin(dump)) return;
+    setVoicePhase(voice.current.phase);
     setError(null); setVoiceNotice(null); setVoiceNetworkError(false);
     try {
       if (!ExpoSpeechRecognitionModule.isRecognitionAvailable()) {
@@ -162,10 +191,12 @@ export default function App() {
       const permission = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
       if (!permission.granted) { setError('Microphone access is off. Allow it in Android settings, or type below.'); return; }
       const offlineReady = Platform.OS === 'android' && await offlineVoiceAvailable(ExpoSpeechRecognitionModule);
-      voiceBase.current = dump;
-      voiceFinal.current = '';
-      voiceHadResult.current = false;
+      if (voice.current.phase !== 'preparing') return;
+      const service = Platform.OS === 'android' ? ExpoSpeechRecognitionModule.getDefaultRecognitionService().packageName : 'system';
+      setVoiceStatus(`${offlineReady ? 'On-device English' : 'Online English'} · ${offlineReady ? 'system on-device recognizer' : service}`);
+      voice.current.starting(); setVoicePhase(voice.current.phase);
       setInputLevel(0);
+      voiceTimeout('Android voice did not start. Your words are still here. Tap Speak to retry.', 12000);
       ExpoSpeechRecognitionModule.start({
         lang: 'en-US',
         requiresOnDeviceRecognition: offlineReady,
@@ -175,12 +206,19 @@ export default function App() {
         continuous: Platform.OS === 'android' && offlineReady,
         androidIntentOptions: { EXTRA_LANGUAGE_MODEL: 'free_form' },
       });
-    } catch { setError('Voice could not start. Check the emulator microphone, then try again or type below.'); }
-    finally { voiceStarting.current = false; }
+    } catch { cancelVoice(); setError('Voice could not start. Check microphone access, then try again or type below.'); }
+    finally { if (voice.current.phase === 'preparing') { voice.current.cancel(); setVoicePhase('idle'); } }
+  }
+
+  function stopListening() {
+    if (!voice.current.stop()) return;
+    setVoicePhase(voice.current.phase);
+    voiceTimeout('Your words are still here. Android did not finish the voice attempt; tap Speak to retry.', 6000);
+    ExpoSpeechRecognitionModule.stop();
   }
 
   async function prepareOfflineVoice() {
-    if (preparingVoice) return;
+    if (preparingVoice || voice.current.phase !== 'idle') return;
     setPreparingVoice(true); setError(null); setVoiceNotice('Preparing offline English voice… You can keep typing.');
     try {
       if (!ExpoSpeechRecognitionModule.supportsOnDeviceRecognition()) {
@@ -344,6 +382,7 @@ export default function App() {
       dump={dump}
       error={error}
       listening={listening}
+      voicePhase={voicePhase}
       inputLevel={inputLevel}
       voiceNotice={voiceNotice}
       preparingVoice={preparingVoice}
@@ -358,7 +397,7 @@ export default function App() {
       onPersistent={requestPersistent}
       onStartFocus={(item) => void startFocus(item)}
       onToggleReason={() => setShowReason(!showReason)}
-      onToggleVoice={() => listening ? ExpoSpeechRecognitionModule.stop() : void startListening()}
+      onToggleVoice={() => voice.current.phase === 'listening' ? stopListening() : void startListening()}
       onUnderstand={() => void understand()}
       showLab={demoToolsEnabled}
       showReason={showReason}
@@ -368,6 +407,7 @@ export default function App() {
         <Text style={[styles.pageTitle, styles.planTitle]}>Coby Lab</Text>
         <Text style={styles.support}>Local demo controls. Nothing here is sent online.</Text>
         <Text style={styles.labStatus}>{labMessage}</Text>
+        <Text style={styles.labStatus}>{voiceStatus}</Text>
         <Text style={styles.support}>Clock: {activeClock.now().toLocaleString()}</Text>
         <Button label="Check offline voice" kind="quiet" disabled={busy} onPress={async () => {
           const ready = await offlineVoiceAvailable(ExpoSpeechRecognitionModule);

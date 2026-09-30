@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, AppState, BackHandler, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, AppState, BackHandler, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import { useFonts, Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold } from '@expo-google-fonts/manrope';
 import { DemoClock, SystemClock, type Clock } from './src/domain/clock';
@@ -9,8 +9,8 @@ import { rankItems } from './src/domain/ranking';
 import { planNudges } from './src/domain/nudges';
 import type { CobyItem, ItemStatus, ParsedItem } from './src/domain/types';
 import { applyItemEdit, leaveFocusItem } from './src/domain/itemActions';
-import { clearItems, completeItem, listItems, saveItems } from './src/data/items';
-import { clearAllCobyNudges, syncItemNudges, triggerLabNudge } from './src/notifications/scheduler';
+import { clearItems, completeItem, deleteItem, listItems, saveItems } from './src/data/items';
+import { cancelItemNudges, clearAllCobyNudges, syncItemNudges, triggerLabNudge } from './src/notifications/scheduler';
 import { loadBilling, purchaseMonthly, restoreBilling, type BillingState } from './src/billing/revenuecat';
 import { HomeScreen } from './src/ui/HomeScreen';
 import { ReceiptScreen } from './src/ui/ReceiptScreen';
@@ -127,7 +127,8 @@ export default function App() {
     if (ended.empty) setError((current) => current ?? "No words came through. Check microphone access, then try again or type below.");
   }
   useSpeechRecognitionEvent('end', finishVoiceCycle);
-  useSpeechRecognitionEvent('speechend', () => traceVoice('speech-end'));
+  useSpeechRecognitionEvent('speechstart', () => { traceVoice('speech-start'); voice.current.speechStart(); });
+  useSpeechRecognitionEvent('speechend', () => { traceVoice('speech-end'); voice.current.speechEnd(); });
   useSpeechRecognitionEvent('volumechange', ({ value }) => {
     if (voice.current.phase === 'listening') setInputLevel(Math.max(0, Math.min(1, value / 10)));
   });
@@ -355,6 +356,26 @@ export default function App() {
     finally { setBusy(false); }
   }
 
+  async function removeHeldItem(item: CobyItem) {
+    setBusy(true); setError(null);
+    try {
+      await cancelItemNudges(item.id);
+      await deleteItem(item.id);
+      setItems((current) => current.filter((held) => held.id !== item.id));
+      setEditingItem(null); setScreen('plan');
+    } catch { setError('Coby could not delete this item. It is still held; try again.'); }
+    finally { setBusy(false); }
+  }
+
+  function confirmDelete() {
+    if (!editingItem || busy) return;
+    const item = editingItem;
+    Alert.alert('Delete this item?', 'It will be removed from Coby along with its reminders.', [
+      { text: 'Keep it', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: () => void removeHeldItem(item) },
+    ]);
+  }
+
   useEffect(() => {
     const back = BackHandler.addEventListener('hardwareBackPress', () => {
       if (screen === 'home') return false;
@@ -442,7 +463,7 @@ export default function App() {
 
   if (loading || !fontsLoaded) return <View style={styles.loading}><ActivityIndicator color={colors.violet} /></View>;
 
-  return <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+  return <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
     <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
     {screen === 'home' ? <HomeScreen
       busy={busy}
@@ -546,7 +567,7 @@ export default function App() {
       </View>}
 
       {screen === 'receipt' && <ReceiptScreen draft={draft} busy={busy} onEditDump={() => setScreen('home')} onHold={(accepted) => void holdItems(accepted)} />}
-      {screen === 'edit' && editingItem && <ReceiptScreen key={editingItem.id} mode="edit" draft={[editingItem]} busy={busy} onEditDump={cancelEdit} onHold={(accepted) => void saveEditedItem(accepted)} />}
+      {screen === 'edit' && editingItem && <ReceiptScreen key={editingItem.id} mode="edit" draft={[editingItem]} busy={busy} onEditDump={cancelEdit} onHold={(accepted) => void saveEditedItem(accepted)} onDelete={confirmDelete} />}
 
       {error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
     </ScrollView>}

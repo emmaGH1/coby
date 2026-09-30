@@ -12,7 +12,7 @@ Notifications.setNotificationHandler({
   }),
 });
 
-async function cancelItemNudges(itemId: string) {
+export async function cancelItemNudges(itemId: string) {
   const scheduled = await Notifications.getAllScheduledNotificationsAsync();
   for (const request of scheduled) {
     if (request.content.data?.itemId === itemId) {

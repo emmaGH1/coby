@@ -56,3 +56,5 @@ Glassmorphism, neon, generic AI dashboards, constant gradients, rainbow categori
 ## Saved details and Focus exit
 
 Each Plan row in List and Calendar offers Edit details beside the existing Focus action. Details open only on request, with date/time/duration immediately visible and an explicit Save changes/Cancel pair. Reuse the receipt's quiet styling and validation. Focus has a visible Back to Plan/Home control above the orb; Android Back exits through the same path. Reset scroll on screen changes so the exit control is reachable.
+
+Android typing must keep the text field, cursor and send action above the software keyboard. The bottom dock remains anchored to the usable viewport while the content above scrolls. Saved-item editing includes a quiet Delete item action after Save changes, with an explicit confirmation; deletion controls do not add clutter to Home.

@@ -45,3 +45,5 @@ Each checkpoint needs a device or emulator observation where available, typechec
 Basic manual correction of held items is P0 trust work requested by the user. Reuse receipt validation for Plan > Edit details. Save against the existing SQLite item ID; preserve capture history, priority, commitment, and lifecycle. Cancel leaves persistence unchanged. Resynchronize the item's notifications after saving, reporting notification failure separately from save success. Natural-language corrections remain P1.
 
 Focus records the originating screen and prior held status. Back/End focus restores that status and returns to the origin without completion. Android Back uses the same action; saving disables navigation until the operation finishes.
+
+Deletion is a basic held-item correction requested by the user: cancel notifications for the exact ID, then remove that SQLite row and refresh Home/Plan. Keep other held items intact. Check cancellation of the deletion prompt and persistence after relaunch using a synthetic item.

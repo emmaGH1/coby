@@ -5,7 +5,7 @@ import type { ItemKind, ParsedItem } from '../domain/types';
 import { CobyOrb } from './CobyOrb';
 import { colors, radius, type } from './theme';
 
-export function ReceiptScreen({ draft, busy, onEditDump, onHold, mode = 'receipt' }: { draft: ParsedItem[]; busy: boolean; onEditDump: () => void; onHold: (items: ParsedItem[]) => void; mode?: 'receipt' | 'edit' }) {
+export function ReceiptScreen({ draft, busy, onEditDump, onHold, onDelete, mode = 'receipt' }: { draft: ParsedItem[]; busy: boolean; onEditDump: () => void; onHold: (items: ParsedItem[]) => void; onDelete?: () => void; mode?: 'receipt' | 'edit' }) {
   const editing = mode === 'edit';
   const [entries, setEntries] = useState(() => draft.map((item) => ({ item, fields: receiptFields(item), expanded: editing || item.needsClarification })));
   const [attempted, setAttempted] = useState(false);
@@ -40,6 +40,7 @@ export function ReceiptScreen({ draft, busy, onEditDump, onHold, mode = 'receipt
       {attempted && results[index].error && <Text accessibilityRole="alert" style={styles.error}>{results[index].error}</Text>}
     </View>)}
     <Pressable accessibilityRole="button" disabled={busy || !entries.length} onPress={hold} style={[styles.save, busy && styles.disabled]}><Text style={styles.saveText}>{editing ? busy ? 'Saving…' : 'Save changes' : busy ? 'Holding…' : 'Looks right. Hold it.'}</Text></Pressable>
+    {editing && onDelete && <Pressable accessibilityRole="button" disabled={busy} onPress={onDelete} style={styles.detailButton}><Text style={styles.error}>Delete item</Text></Pressable>}
   </View>;
 }
 

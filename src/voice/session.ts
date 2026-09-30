@@ -12,6 +12,7 @@ export class VoiceSession {
   private failed = false;
   private hadWords = false;
   private keepOpen = false;
+  private speechEnded = false;
   get continues(): boolean { return this.keepOpen && !this.failed; }
 
   begin(text: string, keepOpen = false): boolean {
@@ -19,12 +20,25 @@ export class VoiceSession {
     this.base = text;
     this.final = ''; this.partial = ''; this.failed = false; this.hadWords = false;
     this.keepOpen = keepOpen;
+    this.speechEnded = false;
     this.phase = 'preparing';
     return true;
   }
 
   starting(): void { if (this.phase === 'preparing') this.phase = 'starting'; }
   ready(): void { if (this.phase === 'starting' || this.phase === 'restarting') this.phase = 'listening'; }
+  speechEnd(): void { if (this.phase === 'listening') this.speechEnded = true; }
+  speechStart(): void {
+    if (this.phase !== 'listening') return;
+    // Legacy Google recognition can keep the microphone open but reset partial
+    // results for each utterance. Commit only when the next utterance starts,
+    // allowing delayed corrections after speech-end to update the prior one.
+    if (this.speechEnded && this.partial) {
+      this.final = appendTranscript(this.final, this.partial);
+      this.partial = '';
+    }
+    this.speechEnded = false;
+  }
   stop(): boolean {
     if (this.phase !== 'listening' && this.phase !== 'restarting') return false;
     this.keepOpen = false;
@@ -40,8 +54,21 @@ export class VoiceSession {
   result(text: string, isFinal: boolean): string | null {
     if (!['starting', 'listening', 'stopping'].includes(this.phase) || !text.trim()) return null;
     this.hadWords = true;
-    if (isFinal) { this.final = appendTranscript(this.final, text); this.partial = ''; }
-    else this.partial = text;
+    const incoming = text.trim();
+    // Some engines return the whole native cycle; others return only the new
+    // utterance. Never duplicate an already committed prefix in cumulative results.
+    const prefix = (this.final.match(/[\p{L}\p{N}]+/gu) ?? []).map((word) => word.toLowerCase());
+    const tokens = [...incoming.matchAll(/[\p{L}\p{N}]+/gu)];
+    const cumulative = prefix.length > 0 && tokens.length > prefix.length
+      && prefix.every((word, index) => tokens[index][0].toLowerCase() === word);
+    if (cumulative) {
+      // Find the end of the committed word prefix without changing native spelling.
+      const nextWord = tokens[prefix.length];
+      const rest = incoming.slice(nextWord.index!).trim();
+      if (isFinal) { this.final = incoming; this.partial = ''; }
+      else this.partial = rest;
+    } else if (isFinal) { this.final = appendTranscript(this.final, incoming); this.partial = ''; }
+    else this.partial = incoming;
     return appendTranscript(appendTranscript(this.base, this.final), this.partial);
   }
   end(): { text: string; empty: boolean; restart?: true } | null {
@@ -49,6 +76,7 @@ export class VoiceSession {
     const result = { text: appendTranscript(appendTranscript(this.base, this.final), this.partial), empty: !this.hadWords && !this.failed };
     if (this.continues) {
       this.base = result.text; this.final = ''; this.partial = '';
+      this.speechEnded = false;
       this.phase = 'restarting';
       return { ...result, restart: true };
     }

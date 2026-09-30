@@ -5,6 +5,40 @@ import { VoiceSession } from '../src/voice/session';
 import { speechErrorMessage } from '../src/voice/speech';
 import { androidVoiceOptions } from '../src/voice/options';
 
+test('legacy continuous utterances retain prior text when partials reset without native end', () => {
+  const session = new VoiceSession();
+  session.begin('Typed first.', true); session.starting(); session.ready(); session.speechStart();
+  session.result('water the plants', false); session.speechEnd();
+  session.result('Water the plants tomorrow.', false); // delayed correction
+  session.speechStart();
+  assert.equal(session.result('take', false), 'Typed first. Water the plants tomorrow. take');
+  session.result('take out the bins', false); session.speechEnd(); session.speechStart();
+  assert.equal(session.result('buy milk', false), 'Typed first. Water the plants tomorrow. take out the bins buy milk');
+  session.stop(); session.result('Buy milk.', true);
+  assert.deepEqual(session.end(), { text: 'Typed first. Water the plants tomorrow. take out the bins Buy milk.', empty: false });
+});
+
+test('cumulative native results after a speech boundary do not duplicate held utterances', () => {
+  const session = new VoiceSession();
+  session.begin('', true); session.starting(); session.ready(); session.speechStart();
+  session.result('Call Mum.', false); session.speechEnd(); session.speechStart();
+  assert.equal(session.result('Call Mum and buy milk', false), 'Call Mum. and buy milk');
+  session.stop();
+  assert.equal(session.result('Call Mum and buy milk.', true), 'Call Mum and buy milk.');
+  assert.equal(session.end()?.text, 'Call Mum and buy milk.');
+});
+
+test('repeated speech-start within an utterance and repeated words do not erase or duplicate revisions', () => {
+  const session = new VoiceSession();
+  session.begin('', true); session.starting(); session.ready(); session.speechStart();
+  session.result('buy', false); session.speechStart();
+  assert.equal(session.result('buy milk', false), 'buy milk');
+  session.speechEnd(); session.speechStart();
+  assert.equal(session.result('buy milk', false), 'buy milk buy milk');
+  session.stop();
+  assert.equal(session.end()?.text, 'buy milk buy milk');
+});
+
 test('legacy voice retains the long continuous window; modern online avoids audio pipes', () => {
   const legacy = androidVoiceOptions(30, false);
   assert.equal(legacy.continuous, true);

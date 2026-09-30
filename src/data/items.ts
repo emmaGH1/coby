@@ -42,3 +42,8 @@ export async function clearItems(): Promise<void> {
   const db = await database();
   await db.runAsync('DELETE FROM items');
 }
+
+export async function deleteItem(id: string): Promise<void> {
+  const db = await database();
+  await db.runAsync('DELETE FROM items WHERE id = ?', id);
+}

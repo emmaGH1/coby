@@ -85,6 +85,14 @@ Reviewed the installed native implementation: below API 33 its continuous mode s
 
 Development-only [CobyVoice] traces log event name, phase and elapsed milliseconds, never words/audio. Typecheck, lint and all 44 tests pass. Tests add legacy/modern configuration and duplicate-end/late-result cases. The candidate is NOT yet verified live. Asked the user to save their current dump and reply ready before reload, to avoid losing unsaved text. Awaiting clarification on native stop/start versus transcript replacement. Saved editing and Focus interaction acceptance also remain pending. Metro session 26739 is localhost-only on 8082.
 
+## Keyboard, utterance retention and deletion correction
+
+The latest live report still fails voice reliability and reports a covered composer. Trace from that attempt shows a single native start and repeated speech-end callbacks; native end arrives only after Done at about 36 seconds. Sanitized native partial metadata confirms the service resets partial results within the same open microphone session. Prior restart/silence corrections did not address utterance replacement. VoiceSession now retains the prior partial on the next speech-start after speech-end, accepts delayed corrections before that start, and handles cumulative final/partial results without duplicating the held prefix. Speech-start is traced without words. Three synthetic regression cases cover segmented partial resets, cumulative results, delayed corrections and repeated words.
+
+Android KeyboardAvoidingView now uses height behavior, keeping the bottom composer above the keyboard. app.json explicitly specifies resize; the existing native manifest already has adjustResize. No native rebuild is expected for these JavaScript fixes. Saved Edit details now exposes Delete item with Keep it/Delete confirmation. Cancel only the selected ID's notifications before deleting its SQLite row; failures retain the item. Removing it recomputes Home/Plan while preserving other tasks.
+
+Typecheck, lint and all 47 tests pass. Physical checks are not yet completed for this correction. Asked the user to save unsaved words and reply ready before reload. Do not clear or seed the user's phone. Use an isolated synthetic item to verify deletion. Never capture unrelated foreground apps: check resumed package before screenshots. Native metadata comparisons were performed without printing transcript words. Previous short live acceptance is superseded by the user's continuing failures.
+
 ## NEXT ACTION
 
-After the user saves their dump and replies ready, reload the voice candidate and observe a minute-long physical-phone dump with [CobyVoice] timing metadata, checking native gaps and word retention before claiming voice reliable.
+After readiness, load the three corrections on the phone and verify visible typing with the keyboard open, a minute-long multi-utterance dump retaining all text, and synthetic-item delete/cancel/persistence before claiming reliability.

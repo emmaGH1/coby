@@ -25,7 +25,7 @@ Coby optimizes for reduced cognitive load and trust, not maximum information den
 | Receipt | Calm confirmation of every extracted item; user can correct errors before saving. |
 | Hold | Local persistence survives app restart. |
 | Home | Exactly one NOW item when available and at most two NEXT items. A clear state when none exists. |
-| Plan | All held items inspectable in List and simple Calendar/day views. Saved items expose Edit details for title, kind, date, time, and duration corrections. |
+| Plan | All held items inspectable in List and simple Calendar/day views. Saved items expose Edit details for title, kind, date, time, and duration corrections, plus explicit deletion with reminder cancellation. |
 | Focus | One item at a time, with completion and a clear exit. Back returns to the originating Home/Plan without completing the item; Android Back does the same. |
 | Rank | Deterministic priority with a truthful “Why this now?” explanation. |
 | Nudge | Deadline-aware local notifications; recalculate when relevant fields change. |

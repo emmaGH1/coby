@@ -93,3 +93,12 @@ The stylus tutorial was dismissed. Current Pixel 6 development build passed bott
 - Typecheck, lint, all 44 tests pass. Added legacy long-window/modern microphone-mode and duplicate end/late-result regression coverage.
 - Candidate restores the legacy continuous hints and removes the extra application restart delay. Timing-only development diagnostics added.
 - Live verification pending: user must save unsaved words before reload, then perform a minute-long paused dump while metadata confirms actual native boundaries. No claim of uninterrupted capture or resolved provider cutoff yet.
+
+## Covered composer, utterance resets and task deletion
+
+- User live result: keyboard covers the composer; voice still appears to cut/reset. Prior voice candidate is not a live pass.
+- Evidence: one native start, repeated speech-end events, end only after Done (~36s). Sanitized partial metadata shows longer utterances replaced by short new partials during that same session.
+- Typecheck, lint, all 47 tests pass. New synthetic cases cover speech-boundary partial retention, delayed corrections, cumulative native results and intentionally repeated utterances.
+- Keyboard correction: Android height avoidance plus explicit resize config. Device visibility/cursor/send verification pending.
+- Deletion: cancel item-specific notifications, delete one SQLite ID, refresh Home/Plan. Confirmation Cancel, isolated synthetic delete, untouched other tasks and persistence after relaunch remain pending physical checks.
+- Await user readiness before reload to preserve unsaved dump text. No real held item was deleted during agent work.

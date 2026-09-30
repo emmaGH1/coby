@@ -141,3 +141,7 @@ Nudges remain mandatory P0. Add direct 15/30/60-minute reminder postponement and
 An item enabled too late for its original reminder points gets one future reminder within a minute (or halfway to a closer deadline), with truthful wording that does not promise on-time completion. This is notification policy, not an invented task duration.
 
 Use the user-approved Soft Fold asset with restrained native volume response. Home name left/Settings right and arrival companion above coby/Unload your mind supersede earlier header and carry-less loading copy. Seven-day weeks with previous/next week inspection satisfy P0; no month grid. Completed task history and restoration are safe P0 inspection. Defer custom reminder time until quick delays are verified; do not add journal/streak loops before submission.
+
+## September 30 — Android default notification sound
+
+Omit the channel sound property. In the installed Expo Android implementation any non-null sound string is checked as a bundled raw resource; omission uses the system default. Physical channel and delivered notification resolve to Android's default sound with HIGH importance. No custom sound asset or native rebuild is required.

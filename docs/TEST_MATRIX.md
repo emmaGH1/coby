@@ -127,3 +127,11 @@ The stylus tutorial was dismissed. Current Pixel 6 development build passed bott
 - PENDING: real future/background heads-up delivery, each delay choice changing the native schedule, notification body opening the correct item, action after app termination, disabling reminders and edit/complete/delete/clear cancellation. Verify actual unchanged deadline and persisted reminder time.
 - PENDING: native Plan/arrival/Settings/check-in rendering, saved completion restore after restart, keyboard visibility and the previously accepted minute-long paused voice dump after this UI integration. SpeechSession code was not changed.
 - BLOCKED DEVICE: no current adb or mDNS device. User has been asked to reconnect and save unsent words before reload. Test only clearly labelled synthetic items; no real held list may be cleared.
+
+## Physical Gentle delivery and 15-minute action
+
+- PASS: approved bundle loaded on wireless OnePlus A6010; Home, Plan List, receipt and reminder choices observed. Real tasks retained.
+- PASS: synthetic 22:25 local deadline saved through live extraction/receipt; Gentle delivered while Coby was backgrounded. Android confirms HIGH importance, system sound/vibration and three category actions.
+- PASS: actual notification 15-minute response persisted one new reminder while leaving the deadline unchanged; exactly one native pending request for this test item. SQLite inspection remained in memory and printed only test fields.
+- PASS: channel sound warning corrected; typecheck, lint and 56 tests pass. Latest motion preview check passes.
+- PENDING: visible action feedback, body tap/cold start, 30/60-minute actions, edit/complete/delete cancellation and keyboard/voice regression after UI integration. Clean up synthetic reminder after verification.

@@ -10,7 +10,8 @@ export const NUDGE_ACTIONS = { coby_delay_15: 15, coby_delay_30: 30, coby_delay_
 export async function prepareNudgeNotifications() {
   await Notifications.setNotificationChannelAsync(CHANNEL, {
     name: 'Coby reminders', importance: Notifications.AndroidImportance.HIGH,
-    sound: 'default', enableVibrate: true,
+    // Omit sound to use Android's default; a string is treated as a bundled file.
+    enableVibrate: true,
   });
   await Notifications.setNotificationCategoryAsync(CATEGORY, Object.entries(NUDGE_ACTIONS).map(([identifier, minutes]) => ({
     identifier, buttonTitle: minutes === 60 ? '1 hour' : `${minutes} min`,

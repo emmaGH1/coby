@@ -121,6 +121,16 @@ The working cutoff is October 1 at 07:00 Lagos time, ahead of the previously sta
 
 Metro was restarted successfully for the approved reload. Session 91679 serves localhost:8082, and /status returns packager-status:running. The phone is still absent from host ADB/mDNS after the user reported reconnection; requested its wireless IP:port or USB debugging authorization. Do not claim the update is on the phone yet.
 
+## Physical Gentle delivery and notification action checkpoint
+
+The wireless OnePlus A6010 reconnected as transport 27. The user saved their edit and authorized reload. Localhost reverse 8082 was restored and the approved Android bundle loaded. Home, Plan List, receipt and item reminder controls were inspected on the physical phone. No real task was edited, completed, deleted or cleared.
+
+Created only the clearly labelled synthetic item Coby nudge test, using live text extraction and a verified September 30 22:25 local deadline. Enabled Gentle and backgrounded Coby. Android delivered its future notification with truthful close-deadline copy, importance HIGH, default system sound/vibration and three actions. The actual coby_delay_15 response was processed: read-only, in-memory SQLite inspection confirmed dueAt stayed 21:25 UTC (22:25 Lagos), reminderAt became 21:43:36 UTC (22:43 Lagos), and the native notification store contains exactly one pending request for this synthetic item. No database copy or real payload was written to workspace. The response was observed through stored state; user confirmation of the visible feedback is pending.
+
+Fixed startup sound configuration: this Expo Android version treats a channel sound string as a bundled filename. Omitting the channel sound selects Android's default and removes the missing-custom-sound warning. Notification content still requests its default sound. Typecheck, lint and all 56 tests pass after this correction. The rebuilt motion preview check is also successful.
+
+Metro session 94218 serves the corrected localhost 8082 bundle in CI mode. Restart after source changes. Body-tap routing, cold-start action, 30/60-minute actions and edit/complete/delete cancellation remain pending. The synthetic item has a pending test reminder; remove only that item after verification. P0 acceptance and voice/keyboard regression on this new UI remain open.
+
 ## NEXT ACTION
 
-Reconnect the phone and, after reload readiness, verify one isolated future Gentle nudge, notification delay/body tap/cold-start handling, cancellation after completion/edit/delete, and voice/keyboard regression on the new Android UI.
+Finish synthetic-only notification acceptance on the connected phone: body tap/cold start, remaining delays and edit/complete/delete cancellation; then remove the Coby nudge test item and recheck keyboard-visible typing and a minute-long voice dump without changing real tasks.

@@ -18,6 +18,7 @@ import { ReceiptScreen } from './src/ui/ReceiptScreen';
 import { NudgeScreen } from './src/ui/NudgeScreen';
 import { PlanScreen } from './src/ui/PlanScreen';
 import { CobyOrb } from './src/ui/CobyOrb';
+import { colors as palette, type } from './src/ui/theme';
 import { speechErrorMessage } from './src/voice/speech';
 import { offlineVoiceAvailable } from './src/voice/offline';
 import { VoiceSession, type VoicePhase } from './src/voice/session';
@@ -79,6 +80,7 @@ export default function App() {
   const [pendingPersistentId, setPendingPersistentId] = useState<string | null>(null);
   const [nudgeItemId, setNudgeItemId] = useState<string | null>(null);
   const [nudgeMessage, setNudgeMessage] = useState<string | null>(null);
+  const [settingsNotice, setSettingsNotice] = useState<string | null>(null);
   const handledNudgeResponses = useRef(new Set<string>());
   const nudgeQueue = useRef(Promise.resolve());
   const voice = useRef(new VoiceSession());
@@ -206,6 +208,10 @@ export default function App() {
         const stored = await listItems();
         const item = stored.find(entry => entry.id === id);
         if (!item || item.status === 'completed' || item.status === 'archived') {
+          const last = await Notifications.getLastNotificationResponseAsync();
+          if (last?.notification.request.identifier === response.notification.request.identifier && last.actionIdentifier === response.actionIdentifier) {
+            await Notifications.clearLastNotificationResponseAsync();
+          }
           setItems(stored); setScreen('home'); setError('That item is already finished or no longer held.'); return;
         }
         setNudgeItemId(id); setNudgeMessage(null);
@@ -491,7 +497,7 @@ export default function App() {
   }
 
   async function setCommitment(item: CobyItem, mode: 'none' | 'gentle' | 'persistent') {
-    setError(null); setBusy(true);
+    setError(null); setNudgeMessage(null); setBusy(true);
     try {
       const changed: CobyItem = { ...item, commitmentMode: mode, reminderAt: null };
       await saveItems([changed]);
@@ -581,7 +587,7 @@ export default function App() {
       onGentle={(item) => void setCommitment(item, 'gentle')}
       onOpenLab={() => setScreen('lab')}
       onOpenPlan={() => setScreen('plan')}
-      onOpenSettings={() => setScreen('settings')}
+      onOpenSettings={() => { setError(null); setSettingsNotice(null); setScreen('settings'); }}
       onPersistent={requestPersistent}
       onStartFocus={(item) => void startFocus(item)}
       onToggleReason={() => setShowReason(!showReason)}
@@ -636,13 +642,17 @@ export default function App() {
         onClear={confirmClearList} />}
 
       {screen === 'settings' && <>
-        <Button label="← Home" kind="quiet" onPress={() => setScreen('home')} />
+        <Pressable accessibilityRole="button" onPress={() => { setError(null); setScreen('home'); }} style={styles.actionLink}><Text style={styles.back}>← Home</Text></Pressable>
         <Text style={styles.pageTitle}>Settings</Text>
         <Text style={styles.support}>Gentle is one timely nudge. Persistent adds follow-through as a deadline approaches.</Text>
         <Button label="Notification access" kind="quiet" onPress={async () => {
-          const permission = await Notifications.requestPermissionsAsync();
-          setError(permission.granted ? 'Notifications are allowed. Choose a commitment from an item in Plan.' : 'Notifications are off. Enable them in Android app settings to receive nudges.');
+          setError(null);
+          try {
+            const permission = await Notifications.requestPermissionsAsync();
+            setSettingsNotice(permission.granted ? 'Notifications are allowed. Choose Gentle or Persistent from an item in Plan.' : 'Notifications are off. Enable them in Android app settings to receive nudges.');
+          } catch { setSettingsNotice('Coby could not check notification access. Please try again.'); }
         }} />
+        {settingsNotice && <Text accessibilityLiveRegion="polite" style={styles.support}>{settingsNotice}</Text>}
         <Button label="Plan and reminder choices" kind="quiet" onPress={() => setScreen('plan')} />
         <Button label="Coby Plus" kind="quiet" onPress={() => setScreen('paywall')} />
         {demoToolsEnabled && <Button label="Coby Lab" kind="quiet" onPress={() => setScreen('lab')} />}
@@ -677,10 +687,10 @@ export default function App() {
   </KeyboardAvoidingView>;
 }
 
-const colors = { background: '#F2F2F2', ink: '#1A1A1A', violet: '#2268CD', violetSoft: '#EAF2FF', muted: '#62676D' };
+const colors = { ...palette, background: palette.paper };
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight ?? 0 : 0 }, loading: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
-  arrivalName: { fontSize: 43, fontWeight: '700', color: colors.ink, marginTop: 18 }, arrivalCopy: { fontSize: 16, color: colors.muted, marginTop: 12 },
+  arrivalName: { fontFamily: type.bold, fontSize: 43, color: colors.ink, marginTop: 18 }, arrivalCopy: { fontFamily: type.regular, fontSize: 16, color: colors.muted, marginTop: 12 },
   page: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 42 },
   homePage: { paddingTop: 34, paddingBottom: 24 },
   wordmark: { color: colors.ink, fontSize: 31, fontWeight: '700', letterSpacing: -2 },
@@ -690,22 +700,22 @@ const styles = StyleSheet.create({
   subhead: { color: colors.muted, fontSize: 16, textAlign: 'center', marginBottom: 28 },
   orbOuter: { backgroundColor: '#DFD7F3', alignItems: 'center', justifyContent: 'center', shadowColor: colors.violet, shadowOpacity: .14, shadowRadius: 22, elevation: 6 },
   orbInner: { backgroundColor: '#A898D1' }, homeOrb: { alignItems: 'center', marginTop: 30, marginBottom: 30 },
-  kicker: { fontSize: 12, fontWeight: '700', color: colors.violet, letterSpacing: 2.2, marginBottom: 15 },
-  nowTitle: { fontSize: 34, lineHeight: 40, fontWeight: '600', color: colors.ink, letterSpacing: -1.4, marginBottom: 13 },
-  meta: { fontSize: 15, color: colors.muted, marginBottom: 17 }, reasonLink: { color: colors.violet, fontSize: 14, fontWeight: '600', marginBottom: 14 },
-  reason: { color: colors.muted, fontSize: 14, marginBottom: 15 }, support: { color: colors.muted, fontSize: 15, lineHeight: 22 },
+  kicker: { fontFamily: type.semibold, fontSize: 12, color: colors.violet, letterSpacing: 2.2, marginBottom: 15 },
+  nowTitle: { fontFamily: type.semibold, fontSize: 34, lineHeight: 42, color: colors.ink, letterSpacing: -1.4, marginBottom: 13 },
+  meta: { fontSize: 15, color: colors.muted, marginBottom: 17 }, reasonLink: { fontFamily: type.semibold, color: colors.violet, fontSize: 14, marginBottom: 14 },
+  reason: { color: colors.muted, fontSize: 14, marginBottom: 15 }, support: { fontFamily: type.regular, color: colors.muted, fontSize: 15, lineHeight: 24 },
   nextArea: { marginTop: 32 }, nextItem: { color: colors.ink, fontSize: 16, marginBottom: 10 }, bottomAction: { marginTop: 'auto', paddingTop: 24 },
   button: { minHeight: 56, backgroundColor: colors.ink, borderRadius: 20, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, marginTop: 14 },
-  buttonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' }, quietButton: { backgroundColor: colors.violetSoft }, quietButtonText: { color: colors.ink }, disabledButton: { opacity: .45 },
-  actionLink: { minHeight: 48, justifyContent: 'center', alignSelf: 'flex-start' }, back: { color: colors.muted, fontSize: 15 }, captureOrb: { alignSelf: 'center', marginTop: 68, marginBottom: 38 }, receiptOrb: { alignSelf: 'center', marginTop: 36, marginBottom: 34 },
-  pageTitle: { color: colors.ink, fontSize: 34, fontWeight: '700', letterSpacing: -1.3, marginBottom: 12 },
+  buttonText: { fontFamily: type.semibold, color: colors.white, fontSize: 16 }, quietButton: { backgroundColor: colors.violetSoft }, quietButtonText: { color: colors.ink }, disabledButton: { opacity: .45 },
+  actionLink: { minHeight: 48, justifyContent: 'center', alignSelf: 'flex-start' }, back: { fontFamily: type.medium, color: colors.violetDeep, fontSize: 14 }, captureOrb: { alignSelf: 'center', marginTop: 68, marginBottom: 38 }, receiptOrb: { alignSelf: 'center', marginTop: 36, marginBottom: 34 },
+  pageTitle: { fontFamily: type.bold, color: colors.ink, fontSize: 34, letterSpacing: -1.3, marginBottom: 12 },
   dumpInput: { minHeight: 210, borderRadius: 26, backgroundColor: '#FFFFFF', padding: 20, fontSize: 18, color: colors.ink, marginTop: 30, marginBottom: 10, lineHeight: 26 },
   demoLink: { color: colors.violet, fontSize: 14, alignSelf: 'center', marginTop: 22 },
   receiptList: { marginTop: 28, marginBottom: 8 }, receiptRow: { backgroundColor: '#FFFFFF', paddingHorizontal: 20, paddingVertical: 14, borderRadius: 20, marginBottom: 10 },
   receiptTitle: { fontSize: 17, fontWeight: '600', color: colors.ink, minHeight: 32 }, receiptMeta: { fontSize: 13, color: colors.muted, marginTop: 3 },
-  error: { color: '#A24D48', fontSize: 14, marginTop: 18 },
+  error: { fontFamily: type.medium, color: colors.error, fontSize: 14, lineHeight: 22, marginTop: 18 },
   reminderLink: { color: colors.violet, textAlign: 'center', fontSize: 14, marginTop: 12 }, reminderState: { color: colors.muted, fontSize: 13, marginTop: 12 },
-  labLink: { color: colors.muted, fontSize: 12, textAlign: 'center', marginTop: 25 }, labStatus: { color: colors.violet, fontSize: 16, marginTop: 30, marginBottom: 20 },
+  labLink: { color: colors.muted, fontSize: 12, textAlign: 'center', marginTop: 25 }, labStatus: { fontFamily: type.regular, color: colors.violet, fontSize: 16, lineHeight: 24, marginTop: 30, marginBottom: 20 },
   typeInstead: { color: colors.muted, fontSize: 13, textAlign: 'center', marginTop: 18 },
   planLink: { color: colors.violet, fontSize: 15, fontWeight: '600', textAlign: 'center', marginTop: 22 },
   planTitle: { marginTop: 55 }, modeBar: { flexDirection: 'row', backgroundColor: '#EBE8E4', borderRadius: 18, padding: 4, marginTop: 30, marginBottom: 25 },

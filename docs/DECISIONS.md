@@ -145,3 +145,7 @@ Use the user-approved Soft Fold asset with restrained native volume response. Ho
 ## September 30 — Android default notification sound
 
 Omit the channel sound property. In the installed Expo Android implementation any non-null sound string is checked as a bundled raw resource; omission uses the system default. Physical channel and delivered notification resolve to Android's default sound with HIGH importance. No custom sound asset or native rebuild is required.
+
+## September 30 — Extension and truthful feedback
+
+Devpost confirms October 1 noon PDT / 20:00 Lagos; retain P0 scope and reserve submission time. Switching commitment invalidates the previous postponement confirmation, so clear it. Consume stale finished/deleted-item notification responses to avoid replay on launch. Notification-access success belongs in neutral status text. Use Manrope/theme tokens on Focus, Settings and Plus to match the approved Home/Plan direction.

@@ -2,7 +2,9 @@
 
 ## Status
 
-P0 remains **in progress**. The user rejected the earlier capture-above-tasks layout on September 30 and provided a central-orb reference with bottom controls. Their correction supersedes the earlier internal Home visual review.
+P0 remains **in progress**. The current submission deadline is **October 1, 2026 at 12:00 PM PDT / 8:00 PM Lagos**, confirmed on the official Devpost page on September 30. The earlier 07:00 working cutoff is superseded. Finish core reliability, then freeze features and complete polish/build/demo with a submission buffer.
+
+The user rejected the earlier capture-above-tasks layout on September 30 and provided a central-orb reference with bottom controls. Their correction supersedes the earlier internal Home visual review.
 
 ## Earlier visual checkpoint (historical)
 
@@ -131,6 +133,20 @@ Fixed startup sound configuration: this Expo Android version treats a channel so
 
 Metro session 94218 serves the corrected localhost 8082 bundle in CI mode. Restart after source changes. Body-tap routing, cold-start action, 30/60-minute actions and edit/complete/delete cancellation remain pending. The synthetic item has a pending test reminder; remove only that item after verification. P0 acceptance and voice/keyboard regression on this new UI remain open.
 
+## Extended deadline and follow-through acceptance
+
+Official Devpost now lists October 1, 2026 at noon PDT (20:00 Lagos). Source: https://revenuecat-shipaton-2026.devpost.com/. This supersedes the old 07:00 working cutoff. The extension preserves P0 scope; use the added time for reliability and submission craft.
+
+The user confirmed a notification body tap opened the correct synthetic task at its corrected 22:43 deadline after Coby's background process was closed with am kill. This was not Android force-stop. The replacement future notification delivered; native store confirmed exactly one pending reminder after the edit and a cleared reminderAt. Actual 15-minute notification action had already passed; 30/60-minute choices now passed in-app, each leaving one native reminder and preserving dueAt. Their notification-button variants remain unobserved.
+
+Turning reminder mode Off removed the test item's pending request. Completing the test item also removed it; Completed history showed the crossed-out task. Restoring only that task returned it to planned and restored its still-future explicit reminder. Deletion, Focus exit, Persistent cadence/restore and new-UI capture regression remain pending. The test item is still held with a pending reminder; clean up only Coby nudge test. Real tasks were not edited, completed, cleared or deleted.
+
+Observed stale postponement feedback after mode changes. App now clears that message when commitment changes, and consumes a response targeting a deleted/completed item instead of replaying it at the next launch. Settings access confirmation is calm status text, not a red error; permission query failures have recovery copy. Focus, Settings, Plus and loading typography now use the approved Manrope tokens. These code changes are not yet loaded on the phone. Metro session 94218 still serves the preceding CI bundle; restart before reload.
+
+Phone automation paused because Coby stopped being the foreground app. The user was asked to leave it open untouched for five minutes. Every new test tap checks that Coby is foreground first. Do not resume those dependent interactions until readiness arrives.
+
+Next lighter work is exporting the approved circular C launcher icon from outputs/coby-preview/assets/coby-icon.svg and build/asset preparation. The user requested a lower-model switch before routine work; flag that phase rather than silently consuming the design model. Full subjective approval, final screenshot/demo, release-safe configuration and submission remain open.
+
 ## NEXT ACTION
 
-Finish synthetic-only notification acceptance on the connected phone: body tap/cold start, remaining delays and edit/complete/delete cancellation; then remove the Coby nudge test item and recheck keyboard-visible typing and a minute-long voice dump without changing real tasks.
+After phone readiness, load the tested feedback/typography correction and finish synthetic-only deletion/Focus and billing restore checks, clean up Coby nudge test, then recheck keyboard/voice before moving to launcher assets and final build preparation.

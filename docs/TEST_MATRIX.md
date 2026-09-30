@@ -135,3 +135,12 @@ The stylus tutorial was dismissed. Current Pixel 6 development build passed bott
 - PASS: actual notification 15-minute response persisted one new reminder while leaving the deadline unchanged; exactly one native pending request for this test item. SQLite inspection remained in memory and printed only test fields.
 - PASS: channel sound warning corrected; typecheck, lint and 56 tests pass. Latest motion preview check passes.
 - PENDING: visible action feedback, body tap/cold start, 30/60-minute actions, edit/complete/delete cancellation and keyboard/voice regression after UI integration. Clean up synthetic reminder after verification.
+
+## Extended-window follow-through acceptance
+
+- PASS: edited deadline clears the old postponed reminder and leaves exactly one replacement native request; replacement notification delivered after am kill of Coby's background process (not force-stop).
+- PASS: user confirmed body tap opened correct synthetic item with corrected 22:43 deadline; check-in screen inspected.
+- PASS: 30/60-minute in-app choices each preserve dueAt and leave exactly one native request. Only the 15-minute action was exercised from the OS notification itself.
+- PASS: Off and completion each remove the synthetic pending native request; Completed shows strikethrough; restoring that test item returns it to planned with its future requested reminder.
+- PENDING: 30/60-minute OS actions, visible/Android Back Focus exit, synthetic deletion/persistence, Persistent native cadence, RevenueCat restore, bulk clear in an isolated dataset, and keyboard/voice after the latest UI changes.
+- Feedback/Manrope consistency correction is code verified; physical reload is pending. Do not claim these newest changes are installed. Phone readiness is requested because foreground switched away from Coby.

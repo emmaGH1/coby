@@ -1,5 +1,13 @@
 # Decision log
 
+## October 1 — Readability, receipt recovery and earlier tasks
+
+The user rejected prior-day obligations dominating a new day's NOW/NEXT. Derive Earlier from local calendar days through Clock; preserve saved status and deadlines. Rank remaining Home items while Earlier offers reschedule/completion/deletion. Same-day overdue work retains its deterministic priority. Refresh each minute/on foreground; Home edits return Home.
+
+Replace Unicode gear/handmade pencil with explicitly loaded Ionicons and labelled Home/Plan icons. Raise 10–13-point secondary controls to 14, Plan titles/main actions to 16, edit/delete targets to 48×48.
+
+Use Expo-compatible @react-native-community/datetimepicker 9.1.0 (https://docs.expo.dev/versions/latest/sdk/date-time-picker/), native dialogs and manual fallback. Selection changes only its field, dismissal nothing; choosing a time never infers today's date. Receipt review uses a checkbox, per-item errors, bottom summary and first-error scrolling. The dependency requires rebuilding Android before loading the new bundle into the phone.
+
 ## September 30 — Active entitlement and safe acceptance
 
 Show active Plus explicitly and disable its purchase button while active. A successful Test Store purchase must not leave the app inviting another purchase. Restore and Persistent scheduling passed on the physical OnePlus; distinguish two scheduled native reminders from actual cadence delivery. Delete acceptance used only Coby nudge test with aggregate non-test payload digest comparison; never clear the user's real list to satisfy a test gate.

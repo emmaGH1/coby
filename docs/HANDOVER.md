@@ -157,6 +157,14 @@ Keep it preserved the task and both reminders. Confirmed Delete removed the synt
 
 The purchased paywall still invited Try Plus. It now explicitly shows Plus is active and disables purchase while active. Typecheck, lint and all 56 tests pass. This small correction is not loaded on the phone yet; the user is rechecking keyboard-visible typing and a minute-long paused dump on the preceding approved UI. Do not interrupt unsaved capture. Offline/device speech, isolated bulk clear, OS 30/60-minute buttons, full Persistent delivery, final assets/demo and subjective approval remain open. P0 is not complete.
 
+## October 1 — Readability and recovery correction
+
+Source uses labelled Home/Plan navigation, explicitly loaded Ionicons gear/pencil/trash, 14-point secondary labels and 16-point Plan titles/main controls. NOW/NEXT open the saved editor and return Home on Cancel/Save. Prior-day obligations stay saved in Earlier, outside NOW/NEXT; Plan offers review/reschedule/completion/deletion. Refresh each minute/on foreground through activeClock. No real item is migrated, archived or deleted.
+
+Receipt identifies invalid cards, shows specific errors near the title and Save, expands details, announces and scrolls to the first invalid item. Uncertainty uses a review checkbox. Native date/time pickers preserve nulls on dismissal, require an explicit date for a chosen time, and offer manual entry/clear. Rebuild the Android development APK before loading this bundle; protect unsaved phone input first.
+
+Typecheck, lint and all 62 tests pass. Six new cases cover multi-item receipt blocking/recovery, picker previews/selection/nulls, local midnight/date-only recovery, rescheduling/history exclusion and one NOW/two NEXT. Android bundle/native build and physical acceptance are pending. Phone is transport 34. P0 remains incomplete.
+
 ## NEXT ACTION
 
-Record the user's new-UI keyboard/voice result and safely load the active-Plus display correction, then flag the requested lower-model switch before launcher exports, isolated bulk-clear verification and final build/demo preparation.
+Finish the Android bundle/native picker build, protect unsaved input and verify icons, Earlier recovery, Home edit/return and receipt error/picker flow on the phone, then give the user a short test checklist.

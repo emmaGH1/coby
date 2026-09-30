@@ -36,10 +36,10 @@ const styles=StyleSheet.create({
   screen:{gap:16},back:{minHeight:44,justifyContent:'center'},brand:{fontFamily:type.bold,fontSize:30,color:colors.ink},
   message:{padding:22,borderRadius:24,backgroundColor:colors.paperRaised,gap:12},intro:{fontFamily:type.medium,fontSize:14,color:colors.muted},
   title:{fontFamily:type.semibold,fontSize:25,lineHeight:33,color:colors.ink},body:{fontFamily:type.regular,fontSize:15,lineHeight:23,color:colors.muted},
-  status:{fontFamily:type.medium,fontSize:14,lineHeight:22,color:colors.violetDeep},label:{fontFamily:type.medium,fontSize:13,color:colors.muted,marginTop:8},
+  status:{fontFamily:type.medium,fontSize:14,lineHeight:22,color:colors.violetDeep},label:{fontFamily:type.medium,fontSize: 14,color:colors.muted,marginTop:8},
   delays:{flexDirection:'row',gap:8},delay:{flex:1,minHeight:48,alignItems:'center',justifyContent:'center',borderRadius:24,backgroundColor:colors.violetMist},
   commitments:{flexDirection:'row',flexWrap:'wrap',gap:14,alignItems:'center'},mode:{minHeight:44,justifyContent:'center'},disabled:{opacity:.4},
-  link:{fontFamily:type.semibold,fontSize:14,color:colors.violetDeep},note:{fontFamily:type.regular,fontSize:12,lineHeight:19,color:colors.muted},
+  link:{fontFamily:type.semibold,fontSize:14,color:colors.violetDeep},note:{fontFamily:type.regular,fontSize: 14,lineHeight:19,color:colors.muted},
   primary:{minHeight:52,alignItems:'center',justifyContent:'center',borderRadius:24,backgroundColor:colors.violet},
   primaryText:{fontFamily:type.semibold,fontSize:15,color:colors.white},secondary:{minHeight:48,alignItems:'center',justifyContent:'center'},
 });

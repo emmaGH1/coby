@@ -25,6 +25,12 @@ Premium calm companion: a quiet room with a soft, recognizable presence. Use whi
 
 Functional type: Manrope. Use large titles and generous line-height. Build with tokens so dark mode can be added later; polish light mode first. Meet usable touch-target sizes and readable contrast.
 
+October 1 correction: secondary/action labels use at least 14 points; Plan titles/main controls use 16. Preserve larger display titles and system font scaling. Explicitly load Ionicons for recognizable Home, Plan/calendar, gear, pencil and trash. Navigation includes icons and labels; edit/delete targets are 48×48.
+
+Prior-day unfinished items stay saved in Plan's Earlier view and a quiet Home review link. Same-day overdue work retains its explanation. Refresh through Clock every minute and on foreground. Tapping NOW/NEXT opens details and Cancel/Save returns Home.
+
+Receipt defaults to native date/time dialogs with manual entry/clear on demand. Picker previews/dismissal never invent timing. Blocked saves identify and highlight invalid items, announce and scroll to the first, and repeat a review link near Save. Uncertainty uses a visible review checkbox.
+
 ## Home composition
 
 Home is the relief loop in one surface. The user should understand within seconds that they can speak or type without first navigating elsewhere.

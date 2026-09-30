@@ -2,6 +2,12 @@
 
 Record date, device/emulator, build, result, and evidence for every executed row. “Planned” is not “passed.”
 
+## October 1 — Readability/recovery candidate
+
+- PASS: typecheck/lint/62 tests. Six new cases cover prior local days/midnight, date-only recovery, rescheduling/history exclusion, one NOW/two NEXT, receipt multi-item blocking and picker previews/nulls/field selection.
+- PENDING: Android bundle/native picker APK and physical selection/dismissal, bottom Save jumping to an invalid earlier card, icons/larger labels, Home editing/return, Earlier inspection and capture regression.
+- No real task changed, archived, deleted or reseeded. Earlier is derived inspection, not a storage migration.
+
 ## Current physical checkpoint — September 30, 23:42 Lagos
 
 - PASS: bf79e24 loaded on wireless OnePlus A6010/API 30; GitHub Android debug build 36783330575 passed. Supersedes earlier disconnected-device notes.

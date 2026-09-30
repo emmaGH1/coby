@@ -22,9 +22,9 @@ Coby optimizes for reduced cognitive load and trust, not maximum information den
 | Arrival | Warm branded entry with an immediate path into the app. |
 | Capture | Native/device voice input and reliable text fallback. Editable transcript before understanding. |
 | Understand | Structured extraction of tasks, events, and reminders. Unknown dates and durations stay null. |
-| Receipt | Calm confirmation of every extracted item; user can correct errors before saving. |
+| Receipt | Calm confirmation of every extracted item; user can correct errors before saving. Native date/time selection with optional manual entry. Invalid submission identifies and scrolls to the affected item; uncertainty has an explicit review checkbox. |
 | Hold | Local persistence survives app restart. |
-| Home | Exactly one NOW item when available and at most two NEXT items. A clear state when none exists. |
+| Home | Exactly one NOW item when available and at most two NEXT items. Prior-day unfinished items stay saved in Earlier review, outside NOW/NEXT. Tap NOW/NEXT to edit directly. A clear state when none exists. |
 | Plan | All held items inspectable in List and seven-day Calendar views, with previous/next week inspection and a quiet Completed history view with restoration. Saved items expose Edit details for title, kind, date, time, and duration corrections, plus individual deletion and confirmed Clear list with reminder cancellation. |
 | Focus | One item at a time, with completion and a clear exit. Back returns to the originating Home/Plan without completing the item; Android Back does the same. |
 | Rank | Deterministic priority with a truthful “Why this now?” explanation. |

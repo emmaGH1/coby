@@ -3,6 +3,21 @@ import type { CobyItem } from './types';
 
 export type RankedItem = { item: CobyItem; score: number; reasonCodes: string[] };
 
+export function isFromEarlierDay(item: CobyItem, clock: Clock): boolean {
+  const today = clock.now();
+  const due = item.dueAt ? new Date(item.dueAt) : item.dueDate ? new Date(`${item.dueDate}T12:00:00`) : null;
+  if (!due || !Number.isFinite(due.getTime())) return false;
+  today.setHours(0, 0, 0, 0);
+  return due.getTime() < today.getTime();
+}
+
+export function selectHomeItems(items: CobyItem[], clock: Clock): { now?: RankedItem; next: RankedItem[]; earlier: CobyItem[] } {
+  const held = items.filter(item => item.status !== 'completed' && item.status !== 'archived');
+  const earlier = held.filter(item => isFromEarlierDay(item, clock));
+  const current = rankItems(held.filter(item => !isFromEarlierDay(item, clock)), clock);
+  return { now: current[0], next: current.slice(1, 3), earlier };
+}
+
 export function rankItems(items: CobyItem[], clock: Clock): RankedItem[] {
   const now = clock.now().getTime();
   return items

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, AppState, BackHandler, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import * as Notifications from 'expo-notifications';
@@ -6,7 +6,7 @@ import { useFonts, Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, M
 import { DemoClock, SystemClock, type Clock } from './src/domain/clock';
 import { DEMO_DUMP, FixtureBrainDumpParser } from './src/domain/parser';
 import { createGeminiBrainDumpParser } from './src/domain/parserFactory';
-import { rankItems } from './src/domain/ranking';
+import { selectHomeItems } from './src/domain/ranking';
 import { planNudges, postponeNudge } from './src/domain/nudges';
 import type { CobyItem, ItemStatus, ParsedItem } from './src/domain/types';
 import { applyItemEdit, leaveFocusItem } from './src/domain/itemActions';
@@ -18,6 +18,8 @@ import { ReceiptScreen } from './src/ui/ReceiptScreen';
 import { NudgeScreen } from './src/ui/NudgeScreen';
 import { PlanScreen } from './src/ui/PlanScreen';
 import { CobyOrb } from './src/ui/CobyOrb';
+import { BottomNav } from './src/ui/BottomNav';
+import { iconFonts } from './src/ui/icons';
 import { colors as palette, type } from './src/ui/theme';
 import { speechErrorMessage } from './src/voice/speech';
 import { offlineVoiceAvailable } from './src/voice/offline';
@@ -60,7 +62,7 @@ async function buildDemoItems(demoClock: DemoClock): Promise<CobyItem[]> {
 }
 
 export default function App() {
-  const [fontsLoaded] = useFonts({ Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold });
+  const [fontsLoaded] = useFonts({ Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold, ...iconFonts });
   const [screen, setScreen] = useState<Screen>('home');
   const [items, setItems] = useState<CobyItem[]>([]);
   const [dump, setDump] = useState('');
@@ -72,6 +74,10 @@ export default function App() {
   const [focusItem, setFocusItem] = useState<CobyItem | null>(null);
   const [focusContext, setFocusContext] = useState<{ returnTo: 'home' | 'plan'; previousStatus: ItemStatus } | null>(null);
   const [editingItem, setEditingItem] = useState<CobyItem | null>(null);
+  const [editReturnTo, setEditReturnTo] = useState<'home' | 'plan'>('plan');
+  const [planInitialView, setPlanInitialView] = useState<'list' | 'earlier'>('list');
+  const [, refreshTime] = useState(0);
+  const pageScroll = useRef<ScrollView>(null);
   const [activeClock, setActiveClock] = useState<Clock>(() => new SystemClock());
   const [labMessage, setLabMessage] = useState('Fixture parser · RevenueCat not connected');
   const [parserMode, setParserMode] = useState<'fixture' | 'configured'>(process.env.EXPO_PUBLIC_COBY_AI_PROVIDER === 'gemini' ? 'configured' : 'fixture');
@@ -275,9 +281,13 @@ export default function App() {
     finally { setBusy(false); }
   }
 
-  const ranked = useMemo(() => rankItems(items, activeClock), [items, activeClock]);
-  const now = ranked[0];
-  const next = ranked.slice(1, 3);
+  useEffect(() => {
+    const refresh = () => refreshTime(value => value + 1);
+    const timer = setInterval(refresh, 60_000);
+    const foreground = AppState.addEventListener('change', state => { if (state === 'active') refresh(); });
+    return () => { clearInterval(timer); foreground.remove(); };
+  }, [activeClock]);
+  const { now, next, earlier } = selectHomeItems(items, activeClock);
 
   async function cancelCompletedNudges(item: CobyItem): Promise<void> {
     try { await syncItemNudges({ ...item, status: 'completed' }, activeClock); }
@@ -427,7 +437,10 @@ export default function App() {
     finally { setBusy(false); }
   }, [focusItem, focusContext]);
 
-  const cancelEdit = useCallback(() => { setEditingItem(null); setError(null); setScreen('plan'); }, []);
+  function openItemEdit(item: CobyItem) {
+    setEditReturnTo(screen === 'home' ? 'home' : 'plan'); setEditingItem(item); setError(null); setScreen('edit');
+  }
+  const cancelEdit = useCallback(() => { setEditingItem(null); setError(null); setScreen(editReturnTo); }, [editReturnTo]);
 
   async function saveEditedItem(accepted: ParsedItem[]) {
     if (!editingItem || !accepted[0] || busy) return;
@@ -435,7 +448,7 @@ export default function App() {
     const changed = applyItemEdit(editingItem, accepted[0]);
     try {
       await saveItems([changed]);
-      setItems(await listItems()); setEditingItem(null); setScreen('plan');
+      setItems(await listItems()); setEditingItem(null); setScreen(editReturnTo);
       try {
         if (!await syncItemNudges(changed, activeClock)) setError('Changes saved. Notifications are off, so no reminder was scheduled.');
       } catch { setError('Changes saved, but Coby could not update the reminders. Please check notification access.'); }
@@ -443,13 +456,13 @@ export default function App() {
     finally { setBusy(false); }
   }
 
-  async function removeHeldItem(item: CobyItem) {
+  async function removeHeldItem(item: CobyItem, returnTo: 'home' | 'plan' = 'plan') {
     setBusy(true); setError(null);
     try {
       await cancelItemNudges(item.id);
       await deleteItem(item.id);
       setItems((current) => current.filter((held) => held.id !== item.id));
-      setEditingItem(null); setScreen('plan');
+      setEditingItem(null); setScreen(returnTo);
     } catch { setError('Coby could not delete this item. It is still held; try again.'); }
     finally { setBusy(false); }
   }
@@ -459,7 +472,7 @@ export default function App() {
     const item = editingItem;
     Alert.alert('Delete this item?', 'It will be removed from Coby along with its reminders.', [
       { text: 'Keep it', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => void removeHeldItem(item) },
+      { text: 'Delete', style: 'destructive', onPress: () => void removeHeldItem(item, editReturnTo) },
     ]);
   }
 
@@ -582,11 +595,14 @@ export default function App() {
       onPrepareOfflineVoice={Platform.OS === 'android' && voiceNetworkError ? () => void prepareOfflineVoice() : undefined}
       next={next}
       now={now}
+      earlierCount={earlier.length}
+      onReviewEarlier={() => { setPlanInitialView('earlier'); setScreen('plan'); }}
+      onEdit={openItemEdit}
       onChangeDump={(value) => { setDump(value); if (error) setError(null); }}
       onComplete={finishNow}
       onGentle={(item) => void setCommitment(item, 'gentle')}
       onOpenLab={() => setScreen('lab')}
-      onOpenPlan={() => setScreen('plan')}
+      onOpenPlan={() => { setPlanInitialView('list'); setScreen('plan'); }}
       onOpenSettings={() => { setError(null); setSettingsNotice(null); setScreen('settings'); }}
       onPersistent={requestPersistent}
       onStartFocus={(item) => void startFocus(item)}
@@ -595,7 +611,7 @@ export default function App() {
       onUnderstand={() => void understand()}
       showLab={demoToolsEnabled}
       showReason={showReason}
-    /> : <ScrollView key={screen} contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
+    /> : <ScrollView ref={pageScroll} key={screen} contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
       {screen === 'lab' && demoToolsEnabled && <>
         <Pressable onPress={() => setScreen('home')} accessibilityRole="button"><Text style={styles.back}>← Home</Text></Pressable>
         <Text style={[styles.pageTitle, styles.planTitle]}>Coby Lab</Text>
@@ -632,9 +648,9 @@ export default function App() {
         <Button label="Restore purchase" kind="quiet" disabled={busy || !billing.configured} onPress={restorePlus} />
       </>}
 
-      {screen === 'plan' && <PlanScreen items={items} clock={activeClock} busy={busy} dueText={dueText}
+      {screen === 'plan' && <PlanScreen items={items} clock={activeClock} busy={busy} dueText={dueText} initialView={planInitialView}
         onHome={() => setScreen('home')}
-        onEdit={item => { setEditingItem(item); setError(null); setScreen('edit'); }}
+        onEdit={openItemEdit}
         onDelete={item => Alert.alert('Delete this item?', 'It will be removed from Coby along with its reminders.', [
           { text: 'Keep it', style: 'cancel' }, { text: 'Delete', style: 'destructive', onPress: () => void removeHeldItem(item) }])}
         onFocus={item => void startFocus(item)} onToggleComplete={item => void toggleComplete(item)}
@@ -662,7 +678,7 @@ export default function App() {
         <NudgeScreen item={nudgeItem} busy={busy} message={nudgeMessage} dueText={dueText}
           onBack={() => { setError(null); setScreen('home'); }} onFocus={() => void startFocus(nudgeItem)}
           onDone={() => void finishNudge()} onDelay={minutes => void delayNudge(minutes)}
-          onEdit={() => { setEditingItem(nudgeItem); setScreen('edit'); }}
+          onEdit={() => openItemEdit(nudgeItem)}
           onGentle={() => void setCommitment(nudgeItem, 'gentle')}
           onPersistent={() => requestPersistent(nudgeItem)} onOff={() => void setCommitment(nudgeItem, 'none')} />
       </>}
@@ -679,11 +695,12 @@ export default function App() {
         </View>
       </View>}
 
-      {screen === 'receipt' && <ReceiptScreen draft={draft} busy={busy} onEditDump={() => setScreen('home')} onHold={(accepted) => void holdItems(accepted)} />}
-      {screen === 'edit' && editingItem && <ReceiptScreen key={editingItem.id} mode="edit" draft={[editingItem]} busy={busy} onEditDump={cancelEdit} onHold={(accepted) => void saveEditedItem(accepted)} onDelete={confirmDelete} />}
+      {screen === 'receipt' && <ReceiptScreen clock={activeClock} onReviewLocation={y => pageScroll.current?.scrollTo({ y, animated: true })} draft={draft} busy={busy} onEditDump={() => setScreen('home')} onHold={(accepted) => void holdItems(accepted)} />}
+      {screen === 'edit' && editingItem && <ReceiptScreen clock={activeClock} onReviewLocation={y => pageScroll.current?.scrollTo({ y, animated: true })} key={editingItem.id} mode="edit" draft={[editingItem]} busy={busy} onEditDump={cancelEdit} onHold={(accepted) => void saveEditedItem(accepted)} onDelete={confirmDelete} />}
 
       {error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
     </ScrollView>}
+    {screen === 'plan' && <BottomNav current="plan" onHome={() => setScreen('home')} onPlan={() => {}} />}
   </KeyboardAvoidingView>;
 }
 

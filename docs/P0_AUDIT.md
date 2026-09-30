@@ -48,3 +48,5 @@ P0 is now **in progress**. The first recovery slice replaces the old Arrival/Hom
 ## September 30 correction from the user
 
 The prior Home layout is rejected despite earlier internal visual review. The new reference requires central orb presence, animated recording feedback, and bottom capture with obligations above it. These requirements are implemented in the new Home. Empty Android rendering is verified; populated/keyboard interaction verification is in progress. Voice failed for the user; the emulator host microphone was subsequently found disabled and enabled through its SDK API. Real spoken transcription is still an open acceptance gate.
+
+The September 30 fixture text loop has now passed on the current Android Home: bottom input → undated receipt → acceptance/local save → NOW above dock → Done → clear Home. Empty and one-item returning layouts are verified. Live voice and software-keyboard behavior remain open gates.

@@ -24,7 +24,7 @@ The transparent orb was generated for Coby and stored in assets/coby-orb.png. No
 ## Known P0 gaps
 
 - Real multi-clause voice transcription, stop/retry, permission denial, and actual audio-reactive motion need verification.
-- Current text keyboard/receipt/save flow and populated Home need device interaction confirmation.
+- Text entry, fixture receipt acceptance, local save-to-NOW, and completion passed on the current Home. Software-keyboard resize and full receipt corrections remain pending.
 - Plan, Focus, paywall, and Lab still use the older visual system.
 - Future nudge timing/rescheduling/cancellation and RevenueCat restore remain pending.
 - No final demo video recorded; screenshot and submission polish follow the P0 acceptance matrix.
@@ -37,8 +37,12 @@ Metro runs locally on port 8082 with CI=true and NODE_OPTIONS=--dns-result-order
 
 Use `node scripts/emulator-microphone.cjs` to inspect host forwarding, or add `--enable` to enable and verify it. It reads the local running emulator token only in memory. This is emulator configuration, not an app speech guarantee. The user is asleep; no further human input is expected tonight.
 
+## Latest Android interaction evidence
+
+After dismissing Android/Gboard stylus onboarding, the bottom field accepted the synthetic sentence "Remember to water the plants". The fixture parser returned one intact item with no date; receipt acceptance saved it and Home displayed it as NOW above the dock. Done removed it and returned Home to the large-orb empty state. Empty and populated Home were inspected inline on Pixel 6; subjective approval remains for the user. No real personal dump was used.
+
+Metro reported emulator DNS failures resolving api.revenuecat.com during this session. Earlier successful billing checks remain historical; current online services are not verified.
+
 ## NEXT ACTION
 
-Verify the revised Home capture-to-receipt-to-save flow and real spoken transcription on Pixel 6, preserving an honest failure record for anything still not working.
-
-Current emulator interaction caveat: Android/Gboard opened a stylus onboarding overlay during automated text entry. Text-to-receipt verification is not passed. Metro also reported emulator DNS failures resolving api.revenuecat.com in this session; prior successful billing evidence remains historical, not a current connectivity pass.
+Verify real multi-clause spoken transcription, stop/retry, and permission fallback on Pixel 6 now that host microphone forwarding is enabled.

@@ -43,3 +43,7 @@ Typecheck, lint, and 24 tests passed. Receipt validation covers unknown timing, 
 - Prior release screenshot represents the superseded Home layout; do not submit it as the final UI.
 
 Current emulator interaction caveat: Android/Gboard opened a stylus onboarding overlay during automated text entry. Text-to-receipt verification is not passed. Metro also reported emulator DNS failures resolving api.revenuecat.com in this session; prior successful billing evidence remains historical, not a current connectivity pass.
+
+### Follow-up device evidence
+
+The stylus tutorial was dismissed. Current Pixel 6 development build passed bottom-dock typed input, fixture parsing to receipt, accepting an undated item, local save/read to NOW, and completion returning to empty Home. Test phrase: "Remember to water the plants" (synthetic). Empty and one-item Home were inspected inline. This does not verify spoken transcription, software-keyboard resize, multi-item NEXT rendering, or full receipt correction fields.

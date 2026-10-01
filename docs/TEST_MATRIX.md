@@ -2,15 +2,13 @@
 
 ## October 1 — P0 closure checkpoint
 
-- PASS: isolated native QA 36824997183 on Android 16/API36. Actual SQLite bulk removal keeps completed/archived rows and removes all pending reminders. Both deterministic Persistent reminders delivered while backgrounded over their real 30-minute interval; cleared rows/history survived cold restart. Evidence artifact coby-native-qa-evidence/native-qa.txt. This is native adapter evidence, separate from the application's Clear list UI gate.
-- PASS: fixture public release contains its JavaScript bundle, no local Gemini development key and no Google API-key pattern. Native branded package is com.emmagh1.coby, min API24/target API36.
-- RUNNING: native UI casing-corrected rerun 36829030329. First run reached a correct confirmation but test expected lowercase text; no app defect established by that failure.
-
-- PASS: typecheck, lint and 68 tests, including bounded extraction timeout/abort, retry, explicit offline retention without guessed timing, and Gentle default only for future exact-time items.
-- PASS: branded native debug build 36824942961 and fixture release/screenshot workflow 36825001246 at c8cefcd. Fresh screenshot visual inspection is next; new offline-recovery/automatic-Gentle JavaScript changes follow in a later checkpoint.
-- RUNNING: isolated native QA 36824997183; bulk cancellation/removal/history, real Persistent delivery and restart must be observed in its final report before marking passed.
-- PENDING DEVICE: load the warning/recovery/Gentle update, verify notification permission denial preserves saved items, automatic future Gentle delivery, and specific offscreen receipt error jump. Preserve unsaved phone input and all real tasks.
-- DEMO REVIEW FAILED: supplied draft contains inaccurate technology/event claims and existing task footage. FFprobe verifies 95s, 1920×1080 at 30fps. It is not approved for submission.
+- PASS: typecheck, lint and 68 tests, including timeout/abort/retry, explicit offline retention with null timing, and automatic Gentle only for future exact-time items.
+- PASS: isolated native QA 36824997183 on Android 16/API36. Actual SQLite bulk removal retains completed/archived rows, cancels pending reminders, and survives cold restart. Both Persistent reminders delivered while backgrounded over their real 30-minute interval.
+- PASS: production native UI 36831455328, reusing the unchanged runtime APK from 36829030329. Exact full input and three receipt cards verified before the offscreen invalid-title jump/correction. Hold, Focus completion, List/Calendar, confirmed Clear list and completed history after cold restart passed. Screenshots visually reviewed. Earlier truncated-input evidence does not establish this case.
+- PASS: branded native build 36824942961, package com.emmagh1.coby, min API24/target API36. Fresh actual Android submission screenshot 1179×2556 inspected and committed. Public fixture release has bundled JavaScript, no local Gemini development key and no Google API-key pattern; it is not a live-AI/billing build.
+- RUNNING: 36832129592 tests actual 30/60-minute Android notification buttons through production App and explicit offline recovery/receipt/restart in a separate QA package. Prior 36829983916 timed out during installation before an app action; installation timeout corrected.
+- PENDING PHONE: saved/Home readiness, safe reload and spoken confirmation of the silence-warning fix. No speech lifecycle changes. Latest automatic-Gentle/recovery source is not yet loaded on the phone. Notification-denial saved-state messaging is not physically accepted yet.
+- DEMO REVIEW FAILED: supplied local draft needs synthetic footage and truthful speech/SDK/event/Focus claims. Metadata: 95s, 1920×1080, 30fps. Final corrected render and subjective approval remain pending.
 
 ## October 1 — User acceptance and silence-warning correction
 
@@ -200,3 +198,4 @@ The stylus tutorial was dismissed. Current Pixel 6 development build passed bott
 - PASS: Off and completion each remove the synthetic pending native request; Completed shows strikethrough; restoring that test item returns it to planned with its future requested reminder.
 - PENDING: 30/60-minute OS actions, visible/Android Back Focus exit, synthetic deletion/persistence, Persistent native cadence, RevenueCat restore, bulk clear in an isolated dataset, and keyboard/voice after the latest UI changes.
 - Feedback/Manrope consistency correction is code verified; physical reload is pending. Do not claim these newest changes are installed. Phone readiness is requested because foreground switched away from Coby.
+

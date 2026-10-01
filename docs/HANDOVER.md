@@ -191,7 +191,7 @@ The canonical anti-AI-slop hackathon demo video is authored, verified, and rende
 
 ## NEXT ACTION
 
-Run the isolated native reliability and fresh screenshot workflows, inspect their evidence, then close remaining phone-action and safe-distribution gates before P0 acceptance.
+Inspect the final isolated OS-action/offline-recovery evidence, then safely load the update when the user confirms saved/Home readiness; obtain voice-warning and corrected-demo approval before declaring P0 accepted.
 
 ## October 1 — Real Persistent delivery and clear/restart passed
 
@@ -224,3 +224,7 @@ Exported the approved circular C mark to 1024px icon, Android adaptive layers/mo
 Extraction now has a bounded 20-second timeout and abort; failure leaves the existing composer recovery path available. Added stalled-request and retry regressions. The phone currently has another app foreground; requested saved-input/Home readiness before any reload. No real phone task was touched.
 
 Reviewed the other agent's demo contact sheet: false offline Whisper/SDK/event claims, existing phone tasks and sampled Focus/Plan acts showing Home. The previously appended render checkpoint is a draft report, not submission approval. docs/DEMO_REVIEW.md records the required corrections. Ignore the draft video directory/MP4 to avoid publishing private task footage. Preserve all local artifacts for correction.
+
+## October 1 — Three-item native receipt gate passed
+
+36831455328 passed using the unchanged runtime APK from 36829030329. Exact injected text was verified before Send; screenshots show all three receipt cards. Invalid first title was identified and scrolled into view from the bottom, corrected, then held. Focus completion, List/Calendar, confirmed Clear list and completed history after cold restart passed. Evidence is downloaded to the working chat's outputs/p0-three-card-pass; no real phone data involved. Actual OS delay/offline recovery run 36832129592 remains running. The draft demo also incorrectly labels Focus “Gentle Timer”; no countdown timer is implemented, so remove that claim.

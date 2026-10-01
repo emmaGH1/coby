@@ -14,11 +14,12 @@ A calm, voice-first companion that turns a messy brain dump into a trustworthy r
 [![AI Engine: Gemini 3.5 Flash Lite](https://img.shields.io/badge/ai-Gemini%203.5%20Flash%20Lite-8b5cf6.svg?style=flat-square)](src/domain/geminiParser.ts)
 [![Persistence: Local SQLite](https://img.shields.io/badge/storage-100%25%20Local%20SQLite-059669.svg?style=flat-square)](src/data/items.ts)
 [![Monetization: RevenueCat Test Store](https://img.shields.io/badge/sponsor-RevenueCat%20Test%20Store-e11d48.svg?style=flat-square)](src/billing/revenuecat.ts)
+[![X / Twitter: @_HEISEMMA](https://img.shields.io/badge/%F0%9D%95%8F-@__HEISEMMA-black.svg?style=flat-square)](https://x.com/_HEISEMMA/status/2105786474436456736)
 [![License: MIT](https://img.shields.io/badge/license-MIT-gray.svg?style=flat-square)](LICENSE)
 
 ---
 
-### [▶ Watch 2-Minute Demo Video](https://vimeo.com/1232100414) &nbsp;•&nbsp; [⬇ Download Pre-Built Android APK](#how-judges-can-test-coby) &nbsp;•&nbsp; [⚡ Verify in 60s](#-verify-in-60-seconds-cpu-only-no-android-required) &nbsp;•&nbsp; [Architecture](#architecture--data-flow) &nbsp;•&nbsp; [Honesty Matrix](#whats-real-the-honesty-matrix)
+### [▶ Watch 2-Minute Demo Video](https://vimeo.com/1232100414) &nbsp;•&nbsp; [𝕏 Launch Post](https://x.com/_HEISEMMA/status/2105786474436456736) &nbsp;•&nbsp; [⬇ Download Pre-Built Android APK](#how-judges-can-test-coby) &nbsp;•&nbsp; [⚡ Verify in 60s](#-verify-in-60-seconds-cpu-only-no-android-required) &nbsp;•&nbsp; [Architecture](#architecture--data-flow) &nbsp;•&nbsp; [Honesty Matrix](#whats-real-the-honesty-matrix)
 
 ---
 
@@ -233,6 +234,7 @@ If you want to run the full live Gemini AI extraction with your own API key:
 ## Submission Assets & Artifacts
 
 * **Demo Video**: [Vimeo Walkthrough (https://vimeo.com/1232100414)](https://vimeo.com/1232100414) (Authentic physical OnePlus A6010 Android capture; under 2 minutes).
+* **Launch Post**: [𝕏 / Twitter Thread (@_HEISEMMA)](https://x.com/_HEISEMMA/status/2105786474436456736) (Walkthrough & launch announcement).
 * **High-Res Screenshot**: [`assets/submission/screenshot-home.png`](assets/submission/screenshot-home.png) (1179 × 2556, unadorned native frame).
 * **Brand Assets**: Programmatically generated 1024×1024 launcher icon, adaptive layers, and native splash via [`scripts/export-brand-assets.cjs`](scripts/export-brand-assets.cjs).
 * **Product Canon**: [`docs/PRODUCT.md`](docs/PRODUCT.md) &nbsp;|&nbsp; **Design System**: [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) &nbsp;|&nbsp; **Test Matrix**: [`docs/TEST_MATRIX.md`](docs/TEST_MATRIX.md).

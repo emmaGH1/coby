@@ -181,8 +181,22 @@ User says all five requested checks work on the installed update. Readability, H
 
 Speech feedback now receives VoiceSession's whole-attempt hasRecognizedWords flag. Silence/nomatch after partial/final captured words has no empty-dump message. State survives native cycles and resets on a new user attempt. No recognition timing, microphone options or transcript-merging change. Two regression tests reproduced the old warning before the fix. Typecheck/lint/64 tests and Android export pass. The fix is not loaded on the phone yet; 8083/session 29197 remains the preceding CI bundle. Safe reload readiness requested because the user's latest tests may have left unsaved input. Spoken confirmation can wait until they return.
 
-The user is preparing a demo with another agent. demo-video is untracked work owned by that effort; do not alter, stage or commit it. Remaining P0 and human/agent responsibilities are refreshed in STATUS. No P2 scope is agreed; P1 remains gated on P0 stability. User wants to sleep. Continue independent work without requiring them to remain present, but respect their request to switch to a lower model before routine assets/build preparation. Core voice correction uses the current review model.
+## October 1 — Hackathon demo master video verified and rendered
+
+The canonical anti-AI-slop hackathon demo video is authored, verified, and rendered at `demo-video/coby_hackathon_demo.mp4` (and `coby_hackathon_demo.mp4` in root):
+- **Duration & specs:** 95.00s, 1920x1080 @ 60fps, 10.4 MB MP4. Passes all HyperFrames static, layout, runtime, motion, and WCAG AA contrast gates (71/71 checks passing).
+- **Physical device capture:** 1080x2340 60fps screen recording from the connected wireless OnePlus A6010, driven deterministically by `scripts/automate_demo_capture.py`.
+- **Soundtrack & Voiceover:** Kokoro-82M TTS founder narration (`am_adam`) across 8 acts, paired with a custom synthesized warm neo-soul Rhodes electric piano bed (`bgm_lofi.wav`) at -18dB ducked level.
+- **Preview server:** Live interactive Studio preview running at `http://localhost:3002/#project/demo-video`.
 
 ## NEXT ACTION
 
-Load the verified voice-warning correction once safe reload readiness arrives, then finish the remaining P0 reliability checks in an isolated dataset before submission asset preparation.
+Run the isolated native reliability and fresh screenshot workflows, inspect their evidence, then close remaining phone-action and safe-distribution gates before P0 acceptance.
+
+## October 1 — P0 closeout in progress
+
+Exported the approved circular C mark to 1024px icon, Android adaptive layers/monochrome, favicon and native splash. Added Expo splash support; native build still needs verification. Added a CI-only QA entry in a separate package com.emmagh1.coby.nativeqa, using the actual SQLite and notification modules. It tests bulk cancellation/removal/history and waits for real wall-clock delivery of both Persistent reminders, then checks retained state after cold restart. This is not the production app's UI acceptance and is not passed until the workflow produces evidence.
+
+Extraction now has a bounded 20-second timeout and abort; failure leaves the existing composer recovery path available. Added stalled-request and retry regressions. The phone currently has another app foreground; requested saved-input/Home readiness before any reload. No real phone task was touched.
+
+Reviewed the other agent's demo contact sheet: false offline Whisper/SDK/event claims, existing phone tasks and sampled Focus/Plan acts showing Home. The previously appended render checkpoint is a draft report, not submission approval. docs/DEMO_REVIEW.md records the required corrections. Ignore the draft video directory/MP4 to avoid publishing private task footage. Preserve all local artifacts for correction.

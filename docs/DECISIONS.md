@@ -1,5 +1,13 @@
 # Decision log
 
+## October 1 — Hackathon master demo video (Zero-slop, physical device capture, HyperFrames)
+
+Authored and rendered a 95.0-second 60fps 1080p master hackathon demo video (`coby_hackathon_demo.mp4`) adhering strictly to Coby's product canon, guardrails, and anti-sloppification directives:
+- **Zero simulated UI mockups:** Every frame of app footage is an authentic 1080x2340 screen recording from the physical OnePlus A6010 Android device driven by automated, reproducible ADB interactions.
+- **Strict guardrails:** Completely zero medical treatment or diagnostic claims; the narrative problem is framed around cognitive overwhelm, executive fatigue, and overloaded minds.
+- **Audio architecture:** Kokoro-82M TTS with young founder voice (`am_adam`) across 8 acts, backed by a custom synthesized warm neo-soul Rhodes electric piano chord bed (`bgm_lofi.wav`) at -18dB ducked level.
+- **Composition contract:** Built with HyperFrames and GSAP 3.14. 0 errors, 0 warnings across lint, runtime, layout, and 71/71 WCAG AA contrast checks. Visual layout features the OnePlus chassis in Studio Calm Canvas (`#F4F3F0`) with Manrope typography and synchronized proof callouts.
+
 ## October 1 — Silence feedback follows captured words
 
 Native nomatch/no-speech/speech-timeout can arrive during finalization after a successful transcript. Use recognized-word state from the whole VoiceSession attempt to suppress the false empty-dump warning. Preserve that state across native cycles and reset it when a new user attempt begins; typed base text does not count as new voice input. Keep recognition timing/transcript merging unchanged. Genuine empty attempts and service/network failures retain their recovery feedback.
@@ -169,3 +177,9 @@ Omit the channel sound property. In the installed Expo Android implementation an
 ## September 30 — Extension and truthful feedback
 
 Devpost confirms October 1 noon PDT / 20:00 Lagos; retain P0 scope and reserve submission time. Switching commitment invalidates the previous postponement confirmation, so clear it. Consume stale finished/deleted-item notification responses to avoid replay on launch. Notification-access success belongs in neutral status text. Use Manrope/theme tokens on Focus, Settings and Plus to match the approved Home/Plan direction.
+
+## October 1 — Safe P0 closure
+
+Use the approved circular C vector for exact brand exports and Expo's native splash plugin. Reliability QA runs under a separate Android application ID and a CI-only entry; it must refuse the real package before any clearing. Persistent delivery uses real wall-clock deadlines rather than accelerated mock alarms. Public fixture artifacts contain no development keys and must be labelled as fixture demonstrations, not live AI/billing builds. The Next Gen source/device-demo route remains available without a store release. A publicly distributed live-AI APK requires a secured endpoint.
+
+Bound Gemini extraction to 20 seconds, abort and retain the existing editable words/retry path. Reject the other agent's rendered demo for submission until incorrect technology/event claims and existing private task footage are replaced; technical render gates alone are insufficient.

@@ -11,3 +11,7 @@ ios/
 *.jks
 *.log
 .expo-export-check/
+
+# Unreviewed recording includes existing phone tasks; preserve locally only.
+demo-video/
+coby_hackathon_demo.mp4

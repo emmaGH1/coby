@@ -1,17 +1,13 @@
-name: Android submission screenshot
-
+name: Isolated native P0 reliability
 on:
   workflow_dispatch:
-
 jobs:
-  capture:
+  native-qa:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 85
     env:
       EXPO_NO_DOTENV: '1'
-      EXPO_PUBLIC_COBY_AI_PROVIDER: fixture
-      EXPO_PUBLIC_COBY_AI_MODEL: gemini-3.5-flash-lite
-      EXPO_PUBLIC_COBY_DEMO_MODE: 'true'
+      EXPO_PUBLIC_COBY_NATIVE_QA: isolated
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -23,10 +19,12 @@ jobs:
           distribution: temurin
           java-version: '17'
       - run: npm ci
+      - name: Select isolated package and QA entry
+        run: |
+          node -e "const fs=require('fs');let p=require('./package.json');p.main='scripts/native-qa-entry.tsx';fs.writeFileSync('package.json',JSON.stringify(p));let a=require('./app.json');a.expo.android.package='com.emmagh1.coby.nativeqa';fs.writeFileSync('app.json',JSON.stringify(a));"
       - run: npx expo prebuild --platform android --non-interactive --no-install
-      - name: Compile fixture-only release APK
+      - run: ./gradlew :app:assembleRelease --no-daemon
         working-directory: android
-        run: ./gradlew :app:assembleRelease --no-daemon
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -39,14 +37,9 @@ jobs:
           arch: x86_64
           profile: pixel_6
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
-          script: python3 scripts/capture_android.py
+          script: python3 scripts/run_native_qa.py
       - uses: actions/upload-artifact@v4
         with:
-          name: coby-android-screenshot
-          path: artifacts/screenshot-home.png
-          if-no-files-found: error
-      - uses: actions/upload-artifact@v4
-        with:
-          name: coby-offline-fixture-apk
-          path: android/app/build/outputs/apk/release/app-release.apk
+          name: coby-native-qa-evidence
+          path: artifacts/native-qa.txt
           if-no-files-found: error

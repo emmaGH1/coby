@@ -45,12 +45,26 @@ export function validateParseResult(value: unknown, input: string): ParseResult 
 }
 
 export class GeminiBrainDumpParser implements BrainDumpParser {
-  constructor(private apiKey: string, private model: string, private fetcher: Fetcher = fetch) {}
+  constructor(private apiKey: string, private model: string, private fetcher: Fetcher = fetch, private timeoutMs = 20_000) {}
 
   async parse(input: string, context: ParseContext): Promise<ParseResult> {
     if (!this.apiKey || !this.model) throw new Error('Gemini is not configured');
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => {
+        reject(new Error('Understanding timed out. Your words are still here. Try again.'));
+        controller.abort();
+      }, this.timeoutMs);
+    });
+    try { return await Promise.race([this.extract(input, context, controller.signal), timeout]); }
+    finally { clearTimeout(timer); }
+  }
+
+  private async extract(input: string, context: ParseContext, signal: AbortSignal): Promise<ParseResult> {
     const response = await this.fetcher(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(this.model)}:generateContent`, {
       method: 'POST',
+      signal,
       headers: { 'Content-Type': 'application/json', 'x-goog-api-key': this.apiKey },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: 'Extract only tasks, events, and reminders from the user text. Return JSON with an items array. Each item needs title, sourceFragment copied exactly from the user text, kind (task/event/reminder), dueDate YYYY-MM-DD or null, dueAt ISO datetime or null, durationMinutes integer or null, explicitPriority (urgent/important) or null, confidence 0..1, needsClarification boolean, clarificationQuestion string or null. A day such as tomorrow supplies dueDate but NOT dueAt; set dueAt only when an exact clock time is stated. Never invent life details, deadlines, durations, or priorities. Resolve clear relative dates/times from supplied local datetime and timezone. If uncertain, leave null and flag clarification. Do not rank, schedule, or give advice.' }] },

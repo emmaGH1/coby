@@ -2,13 +2,30 @@
 
 Record date, device/emulator, build, result, and evidence for every executed row. “Planned” is not “passed.”
 
-## October 1 — Readability/recovery candidate
+## October 1 — Readability/recovery physical checkpoint
 
 - PASS: typecheck/lint/62 tests. Six new cases cover prior local days/midnight, date-only recovery, rescheduling/history exclusion, one NOW/two NEXT, receipt multi-item blocking and picker previews/nulls/field selection.
-- PENDING: Android bundle/native picker APK and physical selection/dismissal, bottom Save jumping to an invalid earlier card, icons/larger labels, Home editing/return, Earlier inspection and capture regression.
+- PASS: Android export includes the icon font; native build 36792872254 (73b6c06) passed. Installed over existing data on wireless OnePlus A6010/API 30.
+- PASS: house/calendar navigation, gear, pencil, trash and enlarged labels render. Home NEXT opens its editor; Android Back returns Home without saving. Earlier opens retained prior-day items outside NOW/NEXT.
+- PASS: synthetic native date/time picker opens, cancellation retains blanks, explicit selection saves October 1 at 02:14 local. Saved edit clearing time retains the date with dueAt null.
+- PASS: live uncertain synthetic receipt blocks Hold, scrolls to Item 1, shows its specific error at the top, and clears the error when the review checkbox is ticked. Hold then saves.
+- PASS: caught and corrected Plan returning to Earlier after switching to Held list and editing. Latest JavaScript bundle preserves the selected Plan view after editor cancellation. Typecheck/lint/62 tests pass again.
+- PASS: only Coby nudge test created/edited/deleted; zero test reminders left. Real-item aggregate digests match before installation and after all checks. Latest bundle runs on Metro localhost:8083, session 29197.
+- PENDING: final subjective readability, Home-origin Save return, multi-item offscreen uncertainty scrolling on phone, clear-date UI and keyboard/minute-long voice regression on this version. Domain multi-item/null/midnight cases pass; do not claim all device variants from a single-item check.
 - No real task changed, archived, deleted or reseeded. Earlier is derived inspection, not a storage migration.
 
-## Current physical checkpoint — September 30, 23:42 Lagos
+### User check after the new APK is installed
+
+1. Home/Plan: check the house/calendar icons, gear, pencil and smaller labels. They should be readable without zooming.
+2. Home: tap a NOW or NEXT title, change a sample task, and save. Return to Home; tap again and Cancel/Android Back without saving. No unintended completion.
+3. Earlier: yesterday's unfinished tasks should be inspectable here, outside NOW/NEXT. Reschedule only a task you genuinely want to move; it should return to the current Home ranking.
+4. Receipt: use a sample dump with several items and one uncertain date. Scroll to the last item and press Hold without reviewing the uncertain one. Coby should jump to the affected item and explain what needs review. Correct/review it, then Hold should work.
+5. Date/time: open each picker, cancel once (nothing changes), then select a date/time and save. Reopen the task to verify persistence. Clear time should keep a date-only task; clear date should remove both fields.
+6. Capture: type several lines with the keyboard open, then try a minute-long sample voice dump with pauses and Stop. Existing words should remain visible and intact. Samples need not be saved.
+
+Report which numbered check failed and what you saw. Do not clear your real list for testing.
+
+## Previous physical checkpoint — September 30, 23:42 Lagos
 
 - PASS: bf79e24 loaded on wireless OnePlus A6010/API 30; GitHub Android debug build 36783330575 passed. Supersedes earlier disconnected-device notes.
 - PASS: synthetic Focus entry, visible Back to Plan and Android Back; both restore planned without completion.
@@ -18,7 +35,7 @@ Record date, device/emulator, build, result, and evidence for every executed row
 - PASS: active-Plus display correction passes typecheck/lint/56 tests; physical reload pending.
 - PENDING: new-UI keyboard/minute-long voice regression, isolated bulk clear, 30/60-minute OS actions, Persistent delivery, final assets/demo/subjective approval.
 
-Older dated sections below are historical evidence; this is the latest device checkpoint.
+Older dated sections below are historical evidence; the October 1 checkpoint supersedes their pending reload notes.
 
 | Area | Scenario | Target | Status |
 | --- | --- | --- | --- |

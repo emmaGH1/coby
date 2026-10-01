@@ -16,7 +16,7 @@ import { loadBilling, purchaseMonthly, restoreBilling, type BillingState } from 
 import { HomeScreen } from './src/ui/HomeScreen';
 import { ReceiptScreen } from './src/ui/ReceiptScreen';
 import { NudgeScreen } from './src/ui/NudgeScreen';
-import { PlanScreen } from './src/ui/PlanScreen';
+import { PlanScreen, type PlanView } from './src/ui/PlanScreen';
 import { CobyOrb } from './src/ui/CobyOrb';
 import { BottomNav } from './src/ui/BottomNav';
 import { iconFonts } from './src/ui/icons';
@@ -75,7 +75,7 @@ export default function App() {
   const [focusContext, setFocusContext] = useState<{ returnTo: 'home' | 'plan'; previousStatus: ItemStatus } | null>(null);
   const [editingItem, setEditingItem] = useState<CobyItem | null>(null);
   const [editReturnTo, setEditReturnTo] = useState<'home' | 'plan'>('plan');
-  const [planInitialView, setPlanInitialView] = useState<'list' | 'earlier'>('list');
+  const [planInitialView, setPlanInitialView] = useState<PlanView>('list');
   const [, refreshTime] = useState(0);
   const pageScroll = useRef<ScrollView>(null);
   const [activeClock, setActiveClock] = useState<Clock>(() => new SystemClock());
@@ -648,7 +648,7 @@ export default function App() {
         <Button label="Restore purchase" kind="quiet" disabled={busy || !billing.configured} onPress={restorePlus} />
       </>}
 
-      {screen === 'plan' && <PlanScreen items={items} clock={activeClock} busy={busy} dueText={dueText} initialView={planInitialView}
+      {screen === 'plan' && <PlanScreen items={items} clock={activeClock} busy={busy} dueText={dueText} initialView={planInitialView} onViewChange={setPlanInitialView}
         onHome={() => setScreen('home')}
         onEdit={openItemEdit}
         onDelete={item => Alert.alert('Delete this item?', 'It will be removed from Coby along with its reminders.', [

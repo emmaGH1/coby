@@ -165,6 +165,16 @@ Receipt identifies invalid cards, shows specific errors near the title and Save,
 
 Typecheck, lint and all 62 tests pass. Six new cases cover multi-item receipt blocking/recovery, picker previews/selection/nulls, local midnight/date-only recovery, rescheduling/history exclusion and one NOW/two NEXT. Android bundle/native build and physical acceptance are pending. Phone is transport 34. P0 remains incomplete.
 
+## October 1 — Physical readability/recovery acceptance
+
+Native build 36792872254 at 73b6c06 passed and was installed over the existing OnePlus app with user authorization. Android export includes Ionicons. Date/time selectors open natively; cancellation preserves blanks. Explicit October 1 / 02:14 selection persisted. Clearing only time through saved editing retained the date with null dueAt. Live ambiguous test receipt blocked Hold, scrolled to its item, showed a specific error and accepted after ticking the review checkbox. Home NEXT opened editing and Android Back returned Home. Earlier showed retained prior-day items outside NOW/NEXT. Icons and larger labels render correctly; final subjective readability remains for the user.
+
+Found Plan re-entering Earlier after changing to Held list and editing. Plan now reports its selected view to App so editor return preserves it. Typecheck/lint/62 tests pass after the fix, and the corrected return was inspected on the phone. Latest 903-module bundle runs on localhost:8083, Metro session 29197. Native picker APK is compatible with this JavaScript-only correction. Superseded 8082 server stopped after verifying its process identity.
+
+Only Coby nudge test was created, edited and removed. Zero test reminders remain. Real-item aggregate digests are unchanged after installation and final checks. No real task was saved, completed, archived, deleted or cleared. Phone was paused when Camera became foreground and resumed only after user readiness. Leave Coby on Home for user checks. No voice implementation changed in this slice.
+
+User checks are listed in TEST_MATRIX: readability, Home-origin Save/Cancel, Earlier rescheduling, multiple-item receipt error location, picker select/cancel/clear, keyboard-visible typing and a paused minute-long voice dump. Single-item receipt/picker/device evidence does not cover every one of those cases. P0 still needs the documented reliability gates, final launcher/splash, fresh screenshot/demo and subjective approval. Before routine asset/build preparation, flag the user's requested lower-model switch.
+
 ## NEXT ACTION
 
-Finish the Android bundle/native picker build, protect unsaved input and verify icons, Earlier recovery, Home edit/return and receipt error/picker flow on the phone, then give the user a short test checklist.
+Collect the user's numbered readability/capture/multi-item receipt checks on the installed update and resolve any failure before final P0 reliability and submission preparation.

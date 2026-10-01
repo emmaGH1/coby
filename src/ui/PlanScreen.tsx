@@ -7,13 +7,16 @@ import type { CobyItem } from '../domain/types';
 import { CheckIcon, PencilIcon, TrashIcon } from './icons';
 import { colors, type } from './theme';
 
-type Props = { items:CobyItem[]; clock:Clock; busy:boolean; dueText:(item:CobyItem)=>string; initialView?:'list'|'earlier';
+export type PlanView = 'list' | 'calendar' | 'completed' | 'earlier';
+
+type Props = { items:CobyItem[]; clock:Clock; busy:boolean; dueText:(item:CobyItem)=>string; initialView?:PlanView; onViewChange:(view:PlanView)=>void;
   onHome:()=>void; onEdit:(item:CobyItem)=>void; onDelete:(item:CobyItem)=>void;
   onFocus:(item:CobyItem)=>void; onToggleComplete:(item:CobyItem)=>void;
   onReminders:(item:CobyItem)=>void; onClear:()=>void };
 
 export function PlanScreen(props:Props) {
-  const [mode,setMode]=useState<'list'|'calendar'|'completed'|'earlier'>(props.initialView ?? 'list');
+  const [mode,setMode]=useState<PlanView>(props.initialView ?? 'list');
+  function changeMode(view:PlanView){setMode(view);props.onViewChange(view)}
   const [offset,setOffset]=useState(0);
   const [day,setDay]=useState(()=>props.clock.now().toDateString());
   const week=calendarWeek(props.clock,offset);
@@ -26,9 +29,9 @@ export function PlanScreen(props:Props) {
   return <View style={styles.screen}>
     <Pressable accessibilityRole="button" onPress={props.onHome} style={styles.back}><Text style={styles.link}>← Home</Text></Pressable>
     <Text style={styles.title}>Plan</Text><Text style={styles.intro}>Everything you’ve handed over.</Text>
-    <View style={styles.segment}>{(['list','calendar'] as const).map(value=><Pressable key={value} accessibilityRole="button" accessibilityState={{selected:mode===value}} onPress={()=>setMode(value)} style={[styles.segmentButton,mode===value&&styles.segmentActive]}><Text style={styles.segmentText}>{value==='list'?'List':'Calendar'}</Text></Pressable>)}</View>
-    <View style={styles.toolbar}><Pressable accessibilityRole="button" onPress={()=>setMode(mode==='completed'?'list':'completed')} style={styles.history}><Text style={styles.link}>{mode==='completed'?'← Held list':`Completed · ${completed.length}`}</Text></Pressable>
-      <Pressable accessibilityRole="button" accessibilityState={{selected:mode==='earlier'}} onPress={()=>setMode(mode==='earlier'?'list':'earlier')} style={styles.history}><Text style={styles.link}>{mode==='earlier'?'← Held list':`Earlier · ${earlier.length}`}</Text></Pressable></View>
+    <View style={styles.segment}>{(['list','calendar'] as const).map(value=><Pressable key={value} accessibilityRole="button" accessibilityState={{selected:mode===value}} onPress={()=>changeMode(value)} style={[styles.segmentButton,mode===value&&styles.segmentActive]}><Text style={styles.segmentText}>{value==='list'?'List':'Calendar'}</Text></Pressable>)}</View>
+    <View style={styles.toolbar}><Pressable accessibilityRole="button" onPress={()=>changeMode(mode==='completed'?'list':'completed')} style={styles.history}><Text style={styles.link}>{mode==='completed'?'← Held list':`Completed · ${completed.length}`}</Text></Pressable>
+      <Pressable accessibilityRole="button" accessibilityState={{selected:mode==='earlier'}} onPress={()=>changeMode(mode==='earlier'?'list':'earlier')} style={styles.history}><Text style={styles.link}>{mode==='earlier'?'← Held list':`Earlier · ${earlier.length}`}</Text></Pressable></View>
     {mode==='list'&&<Pressable accessibilityRole="button" disabled={props.busy} onPress={props.onClear} style={styles.clear}><TrashIcon/><Text style={styles.clearText}>Clear list</Text></Pressable>}
     {mode==='calendar'&&<>
       <View style={styles.weekHeader}><Pressable accessibilityRole="button" accessibilityLabel="Previous week" onPress={()=>changeWeek(-1)} style={styles.weekArrow}><Text style={styles.link}>‹</Text></Pressable>

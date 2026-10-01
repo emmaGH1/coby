@@ -1,5 +1,9 @@
 # Decision log
 
+## October 1 — Preserve Plan view on editor return
+
+Physical checks found that opening Earlier, switching to Held list and editing a task restored Earlier on return because App retained the original entry view. Report List/Calendar/Completed/Earlier changes to App and use the latest selection when remounting Plan. This is navigation state only; no saved task changes. Native date/time, receipt review recovery and task preservation passed on OnePlus; final multi-item/capture/subjective acceptance remains with the user.
+
 ## October 1 — Readability, receipt recovery and earlier tasks
 
 The user rejected prior-day obligations dominating a new day's NOW/NEXT. Derive Earlier from local calendar days through Clock; preserve saved status and deadlines. Rank remaining Home items while Earlier offers reschedule/completion/deletion. Same-day overdue work retains its deterministic priority. Refresh each minute/on foreground; Home edits return Home.

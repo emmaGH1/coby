@@ -1,4 +1,4 @@
-# Coby progress — September 30, 2026
+# Coby progress — October 1, 2026
 
 Submission deadline: **October 1 at noon PDT / 8:00 PM Lagos**, confirmed at https://revenuecat-shipaton-2026.devpost.com/. Keep scope focused on P0 reliability, cohesive visuals, build and demo; the extension does not change P1 scope.
 
@@ -17,7 +17,7 @@ P0 is the complete first usable Coby, including dependable capture, nudges and a
 | Clear list | Implemented in Plan > List with confirmation, scoped notification cancellation and one SQLite deletion transaction. Removes all open items across calendar days; retains completed/archived history. Loaded on the wireless phone; confirmation and Keep my list cancellation passed. Actual bulk removal/persistence remains unverified. |
 | Nudges | Gentle future/background delivery, edited-time replacement, 15-minute OS action, 30/60-minute in-app delays, Off/completion cancellation and cold-start body opening passed on OnePlus. Persistent cadence, 30/60-minute OS actions and delete/clear cancellation remain pending. |
 | Billing | $4.99 coby_plus_monthly Test Store purchase, restore and Persistent gate verified on OnePlus September 30. Two native Persistent requests verified; full delivery cadence remains open. |
-| Quality/harness | Typecheck/lint and 56 tests pass. Fixture parser, SystemClock/DemoClock and Lab controls exist; the complete demo path remains to rehearse. |
+| Quality/harness | Typecheck/lint and 62 tests pass. Fixture parser, SystemClock/DemoClock and Lab controls exist; the complete demo path remains to rehearse. |
 | Repository/assets | README/setup and license exist; orb and icon assets exist. Final asset review, fresh screenshot and final demo recording remain. |
 
 ## Remaining P0, in working order
@@ -41,4 +41,6 @@ Notifications, basic orb responsiveness, keyboard fixes, editing, deletion, clea
 
 ## Latest implementation checkpoint
 
-Approved Home/Plan/receipt/check-in and feedback/Manrope update loaded on OnePlus. Gentle delivery, delays, edit, cold-start opening, Off/completion cancellation and restoration passed. Visible/Android Back Focus exits, Test Store purchase/restore, two native Persistent requests, synthetic deletion and restart persistence also passed. Test task removed; non-test payloads unchanged. Active Plus now has an explicit display instead of inviting repeat purchase; correction passes typecheck/lint/56 tests and awaits safe reload. Capture regression, isolated bulk clear, OS 30/60-minute actions, full Persistent delivery, launcher/splash assets, screenshot and demo remain. P0 is not complete.
+October 1 readability/recovery update installed on OnePlus from successful native build 36792872254. Icons and larger labels render; prior-day tasks stay held in Earlier outside NOW/NEXT. Native date/time selection/cancellation, persisted date-only clearing, live receipt review blocking/error scrolling/checkbox acceptance and Home NEXT edit/Back passed. A caught Plan return-view bug is corrected and phone verified. Latest bundle runs on localhost:8083. Typecheck/lint/62 tests pass. Only Coby nudge test was changed and removed; real-item digests unchanged.
+
+Prior Gentle delivery/delays/cold-start routing/cancellation, Focus exits, Test Store purchase/restore, Persistent scheduling and synthetic deletion remain verified. Active-Plus display is installed. Final user readability, multi-item receipt location, Home Save return and capture regression still need confirmation. Isolated bulk clear, OS 30/60-minute actions, full Persistent delivery, launcher/splash assets, fresh screenshot/demo and final approval remain. P0 is not complete.

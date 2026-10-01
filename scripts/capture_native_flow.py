@@ -39,6 +39,21 @@ def expect(label):
     if not locate(label):
         raise RuntimeError(f'Expected screen/control missing: {label}')
 
+def expect_selected(label):
+    for _ in range(7):
+        if locate(label):
+            break
+        adb('shell', 'input', 'swipe', '590', '1700', '590', '750', '350')
+        time.sleep(1)
+    matches = [node for node in tree().iter('node') if (node.get('content-desc') or '') == label]
+    assert any(node.get('selected') == 'true' for node in matches), f'Selection missing: {label}'
+
+def replace_title(value):
+    tap('Item 1 title')
+    adb('shell', 'input', 'keycombination', '113', '29')
+    adb('shell', 'input', 'text', value.replace(' ', '%s'))
+    adb('shell', 'input', 'keyevent', '4')
+
 def type_dump(value):
     # Pace injected typing and wait for controlled TextInput to retain every word.
     for index, word in enumerate(value.split(' ')):
@@ -64,13 +79,20 @@ def main():
     adb('shell', 'am', 'start', '-n', f'{PACKAGE}/.MainActivity')
     time.sleep(3)
     # This workflow installs into a fresh emulator with synthetic fixtures only.
-    tap('Plan'); tap('Clear list'); tap('Clear list')
-    tap('← Home')
+    tap('Plan'); tap('Clear list', scroll=True); tap('Clear list')
+    tap('Home')
     expect('Brain dump')
     capture('flow-empty-home')
     tap('Brain dump')
     dump = 'Finish the database assignment tomorrow, call Daniel by 8 PM tonight for 5 minutes, and buy data.'
     type_dump(dump)
+    bounds = locate('Brain dump')
+    keyboard = next((node for node in tree().iter('node') if (node.get('resource-id') or '').endswith('/keyboard_view')), None)
+    if keyboard is not None:
+        keyboard_top = [int(x) for x in re.findall(r'\d+', keyboard.get('bounds', ''))][1]
+        assert bounds and bounds[3] <= keyboard_top, 'Composer is behind the keyboard'
+    expect('Let Coby understand this')
+    capture('flow-keyboard')
     adb('shell', 'input', 'keyevent', '4')
     tap('Let Coby understand this')
     expect('Item 1 title')
@@ -100,12 +122,34 @@ def main():
     tap('Looks right. Hold it.', scroll=True)
     expect('Start focus')
     capture('flow-held-home')
+    # A paywall detour must preserve the edit, and Cancel must preserve the saved task.
+    tap('Edit Call Daniel')
+    replace_title('Call Daniel after lunch')
+    tap('Reminder Off', scroll=True); expect_selected('Reminder Off')
+    tap('Reminder Persistent'); expect('A little more support.'); capture('flow-paywall')
+    adb('shell', 'input', 'keyevent', '4')
+    for _ in range(3):
+        adb('shell', 'input', 'swipe', '590', '750', '590', '1700', '350')
+    expect('Item 1 title')
+    title = next(node.get('text') for node in tree().iter('node') if node.get('content-desc') == 'Item 1 title')
+    assert title == 'Call Daniel after lunch', 'Paywall return lost the unsaved title'
+    expect_selected('Reminder Off'); capture('flow-edit-reminder')
+    adb('shell', 'input', 'keyevent', '4')
+    expect('Edit Call Daniel')
+    tap('Edit Call Daniel')
+    expect_selected('Reminder Gentle')
+    tap('Reminder Off'); tap('Save changes', scroll=True)
+    expect('No reminder')
+    tap('Edit Call Daniel'); expect_selected('Reminder Off')
+    adb('shell', 'input', 'keyevent', '4')
     tap('Start focus'); expect('End focus'); capture('flow-focus')
+    adb('shell', 'input', 'keyevent', '4'); expect('Start focus')
+    tap('Start focus'); expect('End focus')
     tap('Complete')
     tap('Plan'); expect('Calendar'); capture('flow-list')
     tap('Calendar'); expect('Next week'); capture('flow-calendar')
     tap('Completed · 1'); capture('flow-history')
-    tap('← Held list'); tap('Clear list'); tap('Clear list')
+    tap('Back to Held list'); tap('Clear list', scroll=True); tap('Clear list')
     expect('Completed · 1'); capture('flow-cleared-list')
     adb('shell', 'input', 'keyevent', '3')
     adb('shell', 'am', 'kill', PACKAGE)
@@ -113,7 +157,7 @@ def main():
     time.sleep(3)
     tap('Plan'); expect('Completed · 1')
     tap('Completed · 1'); capture('flow-restart-history')
-    (OUT / 'native-flow.txt').write_text('PASS: synthetic dump/receipt/hold, multi-item offscreen error jump and correction, Focus completion, List/Calendar, confirmed Clear list and completed history after cold restart.\n')
+    (OUT / 'native-flow.txt').write_text('PASS: synthetic keyboard-visible dump/three-item receipt/hold, offscreen error jump and correction, staged reminder Cancel/Save, paywall draft retention and Android Back, Focus exit/completion, List/Calendar, confirmed Clear list and completed history after cold restart.\n')
 
 if __name__ == '__main__':
     try:

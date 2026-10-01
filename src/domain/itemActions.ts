@@ -6,7 +6,9 @@ export function initialCommitment(item: ParsedItem, clock: Clock): 'gentle' | 'n
 }
 
 // A correction updates the held item, retaining its identity and capture history.
-export function applyItemEdit(item: CobyItem, corrected: ParsedItem): CobyItem {
+export type ReminderMode = 'none' | 'gentle' | 'persistent';
+export function applyItemEdit(item: CobyItem, corrected: ParsedItem, reminderMode?: ReminderMode): CobyItem {
+  const mode = reminderMode === undefined ? item.commitmentMode : corrected.dueAt ? reminderMode : 'none';
   return {
     ...item,
     title: corrected.title, kind: corrected.kind,
@@ -14,7 +16,8 @@ export function applyItemEdit(item: CobyItem, corrected: ParsedItem): CobyItem {
     durationMinutes: corrected.durationMinutes,
     needsClarification: corrected.needsClarification,
     clarificationQuestion: corrected.clarificationQuestion,
-    reminderAt: corrected.dueAt === item.dueAt ? item.reminderAt : null,
+    commitmentMode: mode,
+    reminderAt: corrected.dueAt === item.dueAt && mode === item.commitmentMode && mode !== 'none' ? item.reminderAt : null,
   };
 }
 

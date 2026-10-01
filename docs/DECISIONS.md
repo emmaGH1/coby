@@ -199,3 +199,13 @@ Bound Gemini extraction to 20 seconds, abort and retain the existing editable wo
 - October 1 final native acceptance: 36834814944 closes actual OS 30/60-minute postponement and explicit missing-parser-configuration retention. Require confirmed process exit for restart evidence; am start of an existing task alone is insufficient. P0 remains pending phone warning/default-reminder confirmation and corrected demo approval, not P1 expansion.
 
 - October 1 film plan v3: approve parallel preparation in ignored film/ with a separate film handover; final footage depends on frozen verified app labels. Human captures the isolated synthetic story. Postpone replaces Persistent requests with one snoozed request while preserving dueAt; do not depict an extra original latest reminder. Plan approval is distinct from rendered-film approval.
+
+## October 1 — Final P0 polish contract
+
+Apply the reviewed interface simplification while preserving the approved Soft Fold/C mark, palette, capture position and voice lifecycle. Reminder is the user-facing name; Off/Gentle/Persistent choices belong in saved-item editing. Stage reminder changes alongside details and synchronize only after Save. Cancel changes neither. A paywall detour keeps the mounted draft, returns to the editor and stages Persistent after purchase/restore; it never silently saves the task. Removing exact timing disables reminders on Save, including when Plus is unavailable.
+
+Home shows reminder status, not controls/upsells. Plan titles open editing; keep separate completion and confirmed trash deletion, one Focus link and Clear list below the held list. Bottom navigation owns Home/Plan. Use shared pill actions/chevron back links, 20-point cards and 14-point inputs. Circular controls and the compact review checkbox are explicit shape exceptions. Do not alter capture/keyboard or speech behavior during this polish.
+
+Readable dates are Clock-relative and never invent timing. Explain the actual creation-order tiebreak within equal priority rather than promising that nothing is due sooner. Focus elapsed minutes come from the actual ephemeral session start; no countdown or restart-resume timer is claimed. A 96-point returning companion creates more room, but content remains scrollable at larger text sizes.
+
+Update tracked native selectors with label changes and add actual Android checks for Cancel, saved reminder choice, paywall draft retention and Back. Preserve the pre-existing untracked fixed-coordinate automate_demo_capture.py; it is not the accepted film capture workflow. Local checks and a clean mechanical scan do not replace fresh native rendering/interaction evidence.

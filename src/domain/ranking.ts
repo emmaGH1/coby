@@ -62,5 +62,5 @@ export function reasonText(codes: string[]): string {
   if (codes.includes('dueTomorrow')) return 'Due within two days.';
   if (codes.includes('urgent')) return 'You marked this urgent.';
   if (codes.includes('important')) return 'You marked this important.';
-  return 'Coby is holding this for you.';
+  return 'Among items with the same priority, you handed this over first.';
 }

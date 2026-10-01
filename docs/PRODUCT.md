@@ -11,6 +11,8 @@ Coby is a calm, voice-first companion for people carrying too much in their head
 
 ## Platform
 
+android
+
 Android-first for P0 and the hackathon submission. Optimize and verify the experience on the Pixel 6 phone class and Android 16 / API 36 baseline. Keep component boundaries portable, but do not add iPhone-specific P0 scope before the Android path is reliable.
 
 Coby optimizes for reduced cognitive load and trust, not maximum information density. Coby is **not** a general-purpose task manager, chatbot, AI planner, calendar replacement, medical ADHD treatment, productivity dashboard, or autonomous agent. Do not imply that Coby treats ADHD.

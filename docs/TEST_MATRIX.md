@@ -1,5 +1,13 @@
 # Test matrix
 
+## October 1 — Current P0 polish gate
+
+- Code checks: typecheck/lint and 74 domain/session tests pass. New cases cover relative dates/year rollover/null timing and staged reminder edits, snooze preservation/clearing and removal of exact timing.
+- Native UI run pending: keyboard-visible synthetic typing; three-item receipt/error jump; reminder Cancel leaves Gentle unchanged; paywall return retains edited title and staged Off; Save Off persists; Android Back exits Focus without completion; List/Calendar/clear/history through restart.
+- Native production notification-action rerun pending for the simplified check-in. Prior scheduler delivery/OS action evidence remains valid, but does not prove the changed screen.
+- Physical acceptance pending: load only after saved-input/Home readiness, confirm valid speech followed by silence has no empty-dump error, automatic Gentle on a new future exact-time item, and saved-item recovery with denied notification permission. Use clearly labelled synthetic input; preserve real tasks.
+- Final subjective visual approval, fresh screenshot and corrected human-captured film remain open. This pass adds no P1 work.
+
 ## October 1 — P0 closure checkpoint
 
 - PASS: typecheck, lint and 68 tests, including timeout/abort/retry, explicit offline retention with null timing, and automatic Gentle only for future exact-time items.

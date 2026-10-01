@@ -16,6 +16,29 @@ const original: CobyItem = {
   needsClarification: false, clarificationQuestion: null,
 };
 
+test('staged reminder correction commits with details without changing the original', () => {
+  const changed = applyItemEdit(original, { ...original, title: 'Corrected parcel' }, 'persistent');
+  assert.equal(changed.title, 'Corrected parcel');
+  assert.equal(changed.commitmentMode, 'persistent');
+  assert.equal(original.title, 'Collect parcel');
+  assert.equal(original.commitmentMode, 'gentle');
+});
+
+test('changing mode clears postponed timing but saving unchanged mode retains it', () => {
+  const postponed = { ...original, reminderAt: '2026-09-30T14:00:00Z' };
+  assert.equal(applyItemEdit(postponed, original, 'gentle').reminderAt, postponed.reminderAt);
+  const off = applyItemEdit(postponed, original, 'none');
+  assert.equal(off.commitmentMode, 'none');
+  assert.equal(off.reminderAt, null);
+  assert.deepEqual(planNudges(off, new DemoClock(new Date('2026-09-30T08:00:00Z'))), []);
+});
+
+test('clearing explicit timing through the editor also disables its staged reminder', () => {
+  const changed = applyItemEdit(original, { ...original, dueAt: null, dueDate: null }, 'persistent');
+  assert.equal(changed.commitmentMode, 'none');
+  assert.equal(changed.reminderAt, null);
+});
+
 test('saved corrections retain identity, capture history, commitment and lifecycle', () => {
   const corrected = { ...original, title: 'Collect package', kind: 'reminder' as const,
     sourceFragment: 'replacement', explicitPriority: null, confidence: 1 };

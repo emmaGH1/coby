@@ -73,8 +73,8 @@ def main():
     expect('I’ll check in again in 1 hour. Your due time is unchanged.')
     capture('flow-os-60-min')
     restart(); report('OS_DELAY_60_PASS')
-    if locate('← Home'):
-        tap('← Home')
+    if locate('Back to Home'):
+        tap('Back to Home')
     tap('Brain dump')
     type_dump('Keep the spare key somewhere safe')
     adb('shell', 'input', 'keyevent', '4')

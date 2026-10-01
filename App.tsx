@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, AppState, BackHandler, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { Alert, AppState, BackHandler, KeyboardAvoidingView, Linking, Platform, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import * as Notifications from 'expo-notifications';
 import { useFonts, Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold } from '@expo-google-fonts/manrope';
@@ -9,7 +9,9 @@ import { createGeminiBrainDumpParser } from './src/domain/parserFactory';
 import { selectHomeItems } from './src/domain/ranking';
 import { planNudges, postponeNudge } from './src/domain/nudges';
 import type { CobyItem, ItemStatus, ParsedItem } from './src/domain/types';
-import { applyItemEdit, leaveFocusItem, initialCommitment } from './src/domain/itemActions';
+import { applyItemEdit, leaveFocusItem, initialCommitment, type ReminderMode } from './src/domain/itemActions';
+import { dueText as formatDueText } from './src/domain/dateText';
+import { ActionButton as Button, BackLink } from './src/ui/controls';
 import { clearItems, completeItem, deleteItem, deleteItems, listItems, saveItems } from './src/data/items';
 import { cancelItemNudges, clearAllCobyNudges, NUDGE_ACTIONS, prepareNudgeNotifications, syncItemNudges, triggerLabNudge } from './src/notifications/scheduler';
 import { loadBilling, purchaseMonthly, restoreBilling, type BillingState } from './src/billing/revenuecat';
@@ -32,19 +34,6 @@ const fixtureParser = new FixtureBrainDumpParser();
 const configuredParser = createGeminiBrainDumpParser();
 const releaseDemoMode = process.env.EXPO_PUBLIC_COBY_DEMO_MODE === 'true';
 const demoToolsEnabled = __DEV__;
-
-function Button({ label, onPress, kind = 'primary', disabled = false }: { label: string; onPress: () => void; kind?: 'primary' | 'quiet'; disabled?: boolean }) {
-  return <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={disabled} onPress={onPress}
-    style={[styles.button, kind === 'quiet' && styles.quietButton, disabled && styles.disabledButton]}>
-    <Text style={[styles.buttonText, kind === 'quiet' && styles.quietButtonText]}>{label}</Text>
-  </Pressable>;
-}
-
-function dueText(item: { dueAt: string | null; dueDate: string | null }): string {
-  if (item.dueAt) return new Date(item.dueAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
-  if (item.dueDate) return new Date(`${item.dueDate}T12:00:00`).toLocaleDateString(undefined, { dateStyle: 'medium' });
-  return 'No date set';
-}
 
 function createDemoClock(): DemoClock {
   const start = clock.now();
@@ -73,13 +62,19 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [showReason, setShowReason] = useState(false);
   const [focusItem, setFocusItem] = useState<CobyItem | null>(null);
-  const [focusContext, setFocusContext] = useState<{ returnTo: 'home' | 'plan'; previousStatus: ItemStatus } | null>(null);
+  const [focusContext, setFocusContext] = useState<{ returnTo: 'home' | 'plan' | 'nudge'; previousStatus: ItemStatus; startedAt: number } | null>(null);
   const [editingItem, setEditingItem] = useState<CobyItem | null>(null);
-  const [editReturnTo, setEditReturnTo] = useState<'home' | 'plan'>('plan');
+  const [editReturnTo, setEditReturnTo] = useState<'home' | 'plan' | 'nudge'>('plan');
+  const [editReminder, setEditReminder] = useState<ReminderMode>('none');
+  const [paywallReturnTo, setPaywallReturnTo] = useState<'edit' | 'settings'>('settings');
+  const [nudgeReturnTo, setNudgeReturnTo] = useState<'home' | 'plan'>('home');
+  const screenRef = useRef(screen);
+  useEffect(() => { screenRef.current = screen; }, [screen]);
   const [planInitialView, setPlanInitialView] = useState<PlanView>('list');
   const [, refreshTime] = useState(0);
   const pageScroll = useRef<ScrollView>(null);
   const [activeClock, setActiveClock] = useState<Clock>(() => new SystemClock());
+  const dueText = (item: { dueAt: string | null; dueDate: string | null }) => formatDueText(item, activeClock);
   const [labMessage, setLabMessage] = useState('Fixture parser · RevenueCat not connected');
   const [parserMode, setParserMode] = useState<'fixture' | 'configured'>(process.env.EXPO_PUBLIC_COBY_AI_PROVIDER === 'gemini' ? 'configured' : 'fixture');
   const [listening, setListening] = useState(false);
@@ -88,6 +83,7 @@ export default function App() {
   const [nudgeItemId, setNudgeItemId] = useState<string | null>(null);
   const [nudgeMessage, setNudgeMessage] = useState<string | null>(null);
   const [settingsNotice, setSettingsNotice] = useState<string | null>(null);
+  const [notificationAccess, setNotificationAccess] = useState<Notifications.NotificationPermissionsStatus | null>(null);
   const handledNudgeResponses = useRef(new Set<string>());
   const nudgeQueue = useRef(Promise.resolve());
   const voice = useRef(new VoiceSession());
@@ -206,6 +202,15 @@ export default function App() {
   useEffect(() => { loadBilling().then(setBilling); }, []);
 
   useEffect(() => {
+    if (screen !== 'settings') return;
+    let active = true;
+    const check = () => { void Notifications.getPermissionsAsync().then(value => { if (active) setNotificationAccess(value); }).catch(() => { if (active) setSettingsNotice('Coby could not check notification access.'); }); };
+    check();
+    const subscription = AppState.addEventListener('change', value => { if (value === 'active') check(); });
+    return () => { active = false; subscription.remove(); };
+  }, [screen]);
+
+  useEffect(() => {
     if (loading) return;
     void prepareNudgeNotifications().catch(() => setError('Coby could not prepare notification controls. Your items are still held.'));
     function enqueue(response: Notifications.NotificationResponse) {
@@ -224,6 +229,7 @@ export default function App() {
           }
           setItems(stored); setScreen('home'); setError('That item is already finished or no longer held.'); return;
         }
+        if (screenRef.current !== 'nudge') setNudgeReturnTo(screenRef.current === 'plan' ? 'plan' : 'home');
         setNudgeItemId(id); setNudgeMessage(null);
         const minutes = NUDGE_ACTIONS[response.actionIdentifier as keyof typeof NUDGE_ACTIONS];
         if (minutes) {
@@ -421,7 +427,7 @@ export default function App() {
     try {
       const active: CobyItem = { ...item, status: 'active' };
       await saveItems([active]);
-      setFocusContext({ returnTo: screen === 'plan' ? 'plan' : 'home', previousStatus: item.status });
+      setFocusContext({ returnTo: screen === 'plan' ? 'plan' : screen === 'nudge' ? 'nudge' : 'home', previousStatus: item.status, startedAt: activeClock.now().getTime() });
       setItems(await listItems()); setFocusItem(active); setScreen('focus');
     } catch { setError('Coby could not start focus. Please try again.'); }
     finally { setBusy(false); }
@@ -451,14 +457,18 @@ export default function App() {
   }, [focusItem, focusContext]);
 
   function openItemEdit(item: CobyItem) {
-    setEditReturnTo(screen === 'home' ? 'home' : 'plan'); setEditingItem(item); setError(null); setScreen('edit');
+    setEditReturnTo(screen === 'home' ? 'home' : screen === 'nudge' ? 'nudge' : 'plan');
+    setEditReminder(item.commitmentMode === 'persistent' ? 'persistent' : item.commitmentMode === 'gentle' ? 'gentle' : 'none');
+    setEditingItem(item); setError(null); setScreen('edit');
   }
   const cancelEdit = useCallback(() => { setEditingItem(null); setError(null); setScreen(editReturnTo); }, [editReturnTo]);
 
   async function saveEditedItem(accepted: ParsedItem[]) {
     if (!editingItem || !accepted[0] || busy) return;
     setBusy(true); setError(null);
-    const changed = applyItemEdit(editingItem, accepted[0]);
+    if (accepted[0].dueAt && editReminder === 'persistent' && !billing.plus) { requestPersistent(editingItem); setBusy(false); return; }
+    const latest = items.find(item => item.id === editingItem.id) ?? editingItem;
+    const changed = applyItemEdit(latest, accepted[0], editReminder);
     try {
       await saveItems([changed]);
       setItems(await listItems()); setEditingItem(null); setScreen(editReturnTo);
@@ -485,7 +495,7 @@ export default function App() {
     const item = editingItem;
     Alert.alert('Delete this item?', 'It will be removed from Coby along with its reminders.', [
       { text: 'Keep it', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => void removeHeldItem(item, editReturnTo) },
+      { text: 'Delete', style: 'destructive', onPress: () => void removeHeldItem(item, editReturnTo === 'nudge' ? nudgeReturnTo : editReturnTo) },
     ]);
   }
 
@@ -495,11 +505,13 @@ export default function App() {
       if (busy) return true;
       if (screen === 'focus') { void endFocus(); return true; }
       if (screen === 'edit') { cancelEdit(); return true; }
+      if (screen === 'paywall') { setPendingPersistentId(null); setError(null); setScreen(paywallReturnTo); return true; }
+      if (screen === 'nudge') { setError(null); setScreen(nudgeReturnTo); return true; }
       setError(null); setScreen('home');
       return true;
     });
     return () => back.remove();
-  }, [screen, busy, endFocus, cancelEdit]);
+  }, [screen, busy, endFocus, cancelEdit, paywallReturnTo, nudgeReturnTo]);
 
   const openItems = items.filter((item) => item.status !== 'completed' && item.status !== 'archived');
   async function clearHeldList(targets: CobyItem[]) {
@@ -520,19 +532,6 @@ export default function App() {
       { text: 'Keep my list', style: 'cancel' },
       { text: 'Clear list', style: 'destructive', onPress: () => void clearHeldList(targets) },
     ]);
-  }
-
-  async function setCommitment(item: CobyItem, mode: 'none' | 'gentle' | 'persistent') {
-    setError(null); setNudgeMessage(null); setBusy(true);
-    try {
-      const changed: CobyItem = { ...item, commitmentMode: mode, reminderAt: null };
-      await saveItems([changed]);
-      const enabled = await syncItemNudges(changed, activeClock);
-      setItems(await listItems());
-      if (!enabled) setError('Notifications are off. Coby still has your item.');
-      else if (mode !== 'none' && !planNudges(changed, activeClock).length) setError('Choose a future date and time before Coby can schedule a nudge.');
-    } catch { setError('Coby saved the item but could not schedule a reminder.'); }
-    finally { setBusy(false); }
   }
 
   async function seedLab() {
@@ -559,8 +558,8 @@ export default function App() {
   }
 
   function requestPersistent(item: CobyItem) {
-    if (billing.plus) { void setCommitment(item, 'persistent'); return; }
-    setPendingPersistentId(item.id); setScreen('paywall');
+    if (billing.plus) { setEditReminder('persistent'); return; }
+    setPaywallReturnTo('edit'); setPendingPersistentId(item.id); setScreen('paywall');
   }
 
   async function buyPlus() {
@@ -568,10 +567,9 @@ export default function App() {
     try {
       const updated = await purchaseMonthly(); setBilling(updated);
       if (updated.plus && pendingPersistentId) {
-        const selected = items.find((item) => item.id === pendingPersistentId);
-        if (selected) await setCommitment(selected, 'persistent');
+        if (editingItem?.id === pendingPersistentId) setEditReminder('persistent');
       }
-      setPendingPersistentId(null); setScreen('home');
+      setPendingPersistentId(null); setScreen(paywallReturnTo);
     } catch { setError('The test purchase did not complete. You can keep using Gentle.'); }
     finally { setBusy(false); }
   }
@@ -582,10 +580,9 @@ export default function App() {
       const updated = await restoreBilling(); setBilling(updated);
       if (!updated.plus) { setError('No Coby Plus purchase found.'); return; }
       if (pendingPersistentId) {
-        const selected = items.find((item) => item.id === pendingPersistentId);
-        if (selected) await setCommitment(selected, 'persistent');
+        if (editingItem?.id === pendingPersistentId) setEditReminder('persistent');
       }
-      setPendingPersistentId(null); setScreen('home');
+      setPendingPersistentId(null); setScreen(paywallReturnTo);
     }
     catch { setError('Could not restore purchases right now.'); }
     finally { setBusy(false); }
@@ -617,20 +614,18 @@ export default function App() {
       onEdit={openItemEdit}
       onChangeDump={(value) => { setDump(value); if (error) setError(null); }}
       onComplete={finishNow}
-      onGentle={(item) => void setCommitment(item, 'gentle')}
       onOpenLab={() => setScreen('lab')}
       onOpenPlan={() => { setPlanInitialView('list'); setScreen('plan'); }}
       onOpenSettings={() => { setError(null); setSettingsNotice(null); setScreen('settings'); }}
-      onPersistent={requestPersistent}
       onStartFocus={(item) => void startFocus(item)}
       onToggleReason={() => setShowReason(!showReason)}
       onToggleVoice={() => ['listening', 'restarting'].includes(voice.current.phase) ? stopListening() : void startListening()}
       onUnderstand={() => void understand()}
       showLab={demoToolsEnabled}
       showReason={showReason}
-    /> : <ScrollView ref={pageScroll} key={screen} contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
+    /> : <ScrollView ref={pageScroll} key={screen === 'edit' || (screen === 'paywall' && paywallReturnTo === 'edit') ? 'editor' : screen} contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
       {screen === 'lab' && demoToolsEnabled && <>
-        <Pressable onPress={() => setScreen('home')} accessibilityRole="button"><Text style={styles.back}>← Home</Text></Pressable>
+        <BackLink label="Home" onPress={() => setScreen('home')} />
         <Text style={[styles.pageTitle, styles.planTitle]}>Coby Lab</Text>
         <Text style={styles.support}>Local demo controls. Nothing here is sent online.</Text>
         <Text style={styles.labStatus}>{labMessage}</Text>
@@ -656,56 +651,55 @@ export default function App() {
       </>}
 
       {screen === 'paywall' && <>
-        <Pressable onPress={() => setScreen('home')} accessibilityRole="button"><Text style={styles.back}>← Home</Text></Pressable>
+        <BackLink label={paywallReturnTo === 'edit' ? 'Edit details' : 'Settings'} disabled={busy} onPress={() => { setPendingPersistentId(null); setError(null); setScreen(paywallReturnTo); }} />
         <View style={styles.captureOrb}><CobyOrb size={88} /></View>
         <Text style={styles.pageTitle}>A little more support.</Text>
-        <Text style={styles.support}>Coby Plus adds Persistent reminders as a deadline gets close. Brain dumps, NOW, Plan and Gentle stay free.</Text>
+        <Text style={styles.support}>Gentle gives one timely reminder. Persistent can add a second check-in closer to your deadline. Postponing replaces upcoming reminders with the time you choose.</Text>
         <Text style={styles.labStatus}>{billing.plus ? 'Coby Plus is active. Persistent reminders are available.' : billing.message}</Text>
         <Button label={billing.plus ? 'Plus is active' : billing.monthlyPrice ? `Try Plus monthly · ${billing.monthlyPrice}` : 'Monthly test product unavailable'} disabled={busy || billing.plus || !billing.configured || !billing.monthlyPrice} onPress={buyPlus} />
         <Button label="Restore purchase" kind="quiet" disabled={busy || !billing.configured} onPress={restorePlus} />
       </>}
 
       {screen === 'plan' && <PlanScreen items={items} clock={activeClock} busy={busy} dueText={dueText} initialView={planInitialView} onViewChange={setPlanInitialView}
-        onHome={() => setScreen('home')}
         onEdit={openItemEdit}
         onDelete={item => Alert.alert('Delete this item?', 'It will be removed from Coby along with its reminders.', [
           { text: 'Keep it', style: 'cancel' }, { text: 'Delete', style: 'destructive', onPress: () => void removeHeldItem(item) }])}
         onFocus={item => void startFocus(item)} onToggleComplete={item => void toggleComplete(item)}
-        onReminders={item => { setNudgeItemId(item.id); setNudgeMessage(null); setError(null); setScreen('nudge'); }}
         onClear={confirmClearList} />}
 
       {screen === 'settings' && <>
-        <Pressable accessibilityRole="button" onPress={() => { setError(null); setScreen('home'); }} style={styles.actionLink}><Text style={styles.back}>← Home</Text></Pressable>
+        <BackLink label="Home" onPress={() => { setError(null); setScreen('home'); }} />
         <Text style={styles.pageTitle}>Settings</Text>
-        <Text style={styles.support}>Gentle is one timely nudge. Persistent adds follow-through as a deadline approaches.</Text>
-        <Button label="Notification access" kind="quiet" onPress={async () => {
+        <Text style={styles.support}>Notifications: {notificationAccess ? notificationAccess.granted ? 'Allowed' : 'Off' : 'Checking…'}</Text>
+        <Button label={notificationAccess?.granted ? 'Notification settings' : 'Enable notifications'} kind="quiet" onPress={async () => {
           setError(null);
           try {
+            if (notificationAccess?.granted || notificationAccess?.canAskAgain === false) { await Linking.openSettings(); return; }
             const permission = await Notifications.requestPermissionsAsync();
-            setSettingsNotice(permission.granted ? 'Notifications are allowed. Choose Gentle or Persistent from an item in Plan.' : 'Notifications are off. Enable them in Android app settings to receive nudges.');
+            setNotificationAccess(permission);
+            setSettingsNotice(permission.granted ? 'Notifications are allowed.' : 'Notifications are off. Enable them in Android app settings to receive reminders.');
           } catch { setSettingsNotice('Coby could not check notification access. Please try again.'); }
         }} />
         {settingsNotice && <Text accessibilityLiveRegion="polite" style={styles.support}>{settingsNotice}</Text>}
-        <Button label="Plan and reminder choices" kind="quiet" onPress={() => setScreen('plan')} />
-        <Button label="Coby Plus" kind="quiet" onPress={() => setScreen('paywall')} />
+        <Button label="Coby Plus" kind="quiet" onPress={() => { setPendingPersistentId(null); setPaywallReturnTo('settings'); setScreen('paywall'); }} />
         {demoToolsEnabled && <Button label="Coby Lab" kind="quiet" onPress={() => setScreen('lab')} />}
       </>}
 
       {screen === 'nudge' && nudgeItem && <>
         <NudgeScreen item={nudgeItem} busy={busy} message={nudgeMessage} dueText={dueText}
-          onBack={() => { setError(null); setScreen('home'); }} onFocus={() => void startFocus(nudgeItem)}
+          onBack={() => { setError(null); setScreen(nudgeReturnTo); }} backLabel={nudgeReturnTo === 'plan' ? 'Plan' : 'Home'} onFocus={() => void startFocus(nudgeItem)}
           onDone={() => void finishNudge()} onDelay={minutes => void delayNudge(minutes)}
           onEdit={() => openItemEdit(nudgeItem)}
-          onGentle={() => void setCommitment(nudgeItem, 'gentle')}
-          onPersistent={() => requestPersistent(nudgeItem)} onOff={() => void setCommitment(nudgeItem, 'none')} />
+          />
       </>}
 
       {screen === 'focus' && focusItem && <View style={styles.focusScreen}>
-        <Pressable accessibilityRole="button" disabled={busy} onPress={endFocus} style={styles.actionLink}><Text style={styles.reasonLink}>← Back to {focusContext?.returnTo === 'plan' ? 'Plan' : 'Home'}</Text></Pressable>
+        <BackLink label={focusContext?.returnTo === 'plan' ? 'Plan' : focusContext?.returnTo === 'nudge' ? 'Check-in' : 'Home'} disabled={busy} onPress={() => void endFocus()} />
         <CobyOrb size={88} />
         <Text style={styles.kicker}>ONE THING NOW</Text>
         <Text style={[styles.nowTitle, styles.focusTitle]}>{focusItem.title}</Text>
-        <Text style={styles.support}>The rest can wait. Coby has it.</Text>
+        {dueText(focusItem) ? <Text style={styles.support}>Due {dueText(focusItem)}</Text> : null}
+        {focusContext && <Text style={styles.support}>Started {Math.max(0, Math.floor((activeClock.now().getTime() - focusContext.startedAt) / 60_000))} min ago</Text>}
         <View style={styles.focusActions}>
           <Button label={busy ? 'Finishing…' : 'Complete'} disabled={busy} onPress={finishFocus} />
           <Button label="End focus" kind="quiet" disabled={busy} onPress={endFocus} />
@@ -713,7 +707,10 @@ export default function App() {
       </View>}
 
       {screen === 'receipt' && <ReceiptScreen clock={activeClock} onReviewLocation={y => pageScroll.current?.scrollTo({ y, animated: true })} draft={draft} busy={busy} onEditDump={() => setScreen('home')} onHold={(accepted) => void holdItems(accepted)} />}
-      {screen === 'edit' && editingItem && <ReceiptScreen clock={activeClock} onReviewLocation={y => pageScroll.current?.scrollTo({ y, animated: true })} key={editingItem.id} mode="edit" draft={[editingItem]} busy={busy} onEditDump={cancelEdit} onHold={(accepted) => void saveEditedItem(accepted)} onDelete={confirmDelete} />}
+      {editingItem && (screen === 'edit' || (screen === 'paywall' && paywallReturnTo === 'edit')) && <View style={screen === 'paywall' ? styles.hiddenEditor : undefined}>
+        <ReceiptScreen clock={activeClock} onReviewLocation={y => pageScroll.current?.scrollTo({ y, animated: true })} key={editingItem.id} mode="edit" draft={[editingItem]} busy={busy} onEditDump={cancelEdit} onHold={(accepted) => void saveEditedItem(accepted)} onDelete={confirmDelete}
+          reminder={{ mode: editReminder, plus: billing.plus, onChange: setEditReminder, onPersistent: () => requestPersistent(editingItem) }} />
+      </View>}
 
       {error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
     </ScrollView>}
@@ -723,41 +720,15 @@ export default function App() {
 
 const colors = { ...palette, background: palette.paper };
 const styles = StyleSheet.create({
+  hiddenEditor: { display: 'none' },
   root: { flex: 1, backgroundColor: colors.background, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight ?? 0 : 0 }, loading: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
   arrivalName: { fontFamily: type.bold, fontSize: 43, color: colors.ink, marginTop: 18 }, arrivalCopy: { fontFamily: type.regular, fontSize: 16, color: colors.muted, marginTop: 12 },
-  page: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 42 },
-  homePage: { paddingTop: 34, paddingBottom: 24 },
-  wordmark: { color: colors.ink, fontSize: 31, fontWeight: '700', letterSpacing: -2 },
-  motto: { fontSize: 14, color: colors.muted }, topline: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  arrival: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 25 },
-  hero: { color: colors.ink, fontSize: 42, fontWeight: '700', letterSpacing: -2.2, marginTop: 10 },
-  subhead: { color: colors.muted, fontSize: 16, textAlign: 'center', marginBottom: 28 },
-  orbOuter: { backgroundColor: '#DFD7F3', alignItems: 'center', justifyContent: 'center', shadowColor: colors.violet, shadowOpacity: .14, shadowRadius: 22, elevation: 6 },
-  orbInner: { backgroundColor: '#A898D1' }, homeOrb: { alignItems: 'center', marginTop: 30, marginBottom: 30 },
-  kicker: { fontFamily: type.semibold, fontSize: 12, color: colors.violet, letterSpacing: 2.2, marginBottom: 15 },
-  nowTitle: { fontFamily: type.semibold, fontSize: 34, lineHeight: 42, color: colors.ink, letterSpacing: -1.4, marginBottom: 13 },
-  meta: { fontSize: 15, color: colors.muted, marginBottom: 17 }, reasonLink: { fontFamily: type.semibold, color: colors.violet, fontSize: 14, marginBottom: 14 },
-  reason: { color: colors.muted, fontSize: 14, marginBottom: 15 }, support: { fontFamily: type.regular, color: colors.muted, fontSize: 15, lineHeight: 24 },
-  nextArea: { marginTop: 32 }, nextItem: { color: colors.ink, fontSize: 16, marginBottom: 10 }, bottomAction: { marginTop: 'auto', paddingTop: 24 },
-  button: { minHeight: 56, backgroundColor: colors.ink, borderRadius: 20, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, marginTop: 14 },
-  buttonText: { fontFamily: type.semibold, color: colors.white, fontSize: 16 }, quietButton: { backgroundColor: colors.violetSoft }, quietButtonText: { color: colors.ink }, disabledButton: { opacity: .45 },
-  actionLink: { minHeight: 48, justifyContent: 'center', alignSelf: 'flex-start' }, back: { fontFamily: type.medium, color: colors.violetDeep, fontSize: 14 }, captureOrb: { alignSelf: 'center', marginTop: 68, marginBottom: 38 }, receiptOrb: { alignSelf: 'center', marginTop: 36, marginBottom: 34 },
+  page: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 42, gap: 14 },
+  kicker: { fontFamily: type.semibold, fontSize: 14, color: colors.violet, letterSpacing: 2.2, marginBottom: 15 },
+  nowTitle: { fontFamily: type.semibold, fontSize: 34, lineHeight: 42, color: colors.ink, letterSpacing: -1.4, marginBottom: 13 }, support: { fontFamily: type.regular, color: colors.muted, fontSize: 15, lineHeight: 24 }, captureOrb: { alignSelf: 'center', marginTop: 68, marginBottom: 38 },
   pageTitle: { fontFamily: type.bold, color: colors.ink, fontSize: 34, letterSpacing: -1.3, marginBottom: 12 },
-  dumpInput: { minHeight: 210, borderRadius: 26, backgroundColor: '#FFFFFF', padding: 20, fontSize: 18, color: colors.ink, marginTop: 30, marginBottom: 10, lineHeight: 26 },
-  demoLink: { color: colors.violet, fontSize: 14, alignSelf: 'center', marginTop: 22 },
-  receiptList: { marginTop: 28, marginBottom: 8 }, receiptRow: { backgroundColor: '#FFFFFF', paddingHorizontal: 20, paddingVertical: 14, borderRadius: 20, marginBottom: 10 },
-  receiptTitle: { fontSize: 17, fontWeight: '600', color: colors.ink, minHeight: 32 }, receiptMeta: { fontSize: 13, color: colors.muted, marginTop: 3 },
-  error: { fontFamily: type.medium, color: colors.error, fontSize: 14, lineHeight: 22, marginTop: 18 },
-  reminderLink: { color: colors.violet, textAlign: 'center', fontSize: 14, marginTop: 12 }, reminderState: { color: colors.muted, fontSize: 13, marginTop: 12 },
-  labLink: { color: colors.muted, fontSize: 12, textAlign: 'center', marginTop: 25 }, labStatus: { fontFamily: type.regular, color: colors.violet, fontSize: 16, lineHeight: 24, marginTop: 30, marginBottom: 20 },
-  typeInstead: { color: colors.muted, fontSize: 13, textAlign: 'center', marginTop: 18 },
-  planLink: { color: colors.violet, fontSize: 15, fontWeight: '600', textAlign: 'center', marginTop: 22 },
-  planTitle: { marginTop: 55 }, modeBar: { flexDirection: 'row', backgroundColor: '#EBE8E4', borderRadius: 18, padding: 4, marginTop: 30, marginBottom: 25 },
-  modeButton: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 15 }, modeSelected: { backgroundColor: '#FFFFFF' }, modeText: { color: colors.ink, fontSize: 15, fontWeight: '600' },
-  dayStrip: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 25 }, dayButton: { alignItems: 'center', paddingVertical: 10, width: '13%', borderRadius: 15 },
-  daySelected: { backgroundColor: colors.violetSoft }, dayText: { color: colors.muted, fontSize: 11 }, dayNumber: { color: colors.ink, fontSize: 16, fontWeight: '600', marginTop: 5 },
-  planRow: { borderBottomWidth: 1, borderBottomColor: '#E6E2DD', paddingVertical: 18 }, planItemTitle: { color: colors.ink, fontSize: 18, fontWeight: '600', marginBottom: 4 },
-  planEmpty: { color: colors.muted, fontSize: 16, marginVertical: 30 }, focusScreen: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 620 },
-  focusTitle: { textAlign: 'center', marginTop: 16 }, focusActions: { alignSelf: 'stretch', marginTop: 70 },
+  error: { fontFamily: type.medium, color: colors.error, fontSize: 14, lineHeight: 22, marginTop: 18 }, labStatus: { fontFamily: type.regular, color: colors.violet, fontSize: 16, lineHeight: 24, marginTop: 30, marginBottom: 20 },
+  planTitle: { marginTop: 55 }, focusScreen: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 620 },
+  focusTitle: { textAlign: 'center', marginTop: 16 }, focusActions: { alignSelf: 'stretch', marginTop: 36, gap: 12 },
 });
 

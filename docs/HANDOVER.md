@@ -191,7 +191,7 @@ The canonical anti-AI-slop hackathon demo video is authored, verified, and rende
 
 ## NEXT ACTION
 
-Safely load the latest branded app/update after saved/Home readiness, confirm the speech-warning correction and automatic Gentle/denied-permission save recovery using synthetic input, then review the corrected demo for final P0 approval.
+Finish the current Android acceptance run for the P0 polish, then safely load the update after saved/Home readiness and confirm the false-silence warning/automatic Gentle recovery before freezing the UI for human film capture.
 
 ## October 1 — Real Persistent delivery and clear/restart passed
 
@@ -246,3 +246,11 @@ P0 acceptance stays open for safe phone confirmation and corrected demo approval
 ## October 1 — Film brief approved for parallel preparation
 
 docs/FILM_BRIEF.md v3 is reviewed against production scheduler/source and official Devpost requirements. Corrected postpone replacement (no remaining original latest reminder), fixed deadline/actual tap timing, updated-build/UI-freeze capture gate, final labels, quiet-room speech setup and parallel ownership. Approved the plan for storyboard/narration/audio/edit preparation now; actual human footage waits for app acceptance/freeze. Film agent owns only ignored film/ and film/HANDOVER.md; app session owns source/shared docs and retains its current NEXT ACTION. Old demo render remains rejected. Final film approval requires complete footage, measured output and human review. No app runtime or test script changed in this review.
+
+## October 1 — Reviewed P0 polish implemented, Android acceptance pending
+
+Applied the reviewed simplification: shared pill actions/chevron back links, Clock-relative readable dates, truthful tie explanation, concise receipt/Home copy, 96-point returning companion, quiet Home reminder status, title-to-edit Plan rows, bottom Clear list, calendar dots/48-point chevrons and notification status on Settings entry. Focus displays actual session elapsed time. Removed dead App/Home/Plan styles and the old violet underline.
+
+Reminder choices now stage with the edit; Save persists details/mode and updates scheduling, while Cancel preserves saved state. Clearing exact timing disables reminders. Paywall returns to the requesting editor without losing its fields and stages Persistent after purchase/restore until Save. Notification check-in contains completion/focus/delays/change details, with no mode controls. No parser, scheduler or speech lifecycle change.
+
+Typecheck, lint and all 74 tests pass, including date/null/year-boundary and staged-mode/snooze regressions. One Impeccable mechanical pass returned no findings for changed screens. Native selectors were updated and the fixture-only UI gate now checks keyboard-visible capture, reminder Cancel/Save, paywall draft retention and Android Back. These new native checks are pending, not passed yet. No physical app reload or task mutation occurred; the connected OnePlus still needs saved/Home readiness before loading. The film session may prepare assets, but final capture still waits for this UI acceptance/freeze. Preserve its ignored film/ and the pre-existing untracked automate_demo_capture.py.

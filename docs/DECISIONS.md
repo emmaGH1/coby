@@ -193,3 +193,5 @@ Use the approved circular C vector for exact brand exports and Expo's native spl
 Bound Gemini extraction to 20 seconds, abort and retain the existing editable words/retry path. Reject the other agent's rendered demo for submission until incorrect technology/event claims and existing private task footage are replaced; technical render gates alone are insufficient.
 
 - October 1 acceptance evidence: require exact retained input and a visible third receipt card before claiming the multi-item offscreen recovery gate. Native run 36831455328 meets those conditions. Installation delays are test infrastructure failures unless an app action was reached.
+
+- Notification UI acceptance must expand the Coby notification group/card by its synthetic title, not the first expand control in Android's shade. Reuse only the unchanged compiled QA runtime; require quick mode and runtime diff validation.

@@ -198,4 +198,3 @@ The stylus tutorial was dismissed. Current Pixel 6 development build passed bott
 - PASS: Off and completion each remove the synthetic pending native request; Completed shows strikethrough; restoring that test item returns it to planned with its future requested reminder.
 - PENDING: 30/60-minute OS actions, visible/Android Back Focus exit, synthetic deletion/persistence, Persistent native cadence, RevenueCat restore, bulk clear in an isolated dataset, and keyboard/voice after the latest UI changes.
 - Feedback/Manrope consistency correction is code verified; physical reload is pending. Do not claim these newest changes are installed. Phone readiness is requested because foreground switched away from Coby.
-

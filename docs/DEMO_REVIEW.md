@@ -18,4 +18,3 @@ FFprobe inspection: H.264/AAC, 1920×1080, 30fps, 95.000 seconds, 10,872,665 byt
 ## Final gate
 
 Keep the video under two minutes. Review the complete rendered file for task privacy, visible interactions, truthful narration, legible text and audio. Get the user's final subjective approval before treating it as the submission video.
-

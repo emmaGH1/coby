@@ -228,3 +228,5 @@ Reviewed the other agent's demo contact sheet: false offline Whisper/SDK/event c
 ## October 1 — Three-item native receipt gate passed
 
 36831455328 passed using the unchanged runtime APK from 36829030329. Exact injected text was verified before Send; screenshots show all three receipt cards. Invalid first title was identified and scrolled into view from the bottom, corrected, then held. Focus completion, List/Calendar, confirmed Clear list and completed history after cold restart passed. Evidence is downloaded to the working chat's outputs/p0-three-card-pass; no real phone data involved. Actual OS delay/offline recovery run 36832129592 remains running. The draft demo also incorrectly labels Focus “Gentle Timer”; no countdown timer is implemented, so remove that claim.
+
+Quick run 36832129592 installed successfully, but the harness expanded Android System rather than Coby's grouped notifications. Screenshot shows Coby's collapsed group. Target the smallest notification subtree containing the synthetic persistent-delivery title, expand its own controls, and rerun with the unchanged QA APK. No production runtime change; OS action acceptance remains pending.

@@ -24,14 +24,24 @@ def notification_action(label):
     time.sleep(3)
     adb('shell', 'cmd', 'statusbar', 'expand-notifications')
     time.sleep(2)
-    if not locate(label):
+    for _ in range(4):
+        if locate(label):
+            break
+        candidates = []
         for node in tree().iter('node'):
-            if (node.get('resource-id') or '').endswith('/expand_button'):
-                values = [int(x) for x in re.findall(r'\d+', node.get('bounds', ''))]
-                if len(values) == 4:
-                    adb('shell', 'input', 'tap', str((values[0]+values[2])//2), str((values[1]+values[3])//2))
-                    time.sleep(1)
-                    break
+            descendants = list(node.iter('node'))
+            if not any('Coby isolated QA persistent-delivery' in (child.get('text') or '') for child in descendants):
+                continue
+            buttons = [child for child in descendants if (child.get('resource-id') or '').endswith('/expand_button')]
+            if buttons:
+                candidates.append((len(descendants), buttons[0]))
+        if not candidates:
+            raise RuntimeError('Coby notification expansion control missing')
+        button = min(candidates, key=lambda entry: entry[0])[1]
+        values = [int(x) for x in re.findall(r'\d+', button.get('bounds', ''))]
+        assert len(values) == 4
+        adb('shell', 'input', 'tap', str((values[0]+values[2])//2), str((values[1]+values[3])//2))
+        time.sleep(1)
     tap(label)
     time.sleep(2)
 
@@ -67,4 +77,6 @@ if __name__ == '__main__':
         if adb('get-serialno').strip().startswith('emulator-'):
             OUT.mkdir(exist_ok=True)
             capture('flow-action-failure')
+            (OUT / 'flow-action-failure.xml').write_text(adb('shell', 'cat', '/sdcard/coby-qa.xml'))
+            (OUT / 'native-action-log.txt').write_text(adb('logcat', '-d', '-s', 'ReactNativeJS:I'))
         raise

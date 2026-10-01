@@ -6,6 +6,13 @@ on:
         description: 'Test production notification actions and offline recovery without repeating the 30-minute delivery wait'
         type: boolean
         default: false
+      reuse_apk_run:
+        description: 'Optional unchanged quick QA APK run ID'
+        type: string
+        default: ''
+permissions:
+  contents: read
+  actions: read
 jobs:
   native-qa:
     runs-on: ubuntu-latest
@@ -17,21 +24,42 @@ jobs:
       EXPO_PUBLIC_COBY_AI_PROVIDER: gemini
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
+        if: inputs.reuse_apk_run == ''
         with:
           node-version: '24'
           cache: npm
       - uses: actions/setup-java@v4
+        if: inputs.reuse_apk_run == ''
         with:
           distribution: temurin
           java-version: '17'
       - run: npm ci
+        if: inputs.reuse_apk_run == ''
       - name: Select isolated package and QA entry
+        if: inputs.reuse_apk_run == ''
         run: |
           node -e "const fs=require('fs');let p=require('./package.json');p.main='scripts/native-qa-entry.tsx';fs.writeFileSync('package.json',JSON.stringify(p));let a=require('./app.json');a.expo.name='Coby QA';a.expo.android.package='com.emmagh1.coby.nativeqa';fs.writeFileSync('app.json',JSON.stringify(a));"
       - run: npx expo prebuild --platform android --non-interactive --no-install
+        if: inputs.reuse_apk_run == ''
       - run: ./gradlew :app:assembleRelease --no-daemon
+        if: inputs.reuse_apk_run == ''
         working-directory: android
+      - name: Reuse unchanged quick QA runtime
+        if: inputs.reuse_apk_run != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APK_RUN_ID: ${{ inputs.reuse_apk_run }}
+          QUICK_MODE: ${{ inputs.quick }}
+        run: |
+          test "$QUICK_MODE" = true
+          [[ "$APK_RUN_ID" =~ ^[0-9]+$ ]]
+          test "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$APK_RUN_ID" --jq '.display_title')" = 'Isolated native P0 reliability'
+          built_sha=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$APK_RUN_ID" --jq .head_sha)
+          test -z "$(git diff --name-only "$built_sha" HEAD -- App.tsx index.ts src app.json package.json package-lock.json assets scripts/native-qa-entry.tsx)"
+          gh run download "$APK_RUN_ID" --name coby-native-qa-apk --dir android/app/build/outputs/apk/release
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules

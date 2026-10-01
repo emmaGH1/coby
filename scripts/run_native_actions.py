@@ -8,7 +8,14 @@ PACKAGE = 'com.emmagh1.coby.nativeqa'
 def start():
     adb('logcat', '-c')
     adb('shell', 'am', 'start', '-n', f'{PACKAGE}/.MainActivity')
-    time.sleep(4)
+    deadline = time.monotonic() + 60
+    while time.monotonic() < deadline:
+        logs = adb('logcat', '-d', '-s', 'ReactNativeJS:I')
+        assert 'COBY_QA FAIL' not in logs, logs
+        if ('COBY_QA QUICK_READY' in logs or 'COBY_QA RESTART_PASS' in logs) and locate('Brain dump'):
+            return
+        time.sleep(1)
+    raise RuntimeError('Isolated App did not reach its ready capture surface')
 
 def restart():
     adb('shell', 'input', 'keyevent', '3')

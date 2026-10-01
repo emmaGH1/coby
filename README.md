@@ -14,7 +14,7 @@ Captured on an Android 16 / API 36 emulator at 1179 × 2556 pixels. The fixture 
 
 1. Install Node.js, Android Studio, Android SDK Platform 36, Android Build-Tools, Platform-Tools, and an Android emulator. Set `ANDROID_HOME` and add `platform-tools` to your Windows `Path`. Follow [Expo’s Android development build setup](https://docs.expo.dev/get-started/set-up-your-environment/?buildEnv=local&device=simulated&mode=development-build&platform=android).
 2. Run `npm install` in this folder.
-3. Copy `.env.example` to `.env`. Fill only local development keys. Set `EXPO_PUBLIC_COBY_AI_PROVIDER=gemini` to use live extraction; use `fixture` for the deterministic offline demo. The verified fallback model is `gemini-3.5-flash-lite`.
+3. Copy `.env.example` to `.env`. Fill only local development keys. Set `EXPO_PUBLIC_COBY_AI_PROVIDER=gemini` to use live extraction; use `fixture` for the deterministic offline demo. Set `EXPO_PUBLIC_COBY_DEMO_MODE=true` only when you want synthetic sample items on an empty installation. The verified fallback model is `gemini-3.5-flash-lite`.
 4. Start an Android emulator. Run `npm run android` to create/install the native development build. Subsequent JavaScript changes can use `npm run start`.
 
 Expo Go is insufficient for Coby’s native speech, RevenueCat, SQLite, and notification setup. Never commit `.env`. `EXPO_PUBLIC_` variables are embedded in the app bundle: direct Gemini keys are for local development only. Put Gemini behind a server endpoint before distributing a public APK.

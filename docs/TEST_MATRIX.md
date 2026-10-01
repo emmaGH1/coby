@@ -1,5 +1,14 @@
 # Test matrix
 
+## October 1 — User acceptance and silence-warning correction
+
+- USER ACCEPTED: the five requested checks work on the installed OnePlus update: readability/icons, Home editing, Earlier recovery, receipt use and keyboard/minute-long voice capture. The user did not understand the offscreen Hold/error-jump instruction, so that specific multi-item phone case remains unverified.
+- REPORTED: after captured speech and a short pause, an incorrect “I didn't catch anything” warning appears while the valid dump remains sendable.
+- PASS: two regression cases first reproduced this warning, then passed after speech feedback used VoiceSession's whole-attempt recognized-word state. Covers partial capture/manual stop, silence in a later native cycle, reset on a new attempt, and continued network-error feedback.
+- PASS: typecheck, lint, 64 tests and Android export after the correction. No native dependency changed.
+- PENDING: safe reload and physical confirmation of the false-warning correction. Metro 8083 still serves the preceding code. Do not reload unsaved words without user readiness. Final multi-item error-jump check remains for later; no need to repeat all accepted checks.
+- Demo is being prepared by another agent under user direction; do not modify or commit its demo-video folder.
+
 Record date, device/emulator, build, result, and evidence for every executed row. “Planned” is not “passed.”
 
 ## October 1 — Readability/recovery physical checkpoint

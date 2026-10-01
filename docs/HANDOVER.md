@@ -175,6 +175,14 @@ Only Coby nudge test was created, edited and removed. Zero test reminders remain
 
 User checks are listed in TEST_MATRIX: readability, Home-origin Save/Cancel, Earlier rescheduling, multiple-item receipt error location, picker select/cancel/clear, keyboard-visible typing and a paused minute-long voice dump. Single-item receipt/picker/device evidence does not cover every one of those cases. P0 still needs the documented reliability gates, final launcher/splash, fresh screenshot/demo and subjective approval. Before routine asset/build preparation, flag the user's requested lower-model switch.
 
+## October 1 — User acceptance and false-silence warning
+
+User says all five requested checks work on the installed update. Readability, Home edits, Earlier and capture are accepted for the tested phone. They did not understand the offscreen Hold/error-jump instruction, so do not claim that particular multi-item phone scenario passed. They report a false “I didn't catch anything” alert after valid captured words and a short pause; sending still works.
+
+Speech feedback now receives VoiceSession's whole-attempt hasRecognizedWords flag. Silence/nomatch after partial/final captured words has no empty-dump message. State survives native cycles and resets on a new user attempt. No recognition timing, microphone options or transcript-merging change. Two regression tests reproduced the old warning before the fix. Typecheck/lint/64 tests and Android export pass. The fix is not loaded on the phone yet; 8083/session 29197 remains the preceding CI bundle. Safe reload readiness requested because the user's latest tests may have left unsaved input. Spoken confirmation can wait until they return.
+
+The user is preparing a demo with another agent. demo-video is untracked work owned by that effort; do not alter, stage or commit it. Remaining P0 and human/agent responsibilities are refreshed in STATUS. No P2 scope is agreed; P1 remains gated on P0 stability. User wants to sleep. Continue independent work without requiring them to remain present, but respect their request to switch to a lower model before routine assets/build preparation. Core voice correction uses the current review model.
+
 ## NEXT ACTION
 
-Collect the user's numbered readability/capture/multi-item receipt checks on the installed update and resolve any failure before final P0 reliability and submission preparation.
+Load the verified voice-warning correction once safe reload readiness arrives, then finish the remaining P0 reliability checks in an isolated dataset before submission asset preparation.

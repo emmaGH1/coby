@@ -14,6 +14,7 @@ export class VoiceSession {
   private keepOpen = false;
   private speechEnded = false;
   get continues(): boolean { return this.keepOpen && !this.failed; }
+  get hasRecognizedWords(): boolean { return this.hadWords; }
 
   begin(text: string, keepOpen = false): boolean {
     if (this.phase !== 'idle') return false;

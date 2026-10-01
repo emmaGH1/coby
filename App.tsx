@@ -151,7 +151,10 @@ export default function App() {
     if (text !== null) setDump(text);
   });
   useSpeechRecognitionEvent('nomatch', () => {
-    if (voice.current.phase !== 'idle' && !voice.current.continues) setError("I didn't catch anything. Tap the mic and try again, or type below.");
+    if (voice.current.phase !== 'idle' && !voice.current.continues) {
+      const message = speechErrorMessage('no-speech', undefined, voice.current.hasRecognizedWords);
+      if (message) setError(message);
+    }
   });
   useSpeechRecognitionEvent('error', (event) => {
     traceVoice(`error=${event.error} code=${event.code ?? 'unknown'}`);
@@ -167,7 +170,7 @@ export default function App() {
     setListening(false);
     setVoiceNetworkError(event.error === 'network' || event.code === 13);
     setVoiceStatus(`Speech failure: ${event.error} · Android code ${event.code ?? 'unknown'}`);
-    const message = speechErrorMessage(event.error, event.code);
+    const message = speechErrorMessage(event.error, event.code, voice.current.hasRecognizedWords);
     if (message) setError(message);
     voiceTimeout(message || 'Voice has stopped. Tap Speak to start again.', 6000);
   });

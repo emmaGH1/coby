@@ -182,6 +182,28 @@ test('native language and server errors have different recovery instructions', (
   assert.match(speechErrorMessage('network', 2), /could not connect/i);
 });
 
+test('silence after captured words does not claim the voice dump was empty', () => {
+  const session = new VoiceSession();
+  session.begin('Typed first.', true); session.starting(); session.ready();
+  session.result('Water the plants.', false); session.speechEnd(); session.stop();
+  assert.equal(speechErrorMessage('no-speech', 7, session.hasRecognizedWords), '');
+  assert.equal(speechErrorMessage('speech-timeout', undefined, session.hasRecognizedWords), '');
+  session.fail();
+  assert.deepEqual(session.end(), { text: 'Typed first. Water the plants.', empty: false });
+});
+
+test('silence feedback tracks the whole dump and resets for a new voice attempt', () => {
+  const session = new VoiceSession();
+  session.begin('Typed first.', true); session.starting(); session.ready();
+  session.result('Buy milk.', true); session.end(); session.ready(); session.stop();
+  assert.equal(speechErrorMessage('no-speech', 7, session.hasRecognizedWords), '');
+  assert.match(speechErrorMessage('network', 2, session.hasRecognizedWords), /could not connect/i);
+  session.end();
+  session.begin('Typed first. Buy milk.', true); session.starting(); session.ready(); session.stop();
+  assert.match(speechErrorMessage('no-speech', 7, session.hasRecognizedWords), /didn't catch anything/i);
+  assert.equal(session.end()?.empty, true);
+});
+
 test('offline voice requires an installed locale, not just a supported language', async () => {
   assert.equal(await offlineVoiceAvailable({ supportsOnDeviceRecognition: () => true, getSupportedLocales: async () => ({ installedLocales: [] }) }), false);
   assert.equal(await offlineVoiceAvailable({ supportsOnDeviceRecognition: () => true, getSupportedLocales: async () => ({ installedLocales: ['en_US'] }) }), true);

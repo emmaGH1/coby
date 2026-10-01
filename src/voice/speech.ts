@@ -1,7 +1,7 @@
 import type { ExpoSpeechRecognitionErrorCode } from 'expo-speech-recognition';
 
-export function speechErrorMessage(code: ExpoSpeechRecognitionErrorCode, nativeCode?: number): string {
-  if (code === 'no-speech' || code === 'speech-timeout') return "I didn't catch anything. Tap the mic and try again, or type below.";
+export function speechErrorMessage(code: ExpoSpeechRecognitionErrorCode, nativeCode?: number, hasRecognizedWords = false): string {
+  if (code === 'no-speech' || code === 'speech-timeout') return hasRecognizedWords ? '' : "I didn't catch anything. Tap the mic and try again, or type below.";
   if (code === 'not-allowed') return 'Microphone access is off. Allow it in Android settings, or type below.';
   if (code === 'language-not-supported' && nativeCode === 13) return 'English voice is not installed yet. Enable offline English voice below, or keep typing.';
   if (code === 'service-not-allowed' || code === 'language-not-supported') return 'Android speech recognition is unavailable. Enable Speech Recognition & Synthesis, or type below.';

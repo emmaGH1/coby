@@ -11,23 +11,29 @@ P0 is the complete first usable Coby, including dependable capture, nudges and a
 | Product foundation | Product canon, implementation/design/guardrail documents, handover, test/demo/decision records and environment template exist. |
 | Android build | Native development app runs on a physical OnePlus; wireless debugging and localhost reverse work without USB. |
 | Brain dump | Text and native voice exist. User confirmed typing remains visible with the keyboard open and a minute-long paused voice dump retains words. Earlier permission-denial fallback and stop/retry passed. Offline voice remains unverified. |
-| Understanding/receipt | Fixture and live Gemini sample extraction previously passed; correction and ambiguity validation have unit coverage. Unknown date/time/duration remain null. Broader failures and current full receipt interaction need verification. |
+| Understanding/receipt | Fixture/live Gemini extraction and native corrections passed; unknown timing remains null. User reports receipt use works. The specific multi-item offscreen error jump was not understood/tested; parsing failure cases remain open. |
 | Holding/Home | Local SQLite, persistence across restart, completion and deterministic NOW/NEXT ranking previously passed. Home has one NOW and at most two NEXT, explanation and central orb above bottom capture. |
-| Plan/Focus | List/selected-day Calendar and basic Focus previously passed. Saved manual edits, individual deletion and visible/Android Back exits are implemented; full current phone acceptance is pending. |
+| Plan/Focus | Saved corrections, synthetic deletion and both Focus exits passed. User accepts Home editing, native timing controls and Earlier recovery on the current phone. |
 | Clear list | Implemented in Plan > List with confirmation, scoped notification cancellation and one SQLite deletion transaction. Removes all open items across calendar days; retains completed/archived history. Loaded on the wireless phone; confirmation and Keep my list cancellation passed. Actual bulk removal/persistence remains unverified. |
-| Nudges | Gentle future/background delivery, edited-time replacement, 15-minute OS action, 30/60-minute in-app delays, Off/completion cancellation and cold-start body opening passed on OnePlus. Persistent cadence, 30/60-minute OS actions and delete/clear cancellation remain pending. |
+| Nudges | Gentle future/background delivery, edited-time replacement, 15-minute OS action, 30/60-minute in-app delays, Off/completion/delete cancellation and cold-start body opening passed on OnePlus. Persistent delivery, 30/60-minute OS actions and bulk-clear cancellation remain pending. |
 | Billing | $4.99 coby_plus_monthly Test Store purchase, restore and Persistent gate verified on OnePlus September 30. Two native Persistent requests verified; full delivery cadence remains open. |
-| Quality/harness | Typecheck/lint and 62 tests pass. Fixture parser, SystemClock/DemoClock and Lab controls exist; the complete demo path remains to rehearse. |
+| Quality/harness | Typecheck/lint and 64 tests pass. Fixture parser, SystemClock/DemoClock and Lab controls exist; the complete demo path remains to rehearse. |
 | Repository/assets | README/setup and license exist; orb and icon assets exist. Final asset review, fresh screenshot and final demo recording remain. |
 
 ## Remaining P0, in working order
 
-1. Verify saved editing, Focus exits, individual deletion and Clear list/cancel/persistence without destroying real held items during agent tests.
-2. Finish real phone notification acceptance: a future deadline with Gentle enabled, background delivery, edited time replacing the old schedule, and no future reminder after completion/deletion/clearing. Verify Persistent cadence and its entitlement gate.
-3. Reminder setup is visible per Plan item and in the check-in screen. New items start with no commitment; the user chooses Gentle or Persistent. Undated/date-only items do not receive an invented notification time. Complete the remaining cancellation/cadence checks.
-4. Complete the companion experience across Plan, receipt, Focus and paywall: consistent typography/spacing, clear action feedback, responsive controls, polished state transitions, accessible keyboard/navigation and useful empty/error states. Basic listening/thinking/settled orb response is P0. The user's subjective visual approval is still required.
-5. Verify RevenueCat restore and free/Plus behavior, parsing uncertainty/failure, interrupted sessions, offline text fallback and restart reliability. Preserve the already passed capture checks through subsequent changes.
-6. Freeze features after P0 acceptance. Rehearse the deterministic demo, record the final video, replace stale screenshots, review icon/README/license and confirm submission requirements. A public distributed build must not embed the development Gemini secret or use a RevenueCat Test Store key as production billing.
+1. Load and confirm the verified false-silence warning correction; preserve the user-accepted typing and minute-long capture. Verify the specific multi-item offscreen receipt error jump later.
+2. Verify actual Persistent delivery and 30/60-minute notification-button actions. Scheduling, entitlement/purchase/restore, Gentle delivery and cancellation on edit/complete/delete already passed.
+3. Verify actual Clear list removal, reminder cancellation, history preservation and restart using an isolated synthetic dataset. Never clear the user's real list.
+4. Complete interrupted-session, parser failure, offline text fallback and restart acceptance. Offline speech depends on the device/service; do not promise it from unit tests alone.
+5. Export the approved C launcher icon/native splash; replace stale screenshots; finish README/setup and a submission-safe Android build with no embedded Gemini development secret. RevenueCat Test Store is a hackathon development integration, not production store billing.
+6. Review/rehearse the demo being made with the other agent, confirm final visuals and submission requirements, and reserve time for final submission. P1 is optional after these gates, not a reason to delay a stable submission.
+
+## While the user rests
+
+Agent work: targeted fixes/tests, isolated reliability checks, asset preparation, documentation/build preparation and review of a supplied demo artifact. Routine assets/build work should use the user's lower-model preference before starting. Protect real phone data and unsaved input; no broad reseeding or clearing.
+
+Human work when awake: short spoken confirmation of the warning fix, the specific receipt error-jump check if still needed, final visual/demo approval, any required account/credential action and final submission. The user need not stay present for routine development.
 
 ## P1 — only after P0 is stable
 
@@ -43,4 +49,4 @@ Notifications, basic orb responsiveness, keyboard fixes, editing, deletion, clea
 
 October 1 readability/recovery update installed on OnePlus from successful native build 36792872254. Icons and larger labels render; prior-day tasks stay held in Earlier outside NOW/NEXT. Native date/time selection/cancellation, persisted date-only clearing, live receipt review blocking/error scrolling/checkbox acceptance and Home NEXT edit/Back passed. A caught Plan return-view bug is corrected and phone verified. Latest bundle runs on localhost:8083. Typecheck/lint/62 tests pass. Only Coby nudge test was changed and removed; real-item digests unchanged.
 
-Prior Gentle delivery/delays/cold-start routing/cancellation, Focus exits, Test Store purchase/restore, Persistent scheduling and synthetic deletion remain verified. Active-Plus display is installed. Final user readability, multi-item receipt location, Home Save return and capture regression still need confirmation. Isolated bulk clear, OS 30/60-minute actions, full Persistent delivery, launcher/splash assets, fresh screenshot/demo and final approval remain. P0 is not complete.
+The user now reports all five requested checks work, including Home editing and capture. Their specific offscreen error-jump check remains unclear. False silence feedback is corrected in source; typecheck/lint/64 tests and Android export pass, with reload/physical confirmation pending. Active-Plus display is installed. Isolated bulk clear, OS 30/60-minute actions, full Persistent delivery, failure/restart acceptance, launcher/splash assets, fresh screenshot/demo and final approval remain. P0 is not complete; no P2 scope has been agreed.

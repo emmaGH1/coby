@@ -1,5 +1,9 @@
 # Decision log
 
+## October 1 — Silence feedback follows captured words
+
+Native nomatch/no-speech/speech-timeout can arrive during finalization after a successful transcript. Use recognized-word state from the whole VoiceSession attempt to suppress the false empty-dump warning. Preserve that state across native cycles and reset it when a new user attempt begins; typed base text does not count as new voice input. Keep recognition timing/transcript merging unchanged. Genuine empty attempts and service/network failures retain their recovery feedback.
+
 ## October 1 — Preserve Plan view on editor return
 
 Physical checks found that opening Earlier, switching to Held list and editing a task restored Earlier on return because App retained the original entry view. Report List/Calendar/Completed/Earlier changes to App and use the latest selection when remounting Plan. This is navigation state only; no saved task changes. Native date/time, receipt review recovery and task preservation passed on OnePlus; final multi-item/capture/subjective acceptance remains with the user.

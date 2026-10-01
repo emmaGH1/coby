@@ -201,6 +201,8 @@ Full application UI gate is still running after the casing correction. Added a q
 
 ## October 1 — Fresh screenshot and native UI acceptance harness
 
+Rerun 36829030329 passed its assertions, but screenshot review showed the injected sample was truncated and produced one intact item, not three. Accept its Focus/List/Calendar/clear/history evidence; do not claim the specific multi-item receipt case. Pace synthetic typing, verify exact retained text before Send and assert Item 3 exists before testing the offscreen invalid first card. The revised flow can reuse 36829030329's runtime APK because only test scripts/docs change.
+
 First native UI run 36827272205 reached the correct clear-list confirmation but the harness failed on Android's uppercase CLEAR LIST button. This is a case-sensitive selector problem, not an app deletion failure. Match labels case-insensitively and rerun. The next workflow retains compiled APKs even after a UI-test failure; an optional reuse input rejects reuse if runtime files changed. Do not claim the remainder of the flow passed from this partial run.
 
 Downloaded and inspected the successful 36825001246 screenshot: 1179×2556 actual Android 16 rendering, no frame, correct approved companion, settings/pencil/navigation icons and bottom composer. Replaced the stale submission PNG. NOW and primary actions are visible; NEXT stays accessible by scrolling. Native branded APK 36824942961 was downloaded for later authorized installation, not installed over unsaved input.

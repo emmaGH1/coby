@@ -1,7 +1,7 @@
 """Run the production App inside the isolated QA package on a fresh emulator."""
 import re
 import time
-from capture_native_flow import adb, tap, expect, capture, tree, locate, OUT
+from capture_native_flow import adb, tap, expect, capture, tree, locate, type_dump, OUT
 
 PACKAGE = 'com.emmagh1.coby.nativeqa'
 
@@ -50,7 +50,7 @@ def main():
     capture('flow-os-60-min')
     restart(); report('OS_DELAY_60_PASS')
     tap('Brain dump')
-    adb('shell', 'input', 'text', 'Keep%sthe%sspare%skey%ssomewhere%ssafe')
+    type_dump('Keep the spare key somewhere safe')
     adb('shell', 'input', 'keyevent', '4')
     tap('Let Coby understand this')
     expect('Keep as one item'); capture('flow-parser-failure')

@@ -39,6 +39,18 @@ def expect(label):
     if not locate(label):
         raise RuntimeError(f'Expected screen/control missing: {label}')
 
+def type_dump(value):
+    # Pace injected typing and wait for controlled TextInput to retain every word.
+    for index, word in enumerate(value.split(' ')):
+        adb('shell', 'input', 'text', ('%s' if index else '') + word)
+        time.sleep(0.25)
+    for _ in range(10):
+        current = next((node.get('text', '') for node in tree().iter('node') if node.get('content-desc') == 'Brain dump'), None)
+        if current == value:
+            return
+        time.sleep(1)
+    raise RuntimeError(f'Synthetic input differs before Send: expected length {len(value)}, actual length {len(current or "")}')
+
 def capture(name):
     data = subprocess.check_output(['adb', 'exec-out', 'screencap', '-p'])
     (OUT / f'{name}.png').write_bytes(data)
@@ -58,11 +70,20 @@ def main():
     capture('flow-empty-home')
     tap('Brain dump')
     dump = 'Finish the database assignment tomorrow, call Daniel by 8 PM tonight for 5 minutes, and buy data.'
-    adb('shell', 'input', 'text', dump.replace(' ', '%s'))
+    type_dump(dump)
     adb('shell', 'input', 'keyevent', '4')
     tap('Let Coby understand this')
     expect('Item 1 title')
     capture('flow-receipt')
+    for _ in range(7):
+        if locate('Item 3 title'):
+            break
+        adb('shell', 'input', 'swipe', '590', '1700', '590', '750', '350')
+    else:
+        raise RuntimeError('Fixture did not produce three receipt items')
+    capture('flow-receipt-last-item')
+    for _ in range(3):
+        adb('shell', 'input', 'swipe', '590', '750', '590', '1700', '350')
     # Reproduce the user's offscreen invalid-card case, rather than testing only one card.
     tap('Item 1 title')
     adb('shell', 'input', 'keycombination', '113', '29')

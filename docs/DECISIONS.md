@@ -180,6 +180,8 @@ Devpost confirms October 1 noon PDT / 20:00 Lagos; retain P0 scope and reserve s
 
 ## October 1 — Safe P0 closure
 
+After actual wall-clock Persistent delivery passes, use a quick isolated mode to test notification actions through the production App component and native response handler. Generate synthetic notifications only inside the separate package; validate persisted deadlines/reminder count after cold restart. Missing Gemini configuration tests the real recovery path without sending data or changing the private development key.
+
 Native dialog labels may be uppercase. Match their accessible text case-insensitively. Reuse a compiled fixture artifact for subsequent script-only iterations only after comparing all runtime source/config/package/asset paths against its recorded build SHA. Retain failure artifacts; do not change application behavior to satisfy an automation selector.
 
 Native UI acceptance uses a fresh CI emulator and refuses physical devices. It verifies visible transition results rather than trusting timed coordinate taps. Keep failure screenshots/XML synthetic and separate from the user's phone. Fresh screenshot evidence supersedes the old screenshot; do not claim NEXT is visible without scrolling.

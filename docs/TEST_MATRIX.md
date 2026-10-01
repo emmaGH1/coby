@@ -2,6 +2,10 @@
 
 ## October 1 — P0 closure checkpoint
 
+- PASS: isolated native QA 36824997183 on Android 16/API36. Actual SQLite bulk removal keeps completed/archived rows and removes all pending reminders. Both deterministic Persistent reminders delivered while backgrounded over their real 30-minute interval; cleared rows/history survived cold restart. Evidence artifact coby-native-qa-evidence/native-qa.txt. This is native adapter evidence, separate from the application's Clear list UI gate.
+- PASS: fixture public release contains its JavaScript bundle, no local Gemini development key and no Google API-key pattern. Native branded package is com.emmagh1.coby, min API24/target API36.
+- RUNNING: native UI casing-corrected rerun 36829030329. First run reached a correct confirmation but test expected lowercase text; no app defect established by that failure.
+
 - PASS: typecheck, lint and 68 tests, including bounded extraction timeout/abort, retry, explicit offline retention without guessed timing, and Gentle default only for future exact-time items.
 - PASS: branded native debug build 36824942961 and fixture release/screenshot workflow 36825001246 at c8cefcd. Fresh screenshot visual inspection is next; new offline-recovery/automatic-Gentle JavaScript changes follow in a later checkpoint.
 - RUNNING: isolated native QA 36824997183; bulk cancellation/removal/history, real Persistent delivery and restart must be observed in its final report before marking passed.

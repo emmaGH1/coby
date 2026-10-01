@@ -193,6 +193,12 @@ The canonical anti-AI-slop hackathon demo video is authored, verified, and rende
 
 Run the isolated native reliability and fresh screenshot workflows, inspect their evidence, then close remaining phone-action and safe-distribution gates before P0 acceptance.
 
+## October 1 — Real Persistent delivery and clear/restart passed
+
+Isolated native workflow 36824997183 passed on Android 16/API36. Downloaded report confirms bulk SQLite removal/history retention/pending cancellation, actual delivery of both Persistent points while backgrounded across their real 30-minute gap, and retained cleared/history state after cold restart. No phone data was involved. Public fixture release scan found bundled JavaScript and no development Gemini key or Google API-key pattern. Branded APK identity min24/target36 verified.
+
+Full application UI gate is still running after the casing correction. Added a quick isolated mode for the real production App component, checking actual OS 30/60-minute category taps, persisted unchanged deadline/single pending request, and explicit parser-failure/offline one-item retention through receipt and restart. This mode has no Gemini key and no account; it does not claim live AI/purchase verification. Its new results are pending. Preserve the real phone until saved/Home readiness arrives.
+
 ## October 1 — Fresh screenshot and native UI acceptance harness
 
 First native UI run 36827272205 reached the correct clear-list confirmation but the harness failed on Android's uppercase CLEAR LIST button. This is a case-sensitive selector problem, not an app deletion failure. Match labels case-insensitively and rerun. The next workflow retains compiled APKs even after a UI-test failure; an optional reuse input rejects reuse if runtime files changed. Do not claim the remainder of the flow passed from this partial run.

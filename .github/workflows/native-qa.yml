@@ -1,6 +1,11 @@
 name: Isolated native P0 reliability
 on:
   workflow_dispatch:
+    inputs:
+      quick:
+        description: 'Test production notification actions and offline recovery without repeating the 30-minute delivery wait'
+        type: boolean
+        default: false
 jobs:
   native-qa:
     runs-on: ubuntu-latest
@@ -8,6 +13,8 @@ jobs:
     env:
       EXPO_NO_DOTENV: '1'
       EXPO_PUBLIC_COBY_NATIVE_QA: isolated
+      EXPO_PUBLIC_COBY_NATIVE_QA_MODE: ${{ inputs.quick && 'quick' || 'delivery' }}
+      EXPO_PUBLIC_COBY_AI_PROVIDER: gemini
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,9 +44,10 @@ jobs:
           arch: x86_64
           profile: pixel_6
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
-          script: python3 scripts/run_native_qa.py
+          script: ${{ inputs.quick && 'python3 scripts/run_native_actions.py' || 'python3 scripts/run_native_qa.py' }}
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: coby-native-qa-evidence
-          path: artifacts/native-qa.txt
+          path: artifacts/
           if-no-files-found: error

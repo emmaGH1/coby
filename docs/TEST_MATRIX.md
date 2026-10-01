@@ -1,5 +1,13 @@
 # Test matrix
 
+## October 1 — P0 closure checkpoint
+
+- PASS: typecheck, lint and 68 tests, including bounded extraction timeout/abort, retry, explicit offline retention without guessed timing, and Gentle default only for future exact-time items.
+- PASS: branded native debug build 36824942961 and fixture release/screenshot workflow 36825001246 at c8cefcd. Fresh screenshot visual inspection is next; new offline-recovery/automatic-Gentle JavaScript changes follow in a later checkpoint.
+- RUNNING: isolated native QA 36824997183; bulk cancellation/removal/history, real Persistent delivery and restart must be observed in its final report before marking passed.
+- PENDING DEVICE: load the warning/recovery/Gentle update, verify notification permission denial preserves saved items, automatic future Gentle delivery, and specific offscreen receipt error jump. Preserve unsaved phone input and all real tasks.
+- DEMO REVIEW FAILED: supplied draft contains inaccurate technology/event claims and existing task footage. FFprobe verifies 95s, 1920×1080 at 30fps. It is not approved for submission.
+
 ## October 1 — User acceptance and silence-warning correction
 
 - USER ACCEPTED: the five requested checks work on the installed OnePlus update: readability/icons, Home editing, Earlier recovery, receipt use and keyboard/minute-long voice capture. The user did not understand the offscreen Hold/error-jump instruction, so that specific multi-item phone case remains unverified.

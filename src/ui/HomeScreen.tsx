@@ -13,6 +13,7 @@ type Props = {
   dump: string;
   onChangeDump: (value: string) => void;
   onUnderstand: () => void;
+  onKeepUnparsed?: () => void;
   onToggleVoice: () => void;
   listening: boolean;
   voicePhase: VoicePhase;
@@ -47,12 +48,13 @@ function ActionButton({ label, onPress, quiet = false, disabled = false, icon }:
   </Pressable>;
 }
 
-function CaptureComposer({ dump, onChangeDump, onUnderstand, onToggleVoice, listening, voicePhase, busy, error, onPrepareOfflineVoice, voiceNotice, preparingVoice }: Pick<Props, 'dump' | 'onChangeDump' | 'onUnderstand' | 'onToggleVoice' | 'listening' | 'voicePhase' | 'busy' | 'error' | 'onPrepareOfflineVoice' | 'voiceNotice' | 'preparingVoice'>) {
+function CaptureComposer({ dump, onChangeDump, onUnderstand, onKeepUnparsed, onToggleVoice, listening, voicePhase, busy, error, onPrepareOfflineVoice, voiceNotice, preparingVoice }: Pick<Props, 'dump' | 'onChangeDump' | 'onUnderstand' | 'onKeepUnparsed' | 'onToggleVoice' | 'listening' | 'voicePhase' | 'busy' | 'error' | 'onPrepareOfflineVoice' | 'voiceNotice' | 'preparingVoice'>) {
   const [focused, setFocused] = useState(false);
   const canUnderstand = dump.trim().length > 0 && !busy && voicePhase === 'idle';
   const voiceTransition = voicePhase === 'preparing' || voicePhase === 'starting' || voicePhase === 'stopping';
   const voiceLabel = voicePhase === 'stopping' ? 'Finishing…' : voiceTransition ? 'Starting…' : listening ? 'Stop' : 'Speak';
   return <View style={styles.dock}>
+    {onKeepUnparsed && <Pressable accessibilityRole="button" disabled={busy || listening || voicePhase !== 'idle'} onPress={onKeepUnparsed} style={styles.reasonButton}><Text style={styles.reasonLink}>Keep as one item</Text></Pressable>}
     {voiceNotice && <Text accessibilityLiveRegion="polite" style={styles.voiceNotice}>{voiceNotice}</Text>}
     {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
     {onPrepareOfflineVoice && <Pressable accessibilityRole="button" disabled={busy || preparingVoice || voicePhase !== 'idle'} onPress={onPrepareOfflineVoice} style={styles.voiceRecovery}><Text style={styles.reasonLink}>{preparingVoice ? 'Preparing English voice…' : 'Enable offline English voice'}</Text></Pressable>}

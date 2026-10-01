@@ -44,6 +44,7 @@ export function ReceiptScreen({ draft, busy, onEditDump, onHold, onDelete, clock
     <CobyOrb size={64} state="settled" />
     <Text style={styles.title}>{editing ? 'Edit details.' : 'I’ve got it.'}</Text>
     <Text style={styles.copy}>{editing ? 'Change what you need. Coby will update your reminders.' : 'Here’s what I heard. Check it before I hold it.'}</Text>
+    {!editing && <Text style={styles.meta}>Items with a future date and time get Gentle reminders. You can change this in Plan.</Text>}
     {entries.map((entry, index) => <View key={index} onLayout={event => { cardPositions.current[index] = event.nativeEvent.layout.y; }} style={[styles.card, attempted && results[index].error && styles.cardError]}>
       <Text style={styles.itemNumber}>Item {index + 1}{attempted && results[index].error ? ' · Needs review' : ''}</Text>
       {attempted && results[index].error && <Text accessibilityRole="alert" style={styles.error}>{results[index].error}</Text>}

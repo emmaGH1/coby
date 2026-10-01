@@ -1,4 +1,9 @@
 import type { CobyItem, ItemStatus, ParsedItem } from './types';
+import type { Clock } from './clock';
+
+export function initialCommitment(item: ParsedItem, clock: Clock): 'gentle' | 'none' {
+  return item.dueAt && Date.parse(item.dueAt) > clock.now().getTime() ? 'gentle' : 'none';
+}
 
 // A correction updates the held item, retaining its identity and capture history.
 export function applyItemEdit(item: CobyItem, corrected: ParsedItem): CobyItem {

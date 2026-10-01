@@ -180,6 +180,8 @@ Devpost confirms October 1 noon PDT / 20:00 Lagos; retain P0 scope and reserve s
 
 ## October 1 — Safe P0 closure
 
+User approved automatic free Gentle reminders for newly confirmed future exact-time items. Receipt discloses this and Plan retains mode controls. Notification failure follows successful local holding with truthful recovery copy. No existing modes are changed. Failed extraction offers explicit manual retention as one intact item with null timing; it does not call the fixture's sample extraction or pretend that AI worked offline.
+
 Use the approved circular C vector for exact brand exports and Expo's native splash plugin. Reliability QA runs under a separate Android application ID and a CI-only entry; it must refuse the real package before any clearing. Persistent delivery uses real wall-clock deadlines rather than accelerated mock alarms. Public fixture artifacts contain no development keys and must be labelled as fixture demonstrations, not live AI/billing builds. The Next Gen source/device-demo route remains available without a store release. A publicly distributed live-AI APK requires a secured endpoint.
 
 Bound Gemini extraction to 20 seconds, abort and retain the existing editable words/retry path. Reject the other agent's rendered demo for submission until incorrect technology/event claims and existing private task footage are replaced; technical render gates alone are insufficient.

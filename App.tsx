@@ -4,12 +4,12 @@ import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-spe
 import * as Notifications from 'expo-notifications';
 import { useFonts, Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold } from '@expo-google-fonts/manrope';
 import { DemoClock, SystemClock, type Clock } from './src/domain/clock';
-import { DEMO_DUMP, FixtureBrainDumpParser } from './src/domain/parser';
+import { DEMO_DUMP, FixtureBrainDumpParser, unparsedReceipt } from './src/domain/parser';
 import { createGeminiBrainDumpParser } from './src/domain/parserFactory';
 import { selectHomeItems } from './src/domain/ranking';
 import { planNudges, postponeNudge } from './src/domain/nudges';
 import type { CobyItem, ItemStatus, ParsedItem } from './src/domain/types';
-import { applyItemEdit, leaveFocusItem } from './src/domain/itemActions';
+import { applyItemEdit, leaveFocusItem, initialCommitment } from './src/domain/itemActions';
 import { clearItems, completeItem, deleteItem, deleteItems, listItems, saveItems } from './src/data/items';
 import { cancelItemNudges, clearAllCobyNudges, NUDGE_ACTIONS, prepareNudgeNotifications, syncItemNudges, triggerLabNudge } from './src/notifications/scheduler';
 import { loadBilling, purchaseMonthly, restoreBilling, type BillingState } from './src/billing/revenuecat';
@@ -67,6 +67,7 @@ export default function App() {
   const [items, setItems] = useState<CobyItem[]>([]);
   const [dump, setDump] = useState('');
   const [draft, setDraft] = useState<ParsedItem[]>([]);
+  const [extractionFailed, setExtractionFailed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -299,6 +300,7 @@ export default function App() {
 
   async function understand() {
     setError(null);
+    setExtractionFailed(false);
     setBusy(true);
     try {
       const selectedParser = parserMode === 'fixture' ? fixtureParser : configuredParser;
@@ -306,7 +308,10 @@ export default function App() {
       if (!result.items.length) { setError('Write what is on your mind first.'); return; }
       setDraft(result.items);
       setScreen('receipt');
-    } catch { setError('Coby could not understand that yet. Your words are still here.'); }
+    } catch {
+      setExtractionFailed(true);
+      setError('Coby could not organize that right now. Retry, or keep your words as one item and add details yourself.');
+    }
     finally { setBusy(false); }
   }
 
@@ -388,12 +393,17 @@ export default function App() {
       const captured = accepted.map((entry, index): CobyItem => ({
         ...entry, id: `${activeClock.now().getTime()}-${index}-${Math.random().toString(36).slice(2)}`,
         sourceText: dump, createdAt: timestamp, status: 'captured',
-        commitmentMode: 'none', completedAt: null,
+        commitmentMode: initialCommitment(entry, activeClock), completedAt: null,
       }));
       await saveItems(captured);
-      for (const item of captured) await syncItemNudges(item, activeClock);
-      setItems(await listItems());
+      setItems(current => [...current, ...captured]);
       setDump(''); setDraft([]); setScreen('home');
+      let reminderFailure = false;
+      for (const item of captured) {
+        try { if (!await syncItemNudges(item, activeClock)) reminderFailure = true; }
+        catch { reminderFailure = true; }
+      }
+      if (reminderFailure) setError('Your items are saved. Some reminders could not be enabled. Check notification access in Settings, then choose Gentle in Plan.');
     } catch { setError('Coby could not save this. Please try again.'); }
     finally { setBusy(false); }
   }
@@ -590,6 +600,10 @@ export default function App() {
       dueText={dueText}
       dump={dump}
       error={error}
+      onKeepUnparsed={extractionFailed && dump.trim() ? () => {
+        const result = unparsedReceipt(dump);
+        setDraft(result.items); setExtractionFailed(false); setError(null); setScreen('receipt');
+      } : undefined}
       listening={listening}
       voicePhase={voicePhase}
       inputLevel={inputLevel}

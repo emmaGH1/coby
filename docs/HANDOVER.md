@@ -193,6 +193,12 @@ The canonical anti-AI-slop hackathon demo video is authored, verified, and rende
 
 Run the isolated native reliability and fresh screenshot workflows, inspect their evidence, then close remaining phone-action and safe-distribution gates before P0 acceptance.
 
+## October 1 — Recovery and approved automatic Gentle
+
+User approved enabling Gentle automatically when a newly confirmed item has an explicit future timestamp. Date-only, untimed, invalid or past timestamps get none. Receipt explains the default. Do not change existing item modes. Hold now commits items/returns Home before independent reminder synchronization; failure reports saved items plus reminder recovery and cannot invite duplicate capture. Parser failure offers Keep as one item, a receipt of the intact words with null timing, instead of blocking local holding offline. No speech lifecycle changes.
+
+Typecheck, lint and 68 tests pass. Branded debug build 36824942961 and fresh fixture screenshot/release workflow 36825001246 passed at c8cefcd; isolated native QA 36824997183 is still running. New recovery/Gentle changes are not yet loaded on the phone. Phone saved/Home readiness remains pending. Submitted demo metadata is 95 seconds, 1920×1080, 30fps (not the agent-reported 60fps); its content/privacy corrections remain mandatory. docs/SUBMISSION.md and README describe the honest Next Gen/source/setup route. Default .env.example demo seeding is now opt-in; user's .env is untouched.
+
 ## October 1 — P0 closeout in progress
 
 Exported the approved circular C mark to 1024px icon, Android adaptive layers/monochrome, favicon and native splash. Added Expo splash support; native build still needs verification. Added a CI-only QA entry in a separate package com.emmagh1.coby.nativeqa, using the actual SQLite and notification modules. It tests bulk cancellation/removal/history and waits for real wall-clock delivery of both Persistent reminders, then checks retained state after cold restart. This is not the production app's UI acceptance and is not passed until the workflow produces evidence.

@@ -31,6 +31,11 @@ function item(title: string, sourceFragment: string, dueDate: string | null, due
 }
 
 // An explicit offline fixture, not a general natural-language parser.
+export function unparsedReceipt(input: string): ParseResult {
+  const trimmed = input.trim();
+  return { items: trimmed ? [item(trimmed, trimmed, null, null)] : [] };
+}
+
 export class FixtureBrainDumpParser implements BrainDumpParser {
   async parse(input: string, context: ParseContext): Promise<ParseResult> {
     const trimmed = input.trim();
@@ -42,6 +47,6 @@ export class FixtureBrainDumpParser implements BrainDumpParser {
         item('Buy data', 'buy data', null, null),
       ] };
     }
-    return { items: [item(trimmed, trimmed, null, null)] };
+    return unparsedReceipt(trimmed);
   }
 }

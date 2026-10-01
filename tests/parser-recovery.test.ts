@@ -2,7 +2,28 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { GeminiBrainDumpParser } from '../src/domain/geminiParser';
 import { DemoClock } from '../src/domain/clock';
+import { DEMO_DUMP, unparsedReceipt } from '../src/domain/parser';
+import { initialCommitment } from '../src/domain/itemActions';
 const context = { clock: new DemoClock(new Date('2026-10-01T09:00:00Z')), timeZone: 'UTC' };
+
+test('Gentle starts only for explicitly timed future items', () => {
+  const base = unparsedReceipt('Buy milk').items[0];
+  assert.equal(initialCommitment(base, context.clock), 'none');
+  assert.equal(initialCommitment({ ...base, dueDate: '2026-10-02' }, context.clock), 'none');
+  assert.equal(initialCommitment({ ...base, dueAt: '2026-10-01T10:00:00Z' }, context.clock), 'gentle');
+  assert.equal(initialCommitment({ ...base, dueAt: '2026-10-01T08:00:00Z' }, context.clock), 'none');
+  assert.equal(initialCommitment({ ...base, dueAt: 'invalid' }, context.clock), 'none');
+});
+
+test('explicit offline recovery keeps even the demo phrase intact and invents no timing', () => {
+  const result = unparsedReceipt(DEMO_DUMP);
+  assert.equal(result.items.length, 1);
+  assert.equal(result.items[0].title, DEMO_DUMP);
+  assert.equal(result.items[0].dueDate, null);
+  assert.equal(result.items[0].dueAt, null);
+  assert.equal(result.items[0].durationMinutes, null);
+  assert.equal(unparsedReceipt('  ').items.length, 0);
+});
 
 test('stalled extraction releases the caller and aborts the network request', async () => {
   let signal: AbortSignal | undefined;

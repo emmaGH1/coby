@@ -35,6 +35,8 @@ Coby optimizes for reduced cognitive load and trust, not maximum information den
 
 Free includes brain dump, NOW/NEXT, Plan, and Gentle nudges. Plus unlocks Persistent and, later, Locked. Never paywall the basic relief loop.
 
+October 1 approved reminder default: confirming a new item with an explicit future date/time enables Gentle automatically. Unknown, date-only and past timing get no invented reminder. The receipt explains the default; Plan allows Off/Gentle/Persistent. Notification denial or scheduling failure must report that the item is saved, rather than prompting duplicate capture.
+
 ## P1 only after P0 is stable
 
 Locked commitment with a rescue code; dark mode; richer orb motion and haptics; natural-language task corrections. Locked is behavioral friction, not device security.

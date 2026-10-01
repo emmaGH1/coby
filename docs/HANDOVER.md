@@ -189,7 +189,7 @@ The canonical anti-AI-slop hackathon demo video is authored, verified, and rende
 - **Soundtrack & Voiceover:** Kokoro-82M TTS founder narration (`am_adam`) across 8 acts, paired with a custom synthesized warm neo-soul Rhodes electric piano bed (`bgm_lofi.wav`) at -18dB ducked level.
 - **Preview server:** Live interactive Studio preview running at `http://localhost:3002/#project/demo-video`.
 
-## NEXT ACTION
+### Film capture gate (historical)
 
 Capture and review the corrected synthetic-data demo against FILM_BRIEF.md, including successful purchase-and-Save on the hero item, then complete the final submission review.
 
@@ -282,3 +282,19 @@ The human confirmed that captured words stay after a 3–5-second pause with no 
 User acceptance closes the remaining speech-warning and subjective Home/Plan gates. Freeze runtime source at 2242fd0 (later commits only record evidence/assets/docs). Native debug runtime is d50a74f with the current JavaScript loaded from Metro 8085/session 57811. Do not add P1 or change final labels/layout during capture. All 74 tests, typecheck/lint, full native UI/recovery/large-text checks and notification-action checks passed; prior real Persistent delivery and physical purchase/restore evidence remain recorded. No private task was changed by the app session.
 
 Film preparation and human capture may proceed using docs/FILM_BRIEF.md. The human still verifies the new editor's successful Test Store purchase return and explicit Save on the isolated hero item; do not infer that new positive-flow evidence from the CI paywall Back test. Fresh screenshot/icon/source/setup/license are prepared. The corrected under-two-minute film, final subjective film review and submission are still pending. Do not treat app freeze as approval of the rejected local draft or completed submission. Preserve the film agent's ignored film/ and untracked capture script.
+
+## October 1 — Hackathon README and judge packaging matrix completed
+
+Overhauled `README.md` into an elite hackathon submission showcase meeting RevenueCat Ship-a-thon Next Gen and Hackathon Playbook standards:
+- Dynamic badge wall (74 tests passing, Android 16 / API 36, Expo 57, 100% Local SQLite, Gemini 3.5 Flash Lite, RevenueCat Test Store).
+- Clear problem framing around cognitive overload and executive fatigue; core 5-step relief loop: Dump → Understand → Hold → Surface → Act.
+- Zero-setup 60-second verification command (`npm test`) passing all 74 domain/integration tests in <2s on pure CPU.
+- Architectural Mermaid diagram showing strict guardrail boundary between LLM parsing and local deterministic scheduling.
+- Complete Honesty Matrix distinguishing live subsystems from scoped prototype limits.
+- RevenueCat sponsor deep-dive highlighting ethical monetization (free relief loop, paid Persistent nudges).
+- Packaging guide with 3 test routes: Pre-built demo APK on GitHub Releases with Coby Lab, 60s CPU testing, and local Android build.
+
+## NEXT ACTION
+
+Execute the film capture on the OnePlus A6010 for the corrected under-two-minute demo video following `docs/FILM_BRIEF.md`, upload to YouTube/Vimeo, and finalize Devpost submission fields.
+

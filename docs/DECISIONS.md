@@ -1,5 +1,13 @@
 # Decision log
 
+## October 1 — Hackathon README and judge packaging architecture
+
+Overhauled `README.md` into a top-tier hackathon showcase matching the Hackathon Winner Playbook and RevenueCat Ship-a-thon Next Gen criteria:
+- **Centered Brand Presentation**: Centered circular C mark (`assets/icon.png`), canonical slogan (*"Unload your mind. Out of your head. Into good hands."*), and a full dynamic badge wall (74 tests passing, Android 16/API 36 baseline, Expo 57/React Native 0.86, Gemini 3.5 Flash Lite, 100% Local SQLite, RevenueCat Test Store, MIT License).
+- **The Honesty Matrix**: Complete disclosure table separating 100% live subsystems (local SQLite, 74 automated domain tests, deterministic ranking, Android high-importance notifications with 15/30/60m postponement, RevenueCat purchase/restore flow) from deliberately scoped prototype boundaries (offline models, direct mobile API keys, local-only storage).
+- **Three-Tier Judge Verification**: Solves judge testing constraints with (1) Pre-built demo APK download on GitHub Releases for Android devices/emulators with Coby Lab pre-configured; (2) A 60-second zero-setup laptop command (`npm install && npm test`) executing all 74 unit tests in <2s on pure CPU; (3) Full local React Native setup instructions for custom Gemini API keys.
+- **Architectural Clarity & Guardrails**: Visual Mermaid sequence and component flows emphasizing zero hallucinated deadlines, humane shame-free notifications, and strict separation between LLM structured parsing and deterministic local scheduling.
+
 ## October 1 — Hackathon master demo video (Zero-slop, physical device capture, HyperFrames)
 
 Authored and rendered a 95.0-second 60fps 1080p master hackathon demo video (`coby_hackathon_demo.mp4`) adhering strictly to Coby's product canon, guardrails, and anti-sloppification directives:

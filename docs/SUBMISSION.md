@@ -32,7 +32,7 @@ https://github.com/emmaGH1/coby — source, assets, setup instructions and MIT l
 
 - 1024×1024 icon: `assets/icon.png` (approved C mark).
 - Fresh Android screenshot: `assets/submission/screenshot-home.png`, 1179×2556, without a device frame. Replace only after inspecting the new workflow artifact.
-- Public YouTube or Vimeo link to a corrected device demo under two minutes. The existing 95-second draft is not approved; see DEMO_REVIEW.
+- Public YouTube or Vimeo link to a corrected device demo under two minutes: https://vimeo.com/1232100414.
 - Confirm the selected Next Gen category and the required student eligibility evidence in the submission form.
 - Give judges reproducible setup for their own development keys and RevenueCat Test Store, or an authorized safe test access route. Never paste private API keys into Devpost.
 

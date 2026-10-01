@@ -63,7 +63,7 @@ Log the clock time of every tap.
 | E | Leave Coby. Notification "This is a good time to start." → tap 15 min → postponement shown | ≈ T+10 |
 | F | "Checking in, as you asked." → tap body → check-in → Start focus → Complete → Completed history | 15 min after E's actual delay tap |
 
-Take C describes the intended polished flow, not a claim that its new editor exists yet. Adapt capture instructions to the frozen app's actual labels; never reconstruct missing controls. Confirm the purchase unlocks Persistent on the hero before waiting for E. Each take ≤ 180 s if the human uses adb screenrecord. Check for unrelated notifications before using any frame. Switch back to Owner when done.
+Take C's editor is implemented. Native flow 36852963130 verifies staged reminder Save/Cancel, paywall draft preservation and Back; it does not prove a new successful purchase in this editor. Use the frozen app's actual labels: select Persistent · Plus, finish the Test Store purchase, return to the draft and tap Save changes. Confirm the hero's saved reminder is Persistent before waiting for E. Never reconstruct missing controls. Each take ≤ 180 s if the human uses adb screenrecord. Check for unrelated notifications before using any frame. Switch back to Owner when done.
 
 ## 6. Storyboard (~112 s)
 

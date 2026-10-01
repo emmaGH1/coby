@@ -191,7 +191,7 @@ The canonical anti-AI-slop hackathon demo video is authored, verified, and rende
 
 ## NEXT ACTION
 
-Finish the bounded permission/larger-text Android confirmation, load the authorized phone update and confirm the false-silence warning, then freeze the UI for human film capture.
+Confirm the latest phone bundle and false-silence warning with final visual approval, then freeze the UI for human film capture.
 
 ## October 1 — Real Persistent delivery and clear/restart passed
 
@@ -262,3 +262,11 @@ Commit d50a74f passed branded debug build 36848023063, full native UI flow 36848
 Two final corrections from that review: weekly header names both months at a boundary and shrinks/wraps at larger text; reminder failure points to opening/saving the item in Plan instead of suggesting a removed direct control. The bounded confirmation adds actual denied-notification holding/recovery and 1.3 system font-scale Home/List/Calendar. Typecheck/lint/74 tests pass; fresh native confirmation is pending.
 
 User explicitly authorized pushing main/running GitHub checks and saved-input phone reload after the automatic review block. Phone Home was verified empty/not listening; an aggregate integrity baseline was recorded without saving payloads. Local .env still had DEMO_MODE=true; changed only that non-secret setting to false so physical testing uses SystemClock. Credentials were preserved and .env remains ignored. Windows denied local Hermes execution; hosted native builds passed. Metro refresh and physical loading remain in progress. No private item has been edited or deleted.
+
+## October 1 — Final native confirmation passed; phone acceptance pending
+
+Final confirmation 36852963130 at 2242fd0 passed the full native flow, actual notification-denial recovery with automatic Gentle, and 1.3 system font-scale Home/List/Calendar. Downloaded native-flow.txt and final large-text/permission frames were inspected. The month-range header and recovery instructions match the current controls. The final 1179×2556 actual Android Home screenshot, using synthetic items only, replaces assets/submission/screenshot-home.png. Both NEXT rows remain scrollable rather than guaranteed above the input. This completes the bounded native review; no optional polish or P1 expansion is planned before capture.
+
+The authorized d50a74f development APK was installed over the OnePlus app; its native runtime is compatible with 2242fd0. Aggregate non-test payload integrity is unchanged. Metro 8084/session 27001 serves the latest JavaScript with DEMO_MODE=false; credentials remain ignored and unchanged. The phone switched to another app before bundle loading was confirmed, so leave that surface alone and wait for the human to open Coby. Do not claim the latest source is running yet. The remaining app gate is valid spoken capture followed by a pause without a false empty-dump warning, plus final subjective visual approval. No private task was saved, completed, edited, deleted or cleared.
+
+Film preparation may continue in ignored film/. Human recording uses the actual editor: choose Persistent, purchase if required, return to the preserved draft, then Save changes. Its successful purchase-and-Save take and corrected final render still need human verification/review. The old private/incorrect demo remains rejected. Source is a freeze candidate; full P0/submission approval is not yet claimed.

@@ -2,14 +2,15 @@
 
 ## October 1 — Current P0 polish gate
 
-- PASS at d50a74f: native UI 36848027053 and notification actions 36848035543; their downloaded reports and batched screenshots verify the revised paths below. Branded debug 36848023063 passed.
-- FINAL CONFIRMATION PENDING: corrected weekly month-range/recovery instructions, actual denied-notification local holding with automatic Gentle, and 1.3 system font-scale Home/List/Calendar. Native source changes are limited to these clarity refinements.
+- PASS at d50a74f: native UI 36848027053 and notification actions 36848035543; downloaded reports and screenshots verify the revised paths. Branded debug 36848023063 passed.
+- PASS at 2242fd0: final native confirmation 36852963130. Corrected weekly month-range/recovery instructions, actual denied-notification local holding with automatic Gentle, and 1.3 system font-scale Home/List/Calendar passed. Downloaded native-flow.txt and final screenshots were inspected.
 
 - Code checks: typecheck/lint and 74 domain/session tests pass. New cases cover relative dates/year rollover/null timing and staged reminder edits, snooze preservation/clearing and removal of exact timing.
-- Native UI run pending: keyboard-visible synthetic typing; three-item receipt/error jump; reminder Cancel leaves Gentle unchanged; paywall return retains edited title and staged Off; Save Off persists; Android Back exits Focus without completion; List/Calendar/clear/history through restart.
-- Native production notification-action rerun pending for the simplified check-in. Prior scheduler delivery/OS action evidence remains valid, but does not prove the changed screen.
-- Physical acceptance pending: load only after saved-input/Home readiness, confirm valid speech followed by silence has no empty-dump error, automatic Gentle on a new future exact-time item, and saved-item recovery with denied notification permission. Use clearly labelled synthetic input; preserve real tasks.
-- Final subjective visual approval, fresh screenshot and corrected human-captured film remain open. This pass adds no P1 work.
+- PASS: keyboard-visible synthetic typing; exact three-item receipt/error jump; reminder Cancel leaves Gentle unchanged; paywall return retains edited title and staged Off; Save Off persists; Android Back exits Focus without completion; List/Calendar/clear/history through restart. Final run 36852963130 repeats this flow.
+- PASS: 36848035543 exercises real 30-minute and one-hour Android notification actions through the simplified production check-in. Original deadlines, one pending request, persisted postponement after cold restart and explicit offline retention all pass. Earlier real wall-clock Persistent delivery remains valid.
+- PHONE: user authorized saved-input reload. Branded d50a74f development APK installed over the OnePlus app without uninstalling or clearing data; aggregate non-test payload integrity matches the pre-install baseline. Metro 8084 serves the latest source with SystemClock. The phone left Coby before bundle loading could be confirmed; latest-bundle and spoken silence-warning confirmation remain pending. Native permission/default-Gentle checks above passed on the isolated emulator; do not claim separate physical acceptance.
+- ASSET: final actual Android Home screenshot from 36852963130 is 1179×2556, contains only synthetic data and replaces assets/submission/screenshot-home.png. NEXT remains accessible by scrolling.
+- Final subjective visual approval and corrected human-captured film remain open. New editor purchase-return staging is implemented; the human must verify successful purchase and Save on the film's hero item before recording follow-through. This pass adds no P1 work.
 
 ## October 1 — P0 closure checkpoint
 

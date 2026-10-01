@@ -2,6 +2,8 @@
 
 The supplied 95-second draft is **not approved for submission**. Preserve it as an editable draft, not final evidence. A technical render check cannot establish truthful claims, successful interactions or privacy.
 
+FFprobe inspection: H.264/AAC, 1920×1080, 30fps, 95.000 seconds, 10,872,665 bytes. The other agent's 60fps description is incorrect.
+
 ## Required corrections
 
 - Remove “offline Whisper”: Coby uses the Android recognition service through expo-speech-recognition. Offline availability depends on an installed device model and is not universally verified.

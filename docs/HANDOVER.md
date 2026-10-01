@@ -195,6 +195,8 @@ Run the isolated native reliability and fresh screenshot workflows, inspect thei
 
 ## October 1 — Fresh screenshot and native UI acceptance harness
 
+First native UI run 36827272205 reached the correct clear-list confirmation but the harness failed on Android's uppercase CLEAR LIST button. This is a case-sensitive selector problem, not an app deletion failure. Match labels case-insensitively and rerun. The next workflow retains compiled APKs even after a UI-test failure; an optional reuse input rejects reuse if runtime files changed. Do not claim the remainder of the flow passed from this partial run.
+
 Downloaded and inspected the successful 36825001246 screenshot: 1179×2556 actual Android 16 rendering, no frame, correct approved companion, settings/pencil/navigation icons and bottom composer. Replaced the stale submission PNG. NOW and primary actions are visible; NEXT stays accessible by scrolling. Native branded APK 36824942961 was downloaded for later authorized installation, not installed over unsaved input.
 
 Added emulator-only native UI checks to the screenshot workflow, refusing a physical serial. They operate exclusively on a fresh CI fixture installation: clear initial synthetic fixtures, text dump, three-item receipt, offscreen first-title error/scroll/correction, hold, Focus completion, List/Calendar, clear remaining held items and preserve Completed through cold restart. Export per-state screenshots/failure evidence. This gate is pending; it must pass before being described as observed. The supplied draft demo remains local/unapproved.

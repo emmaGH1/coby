@@ -17,7 +17,7 @@ def tree():
 
 def locate(label):
     for node in tree().iter('node'):
-        if label in (node.get('text'), node.get('content-desc')):
+        if label.casefold() in ((node.get('text') or '').casefold(), (node.get('content-desc') or '').casefold()):
             bounds = [int(x) for x in re.findall(r'\d+', node.get('bounds', ''))]
             if len(bounds) == 4 and bounds[2] > bounds[0] and bounds[3] > bounds[1]:
                 return bounds

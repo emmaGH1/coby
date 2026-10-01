@@ -180,6 +180,8 @@ Devpost confirms October 1 noon PDT / 20:00 Lagos; retain P0 scope and reserve s
 
 ## October 1 — Safe P0 closure
 
+Native dialog labels may be uppercase. Match their accessible text case-insensitively. Reuse a compiled fixture artifact for subsequent script-only iterations only after comparing all runtime source/config/package/asset paths against its recorded build SHA. Retain failure artifacts; do not change application behavior to satisfy an automation selector.
+
 Native UI acceptance uses a fresh CI emulator and refuses physical devices. It verifies visible transition results rather than trusting timed coordinate taps. Keep failure screenshots/XML synthetic and separate from the user's phone. Fresh screenshot evidence supersedes the old screenshot; do not claim NEXT is visible without scrolling.
 
 User approved automatic free Gentle reminders for newly confirmed future exact-time items. Receipt discloses this and Plan retains mode controls. Notification failure follows successful local holding with truthful recovery copy. No existing modes are changed. Failed extraction offers explicit manual retention as one intact item with null timing; it does not call the fixture's sample extraction or pretend that AI worked offline.

@@ -2,6 +2,15 @@ name: Android submission screenshot
 
 on:
   workflow_dispatch:
+    inputs:
+      reuse_apk_run:
+        description: 'Optional fixture APK run ID; only reusable when runtime files are unchanged'
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+  actions: read
 
 jobs:
   capture:
@@ -14,19 +23,36 @@ jobs:
       EXPO_PUBLIC_COBY_DEMO_MODE: 'true'
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
+        if: inputs.reuse_apk_run == ''
         with:
           node-version: '24'
           cache: npm
       - uses: actions/setup-java@v4
+        if: inputs.reuse_apk_run == ''
         with:
           distribution: temurin
           java-version: '17'
       - run: npm ci
+        if: inputs.reuse_apk_run == ''
       - run: npx expo prebuild --platform android --non-interactive --no-install
+        if: inputs.reuse_apk_run == ''
       - name: Compile fixture-only release APK
+        if: inputs.reuse_apk_run == ''
         working-directory: android
         run: ./gradlew :app:assembleRelease --no-daemon
+      - name: Reuse unchanged fixture runtime
+        if: inputs.reuse_apk_run != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APK_RUN_ID: ${{ inputs.reuse_apk_run }}
+        run: |
+          [[ "$APK_RUN_ID" =~ ^[0-9]+$ ]]
+          built_sha=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$APK_RUN_ID" --jq .head_sha)
+          test -z "$(git diff --name-only "$built_sha" HEAD -- App.tsx index.ts src app.json package.json package-lock.json assets)"
+          gh run download "$APK_RUN_ID" --name coby-offline-fixture-apk --dir android/app/build/outputs/apk/release
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -58,6 +84,7 @@ jobs:
             artifacts/native-flow.txt
           if-no-files-found: warn
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: coby-offline-fixture-apk
           path: android/app/build/outputs/apk/release/app-release.apk

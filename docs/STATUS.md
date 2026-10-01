@@ -1,5 +1,13 @@
 # Coby progress — October 1, 2026
 
+## Current closeout
+
+P0 acceptance remains open; no P1 work has started. The core relief flow, saved controls, ranking and RevenueCat Test Store have physical evidence. Current source adds the voice-warning correction, bounded extraction/offline manual retention, and the user-approved automatic Gentle default for new exact-time future items. Typecheck/lint and 68 tests pass; the latest changes still need the safe phone reload.
+
+Approved C launcher/adaptive assets/native splash are exported and native build passed. The submission screenshot is refreshed from actual Android 16 at 1179×2556, inspected and committed. Isolated native Persistent/bulk-clear/restart and full native UI receipt/Focus/Plan/history gates are running in CI. Pending does not mean passed.
+
+The supplied demo is a local draft requiring correction of private task footage and inaccurate speech/SDK/event claims. See DEMO_REVIEW and SUBMISSION. Next Gen can use source plus a truthful device demo; the public fixture APK is an auxiliary offline sample, not live AI/purchase access. A public live-AI APK needs a secured endpoint and is not claimed as delivered.
+
 Submission deadline: **October 1 at noon PDT / 8:00 PM Lagos**, confirmed at https://revenuecat-shipaton-2026.devpost.com/. Keep scope focused on P0 reliability, cohesive visuals, build and demo; the extension does not change P1 scope.
 
 P0 is the complete first usable Coby, including dependable capture, nudges and a polished companion experience. P0 is not complete. The user confirmed that keyboard-visible typing and a minute-long voice dump now both work on the OnePlus A6010. This is acceptance for those tested conditions, not every Android device or offline speech.

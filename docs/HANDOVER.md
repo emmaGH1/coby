@@ -195,6 +195,8 @@ Run the isolated native reliability and fresh screenshot workflows, inspect thei
 
 ## October 1 — Real Persistent delivery and clear/restart passed
 
+Quick action run 36829983916 stopped during installation: its shared adb helper allowed only 20 seconds for the large APK. It did not reach an app action. Give installation 180 seconds while retaining 20-second UI command bounds; retain its separately labelled Coby QA APK for diagnosis. New action results remain pending. Main native receipt rerun now verifies exact injected input and three cards; the preceding one-card evidence does not close that case.
+
 Isolated native workflow 36824997183 passed on Android 16/API36. Downloaded report confirms bulk SQLite removal/history retention/pending cancellation, actual delivery of both Persistent points while backgrounded across their real 30-minute gap, and retained cleared/history state after cold restart. No phone data was involved. Public fixture release scan found bundled JavaScript and no development Gemini key or Google API-key pattern. Branded APK identity min24/target36 verified.
 
 Full application UI gate is still running after the casing correction. Added a quick isolated mode for the real production App component, checking actual OS 30/60-minute category taps, persisted unchanged deadline/single pending request, and explicit parser-failure/offline one-item retention through receipt and restart. This mode has no Gemini key and no account; it does not claim live AI/purchase verification. Its new results are pending. Preserve the real phone until saved/Home readiness arrives.

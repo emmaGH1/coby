@@ -9,7 +9,7 @@ PACKAGE = 'com.emmagh1.coby'
 OUT = Path('artifacts')
 
 def adb(*args):
-    return subprocess.check_output(['adb', *args], timeout=20).decode(errors='replace')
+    return subprocess.check_output(['adb', *args], timeout=180 if args[0] == 'install' else 20).decode(errors='replace')
 
 def tree():
     adb('shell', 'uiautomator', 'dump', '--compressed', '/sdcard/coby-qa.xml')

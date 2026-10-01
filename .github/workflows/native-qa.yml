@@ -28,7 +28,7 @@ jobs:
       - run: npm ci
       - name: Select isolated package and QA entry
         run: |
-          node -e "const fs=require('fs');let p=require('./package.json');p.main='scripts/native-qa-entry.tsx';fs.writeFileSync('package.json',JSON.stringify(p));let a=require('./app.json');a.expo.android.package='com.emmagh1.coby.nativeqa';fs.writeFileSync('app.json',JSON.stringify(a));"
+          node -e "const fs=require('fs');let p=require('./package.json');p.main='scripts/native-qa-entry.tsx';fs.writeFileSync('package.json',JSON.stringify(p));let a=require('./app.json');a.expo.name='Coby QA';a.expo.android.package='com.emmagh1.coby.nativeqa';fs.writeFileSync('app.json',JSON.stringify(a));"
       - run: npx expo prebuild --platform android --non-interactive --no-install
       - run: ./gradlew :app:assembleRelease --no-daemon
         working-directory: android
@@ -51,3 +51,9 @@ jobs:
           name: coby-native-qa-evidence
           path: artifacts/
           if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coby-native-qa-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: warn

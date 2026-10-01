@@ -12,14 +12,21 @@ def start():
     while time.monotonic() < deadline:
         logs = adb('logcat', '-d', '-s', 'ReactNativeJS:I')
         assert 'COBY_QA FAIL' not in logs, logs
-        if ('COBY_QA QUICK_READY' in logs or 'COBY_QA RESTART_PASS' in logs) and locate('Brain dump'):
+        if ('COBY_QA QUICK_READY' in logs or 'COBY_QA RESTART_PASS' in logs) and (locate('Brain dump') or locate('A little check-in.')):
             return
         time.sleep(1)
     raise RuntimeError('Isolated App did not reach its ready capture surface')
 
 def restart():
     adb('shell', 'input', 'keyevent', '3')
-    adb('shell', 'am', 'kill', PACKAGE)
+    time.sleep(2)
+    for _ in range(10):
+        adb('shell', 'am', 'kill', PACKAGE)
+        time.sleep(1)
+        if not adb('shell', f'pidof {PACKAGE} || true').strip():
+            break
+    else:
+        raise RuntimeError('Background QA process did not stop; refusing to claim cold restart')
     start()
 
 def report(marker):
@@ -66,6 +73,8 @@ def main():
     expect('I’ll check in again in 1 hour. Your due time is unchanged.')
     capture('flow-os-60-min')
     restart(); report('OS_DELAY_60_PASS')
+    if locate('← Home'):
+        tap('← Home')
     tap('Brain dump')
     type_dump('Keep the spare key somewhere safe')
     adb('shell', 'input', 'keyevent', '4')

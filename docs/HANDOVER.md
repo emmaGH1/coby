@@ -191,7 +191,7 @@ The canonical anti-AI-slop hackathon demo video is authored, verified, and rende
 
 ## NEXT ACTION
 
-Confirm the latest phone bundle and false-silence warning with final visual approval, then freeze the UI for human film capture.
+Capture and review the corrected synthetic-data demo against FILM_BRIEF.md, including successful purchase-and-Save on the hero item, then complete the final submission review.
 
 ## October 1 — Real Persistent delivery and clear/restart passed
 
@@ -270,3 +270,15 @@ Final confirmation 36852963130 at 2242fd0 passed the full native flow, actual no
 The authorized d50a74f development APK was installed over the OnePlus app; its native runtime is compatible with 2242fd0. Aggregate non-test payload integrity is unchanged. Metro 8084/session 27001 serves the latest JavaScript with DEMO_MODE=false; credentials remain ignored and unchanged. The phone switched to another app before bundle loading was confirmed, so leave that surface alone and wait for the human to open Coby. Do not claim the latest source is running yet. The remaining app gate is valid spoken capture followed by a pause without a false empty-dump warning, plus final subjective visual approval. No private task was saved, completed, edited, deleted or cleared.
 
 Film preparation may continue in ignored film/. Human recording uses the actual editor: choose Persistent, purchase if required, return to the preserved draft, then Save changes. Its successful purchase-and-Save take and corrected final render still need human verification/review. The old private/incorrect demo remains rejected. Source is a freeze candidate; full P0/submission approval is not yet claimed.
+
+## October 1 — Latest phone update loaded safely
+
+After the human opened Coby, the Home composer was verified empty and idle before reconnecting. The previous Metro 8084 listener was bound to IPv6 ::1, while the phone's reverse connection needed IPv4; its old Home copy confirmed that the update had not loaded. Started Metro with NODE_OPTIONS=--dns-result-order=ipv4first, CI=1, localhost port 8085 and two workers. Session 57811 serves the current repository; IPv4 health check passed. Reversed device port 8085 and opened the development-client link. Android bundled index.ts with 905 modules; the updated Home placeholder is visible and the removed helper copy is absent. The latest source is now running on the OnePlus. Aggregate non-test payload integrity remains unchanged after reload. Credentials were not printed or modified.
+
+The human confirmed that captured words stay after a 3–5-second pause with no incorrect empty-dump warning, and approved updated Home/Plan readability for freezing. The app is now frozen for human film capture. No application source changed in this loading correction; prior 74-test/native acceptance remains applicable. Final film approval remains separate.
+
+## October 1 — Phone acceptance and app freeze
+
+User acceptance closes the remaining speech-warning and subjective Home/Plan gates. Freeze runtime source at 2242fd0 (later commits only record evidence/assets/docs). Native debug runtime is d50a74f with the current JavaScript loaded from Metro 8085/session 57811. Do not add P1 or change final labels/layout during capture. All 74 tests, typecheck/lint, full native UI/recovery/large-text checks and notification-action checks passed; prior real Persistent delivery and physical purchase/restore evidence remain recorded. No private task was changed by the app session.
+
+Film preparation and human capture may proceed using docs/FILM_BRIEF.md. The human still verifies the new editor's successful Test Store purchase return and explicit Save on the isolated hero item; do not infer that new positive-flow evidence from the CI paywall Back test. Fresh screenshot/icon/source/setup/license are prepared. The corrected under-two-minute film, final subjective film review and submission are still pending. Do not treat app freeze as approval of the rejected local draft or completed submission. Preserve the film agent's ignored film/ and untracked capture script.

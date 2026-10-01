@@ -1,6 +1,7 @@
 # Coby product film — production brief v3
 
 Status: reviewed and approved for production planning on October 1. Final recording waits for the app's UI freeze and human capture readiness; approval of this plan is not approval of a rendered film. The human performs all film capture; the film agent plans, edits in HyperFrames, and reviews. The film agent never operates the phone, publishes, or submits.
+Capture gate update: the latest OnePlus update is loaded; the human accepted the silence-warning fix and approved Home/Plan visuals. Runtime source 2242fd0 is frozen. App acceptance permits human capture when ready; final film approval and the successful purchase-and-Save take remain required.
 Deadline: October 1, 2026, 20:00 Lagos (noon PDT). Event: RevenueCat Shipaton 2026, Next Gen.
 Read first: AGENTS.md, docs/PRODUCT.md, docs/GUARDRAILS.md, docs/DEMO_REVIEW.md, docs/SUBMISSION.md. Canon wins over this brief.
 

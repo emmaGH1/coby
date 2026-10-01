@@ -191,7 +191,7 @@ The canonical anti-AI-slop hackathon demo video is authored, verified, and rende
 
 ## NEXT ACTION
 
-Inspect the final isolated OS-action/offline-recovery evidence, then safely load the update when the user confirms saved/Home readiness; obtain voice-warning and corrected-demo approval before declaring P0 accepted.
+Safely load the latest branded app/update after saved/Home readiness, confirm the speech-warning correction and automatic Gentle/denied-permission save recovery using synthetic input, then review the corrected demo for final P0 approval.
 
 ## October 1 — Real Persistent delivery and clear/restart passed
 
@@ -234,3 +234,11 @@ Quick run 36832129592 installed successfully, but the harness expanded Android S
 36833590847 backgrounded the fresh app before its QA setup completed: retained log has only Running main and no QUICK_READY, and shade has no Coby reminder. Replace the fixed four-second startup wait with bounded readiness checks for both the native QA marker and production capture surface. Reuse the unchanged 36832129592 APK; do not infer a production notification defect from an unready harness.
 
 36834169289 exercised the actual 30-minute Android action and displayed unchanged-deadline confirmation. Its restart check failed because am kill ran before the app was backgrounded; start reported existing task and no new QA markers. Require confirmed process exit without force-stop, then accept either Home or restored notification check-in as ready. Full 30/60 persisted/offline gate remains pending until the rerun completes.
+
+## October 1 — Native OS actions and offline recovery passed
+
+Final isolated run 36834814944 passed using the unchanged quick QA APK from 36832129592. Actual Android 30-minute and one-hour notification buttons invoked production App. Each preserved dueAt, persisted its requested delay, and retained exactly one pending native request after confirmed background-process exit/restart. Report and visible confirmation screenshots inspected. Missing Gemini configuration showed the recovery action; explicit Keep as one item displayed the complete words with null timing, held them locally and survived confirmed restart. Evidence downloaded to the chat workspace outputs/p0-actions-pass. Earlier infrastructure failures are superseded by this observed pass, not silently treated as app successes.
+
+Typecheck/lint/68 tests and latest branded native build 36832127653 pass. Three-item receipt/UI gate 36831455328 and real Persistent delivery/bulk-clear/restart gate 36824997183 pass. No required isolated gate remains running. No real phone data was changed. Phone saved/Home readiness is still unanswered; Metro 8083/session 29197 still serves the preceding code. Do not claim the latest speech-warning/Gentle/recovery update is installed. Latest native build is compatible; branded c8cefcd APK plus newest JavaScript can be loaded after readiness without uninstalling/clearing data.
+
+P0 acceptance stays open for safe phone confirmation and corrected demo approval. Final demo still requires truthful narration, synthetic task footage and actual visible interactions; do not publish the local draft. Submission assets/source/setup/license are prepared. No P1 added.

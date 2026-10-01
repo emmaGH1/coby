@@ -195,3 +195,5 @@ Bound Gemini extraction to 20 seconds, abort and retain the existing editable wo
 - October 1 acceptance evidence: require exact retained input and a visible third receipt card before claiming the multi-item offscreen recovery gate. Native run 36831455328 meets those conditions. Installation delays are test infrastructure failures unless an app action was reached.
 
 - Notification UI acceptance must expand the Coby notification group/card by its synthetic title, not the first expand control in Android's shade. Reuse only the unchanged compiled QA runtime; require quick mode and runtime diff validation.
+
+- October 1 final native acceptance: 36834814944 closes actual OS 30/60-minute postponement and explicit missing-parser-configuration retention. Require confirmed process exit for restart evidence; am start of an existing task alone is insufficient. P0 remains pending phone warning/default-reminder confirmation and corrected demo approval, not P1 expansion.

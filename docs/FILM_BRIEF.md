@@ -1,6 +1,6 @@
-# Coby product film — production brief v2
+# Coby product film — production brief v3
 
-Status: approved plan. The human performs all phone capture; the agent plans, edits in HyperFrames, and reviews. The agent never operates the phone, publishes, or submits.
+Status: reviewed and approved for production planning on October 1. Final recording waits for the app's UI freeze and human capture readiness; approval of this plan is not approval of a rendered film. The human performs all film capture; the film agent plans, edits in HyperFrames, and reviews. The film agent never operates the phone, publishes, or submits.
 Deadline: October 1, 2026, 20:00 Lagos (noon PDT). Event: RevenueCat Shipaton 2026, Next Gen.
 Read first: AGENTS.md, docs/PRODUCT.md, docs/GUARDRAILS.md, docs/DEMO_REVIEW.md, docs/SUBMISSION.md. Canon wins over this brief.
 
@@ -30,7 +30,7 @@ Brand: lowercase "coby". Lines: "Unload your mind." / "Out of your head. Into go
 
 ## 4. Synthetic story
 
-Dump (exact words; insert the clock time at T+45 min, where T is when Hold is pressed):
+Dump (exact words; choose a fixed explicit deadline D roughly 45–50 minutes ahead before recording, including AM/PM or a 24-hour clock time; record the actual Hold time T):
 
 "Finish the database assignment tomorrow, call Daniel at [TIME] for five minutes, and buy data."
 
@@ -40,13 +40,17 @@ Dump (exact words; insert the clock time at T+45 min, where T is when Hold is pr
 
 Hero stays open until completion. No private data anywhere.
 
-Reminder timing (src/domain/nudges.ts, deadline D, duration 5 min): first reminder at D − 35 min (≈ T+10); 15-minute postpone → snoozed reminder ≈ T+25; Persistent "latest" reminder at D − 5 min (≈ T+40). Complete before T+40.
+Reminder timing (src/domain/nudges.ts, deadline D, duration 5 min): the initial Persistent schedule has a first reminder at D − 35 min and a latest reminder at D − 5 min. If D = T+45 min, these are approximately T+10 and T+40. Use the actual captured deadline and tap times to calculate the waits; do not assume Hold happened at the planned time.
+
+A 15-minute postpone cancels/replaces the pending schedule with one snoozed reminder 15 minutes after that tap. The original latest reminder is therefore not left pending. The task deadline D remains unchanged. Complete after the snoozed reminder, without changing mode or timing between takes.
 
 ## 5. Capture (human, Guest user on OnePlus A6010)
 
-Setup: Settings → System → Multiple users → Guest. Coby is installed there and unused. Grant mic + notifications; load dev build; DND with Coby allowed; one throwaway smoke test (dump → Hold → paywall opens → delete).
+Setup: the human checks Settings → System → Multiple users → Guest, confirms this is an isolated profile and that Coby is installed and usable there, then grants mic + notifications and allows Coby through DND. Do not assume Guest availability or app installation; if unavailable, use a separately agreed synthetic test installation, never clear Owner's real data. Verify Plus is initially inactive for the purchase take. Run one throwaway smoke test (dump → Hold → paywall opens, without buying → delete).
 
-Voice: TTS plays the dump into the phone mic (phone 5–10 cm from the speaker, or a wired earbud mic held against it). Room noise does not matter for the film because screen recording has no audio; the clean TTS file is laid over in the edit. If recognition fails twice, type the dump and label "typed for this take". Never show the mic UI over typed text.
+Before final capture, the app session must confirm that the latest voice-warning/recovery/automatic-Gentle update is loaded, targeted phone acceptance has passed and the polished interface is frozen. Record the build/commit and final visible labels. The demo session may prepare narration, music, composition and capture instructions immediately; it must not reload, build, alter or operate the app/phone. Reserve the phone with the human for capture so another session is not testing it simultaneously.
+
+Voice: TTS plays the dump into the phone mic (phone 5–10 cm from the speaker, or a wired earbud mic held against it). Use a quiet room and test the level: noise still affects recognition even when the recording's audio is discarded. Lay the same spoken sample over the corresponding capture in the edit; never imply different words were recognized. If recognition fails twice, type the dump and label "typed for this take". Never show the mic UI over typed text.
 
 Log the clock time of every tap.
 
@@ -54,12 +58,12 @@ Log the clock time of every tap.
 | --- | --- | --- |
 | A | Clean Home + companion, ~8 s | any |
 | B | Speak → TTS → live transcript → Stop → Understand → receipt (show unset field, Gentle default note) → Hold → Home | T |
-| C | NOW → Why this now? → Persistent · Plus → Test Store paywall → purchase → "Persistent reminders on" | right after B |
+| C | NOW → Why this now? → edit hero item → Reminder/Persistent · Plus → Test Store paywall → purchase → verify and save Persistent for the same item | right after B |
 | D | Plan List: same three items | right after C |
 | E | Leave Coby. Notification "This is a good time to start." → tap 15 min → postponement shown | ≈ T+10 |
-| F | "Checking in, as you asked." → tap body → check-in → Focus → Done → Completed history | ≈ T+25, before T+40 |
+| F | "Checking in, as you asked." → tap body → check-in → Start focus → Complete → Completed history | 15 min after E's actual delay tap |
 
-Each take ≤ 180 s if using adb screenrecord. Check for unrelated notifications before using any frame. Switch back to Owner when done.
+Take C describes the intended polished flow, not a claim that its new editor exists yet. Adapt capture instructions to the frozen app's actual labels; never reconstruct missing controls. Confirm the purchase unlocks Persistent on the hero before waiting for E. Each take ≤ 180 s if the human uses adb screenrecord. Check for unrelated notifications before using any frame. Switch back to Owner when done.
 
 ## 6. Storyboard (~112 s)
 
@@ -101,10 +105,20 @@ Craft: product visible within 5 s; app text readable at phone size; muted viewin
 Technical: ffprobe duration < 120 s, 1920×1080, audio present, no blank/broken frames.
 Final approval and upload are human-only.
 
+Official Devpost requirements rechecked October 1: target-device footage, up to two minutes, publicly visible YouTube/Vimeo upload, and permission for third-party music/material. Source: https://revenuecat-shipaton-2026.devpost.com/. Check eligibility and judge access separately in docs/SUBMISSION.md.
+
 ## 12. Timeline (Lagos)
 
 Takes done 12:30 · rough cut 15:00 · picture lock 17:30 · human approval 18:30 · upload + submit 19:30.
 
-## 13. Deliver
+## 13. Parallel ownership and deliverables
 
-film/out/coby_judges_master.mp4 · SRT · short claim/disclosure + asset-license note. Update docs/HANDOVER.md and docs/DEMO_REVIEW.md after approval.
+The demo session owns only `film/` and its own `film/HANDOVER.md`, containing one NEXT ACTION. Root app source, dependency files, environment files, capture/test scripts and shared docs/HANDOVER.md remain owned by the app session. Read shared docs without editing them; give review notes back to the human for coordination. No agent-to-agent messaging or publication without human authorization.
+
+Start the storyboard, narration draft, audio audition and edit scaffolding now. Use labelled placeholders until the human supplies approved post-freeze takes A–F; do not export placeholders as the final demo. If the UI freeze slips, update the capture schedule with the human and retain the upload/submission buffer.
+
+Deliver `film/out/coby_judges_master.mp4`, SRT, a short claim/disclosure and asset-license note, a measured technical report, and the reviewable preview. The app session updates shared HANDOVER/DEMO_REVIEW only after the human approves the complete rendered film.
+
+## 14. Review outcome — October 1
+
+Approved story, duration, truthful claims, real-device footage, human capture boundary and visual/audio direction. Corrected postponement semantics, fixed-deadline capture timing, startup/build readiness, final-label dependence, noisy-room advice and parallel file ownership against current source. The storyboard does not require a Focus countdown, restore demonstration or any new feature. Final film approval remains pending actual footage, measured output and complete human review.

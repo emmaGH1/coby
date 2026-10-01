@@ -75,7 +75,9 @@ def main():
     OUT.mkdir(exist_ok=True)
     for setting in ('animator_duration_scale', 'transition_animation_scale', 'window_animation_scale'):
         adb('shell', 'settings', 'put', 'global', setting, '0')
-    adb('shell', 'pm', 'grant', PACKAGE, 'android.permission.POST_NOTIFICATIONS')
+    # Denial must not block local holding or imply an unsaved receipt.
+    adb('shell', 'pm', 'revoke', PACKAGE, 'android.permission.POST_NOTIFICATIONS')
+    adb('shell', 'pm', 'set-permission-flags', PACKAGE, 'android.permission.POST_NOTIFICATIONS', 'user-set', 'user-fixed')
     adb('shell', 'am', 'start', '-n', f'{PACKAGE}/.MainActivity')
     time.sleep(3)
     # This workflow installs into a fresh emulator with synthetic fixtures only.
@@ -121,7 +123,19 @@ def main():
     adb('shell', 'input', 'keyevent', '4')
     tap('Looks right. Hold it.', scroll=True)
     expect('Start focus')
+    expect('Your items are saved. Some reminders could not be enabled. Check notification access in Settings, then open the item in Plan and save its reminder.')
+    capture('flow-permission-recovery')
+    adb('shell', 'pm', 'clear-permission-flags', PACKAGE, 'android.permission.POST_NOTIFICATIONS', 'user-set', 'user-fixed')
+    adb('shell', 'pm', 'grant', PACKAGE, 'android.permission.POST_NOTIFICATIONS')
     capture('flow-held-home')
+    adb('shell', 'settings', 'put', 'system', 'font_scale', '1.3')
+    time.sleep(3)
+    expect('Brain dump'); expect('Start focus'); capture('flow-large-text-home')
+    tap('Plan'); expect('Calendar'); capture('flow-large-text-list')
+    tap('Calendar'); expect('Next week'); capture('flow-large-text-calendar')
+    adb('shell', 'settings', 'put', 'system', 'font_scale', '1.0')
+    time.sleep(3)
+    tap('Home')
     # A paywall detour must preserve the edit, and Cancel must preserve the saved task.
     tap('Edit Call Daniel')
     replace_title('Call Daniel after lunch')
@@ -157,7 +171,7 @@ def main():
     time.sleep(3)
     tap('Plan'); expect('Completed · 1')
     tap('Completed · 1'); capture('flow-restart-history')
-    (OUT / 'native-flow.txt').write_text('PASS: synthetic keyboard-visible dump/three-item receipt/hold, offscreen error jump and correction, staged reminder Cancel/Save, paywall draft retention and Android Back, Focus exit/completion, List/Calendar, confirmed Clear list and completed history after cold restart.\n')
+    (OUT / 'native-flow.txt').write_text('PASS: synthetic keyboard-visible dump/three-item receipt/hold, offscreen error jump and correction, denied-notification local save/recovery with automatic Gentle, larger-system-text Home/List/Calendar, staged reminder Cancel/Save, paywall draft retention and Android Back, Focus exit/completion, List/Calendar, confirmed Clear list and completed history after cold restart.\n')
 
 if __name__ == '__main__':
     try:

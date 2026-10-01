@@ -191,7 +191,7 @@ The canonical anti-AI-slop hackathon demo video is authored, verified, and rende
 
 ## NEXT ACTION
 
-Finish the current Android acceptance run for the P0 polish, then safely load the update after saved/Home readiness and confirm the false-silence warning/automatic Gentle recovery before freezing the UI for human film capture.
+Finish the bounded permission/larger-text Android confirmation, load the authorized phone update and confirm the false-silence warning, then freeze the UI for human film capture.
 
 ## October 1 — Real Persistent delivery and clear/restart passed
 
@@ -254,3 +254,11 @@ Applied the reviewed simplification: shared pill actions/chevron back links, Clo
 Reminder choices now stage with the edit; Save persists details/mode and updates scheduling, while Cancel preserves saved state. Clearing exact timing disables reminders. Paywall returns to the requesting editor without losing its fields and stages Persistent after purchase/restore until Save. Notification check-in contains completion/focus/delays/change details, with no mode controls. No parser, scheduler or speech lifecycle change.
 
 Typecheck, lint and all 74 tests pass, including date/null/year-boundary and staged-mode/snooze regressions. One Impeccable mechanical pass returned no findings for changed screens. Native selectors were updated and the fixture-only UI gate now checks keyboard-visible capture, reminder Cancel/Save, paywall draft retention and Android Back. These new native checks are pending, not passed yet. No physical app reload or task mutation occurred; the connected OnePlus still needs saved/Home readiness before loading. The film session may prepare assets, but final capture still waits for this UI acceptance/freeze. Preserve its ignored film/ and the pre-existing untracked automate_demo_capture.py.
+
+## October 1 — Native polish acceptance and final confirmation
+
+Commit d50a74f passed branded debug build 36848023063, full native UI flow 36848027053 and production notification-action/offline recovery 36848035543. Downloaded reports confirm real OS 30/60-minute buttons, unchanged deadlines/one pending request and cold-restart retention. Full UI confirms exact three-item capture, offscreen error recovery, reminder Cancel/Save, paywall draft preservation, Focus Back/completion, List/Calendar/clear/history. Batched Android screenshots were inspected: keyboard text/send visible, approved companion/icons/shapes and coherent revised screens. NEXT remains scrollable; do not claim both NEXT rows always fit above capture.
+
+Two final corrections from that review: weekly header names both months at a boundary and shrinks/wraps at larger text; reminder failure points to opening/saving the item in Plan instead of suggesting a removed direct control. The bounded confirmation adds actual denied-notification holding/recovery and 1.3 system font-scale Home/List/Calendar. Typecheck/lint/74 tests pass; fresh native confirmation is pending.
+
+User explicitly authorized pushing main/running GitHub checks and saved-input phone reload after the automatic review block. Phone Home was verified empty/not listening; an aggregate integrity baseline was recorded without saving payloads. Local .env still had DEMO_MODE=true; changed only that non-secret setting to false so physical testing uses SystemClock. Credentials were preserved and .env remains ignored. Windows denied local Hermes execution; hosted native builds passed. Metro refresh and physical loading remain in progress. No private item has been edited or deleted.

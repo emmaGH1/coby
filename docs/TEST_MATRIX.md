@@ -2,6 +2,9 @@
 
 ## October 1 — Current P0 polish gate
 
+- PASS at d50a74f: native UI 36848027053 and notification actions 36848035543; their downloaded reports and batched screenshots verify the revised paths below. Branded debug 36848023063 passed.
+- FINAL CONFIRMATION PENDING: corrected weekly month-range/recovery instructions, actual denied-notification local holding with automatic Gentle, and 1.3 system font-scale Home/List/Calendar. Native source changes are limited to these clarity refinements.
+
 - Code checks: typecheck/lint and 74 domain/session tests pass. New cases cover relative dates/year rollover/null timing and staged reminder edits, snooze preservation/clearing and removal of exact timing.
 - Native UI run pending: keyboard-visible synthetic typing; three-item receipt/error jump; reminder Cancel leaves Gentle unchanged; paywall return retains edited title and staged Off; Save Off persists; Android Back exits Focus without completion; List/Calendar/clear/history through restart.
 - Native production notification-action rerun pending for the simplified check-in. Prior scheduler delivery/OS action evidence remains valid, but does not prove the changed screen.

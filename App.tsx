@@ -409,7 +409,7 @@ export default function App() {
         try { if (!await syncItemNudges(item, activeClock)) reminderFailure = true; }
         catch { reminderFailure = true; }
       }
-      if (reminderFailure) setError('Your items are saved. Some reminders could not be enabled. Check notification access in Settings, then choose Gentle in Plan.');
+      if (reminderFailure) setError('Your items are saved. Some reminders could not be enabled. Check notification access in Settings, then open the item in Plan and save its reminder.');
     } catch { setError('Coby could not save this. Please try again.'); }
     finally { setBusy(false); }
   }

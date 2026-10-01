@@ -18,7 +18,7 @@ Record a fresh deterministic path twice before final capture. Keep notification 
 
 ## Android screenshot
 
-The verified Home screenshot is [assets/submission/screenshot-home.png](../assets/submission/screenshot-home.png). It was captured from a fixture-powered Android 16 / API 36 emulator at 1179×2556 pixels. The Home screenshot shows one NOW, two NEXT, and both primary actions without scrolling. The app's deterministic demo video and local-device verification remain to be recorded.
+The Home screenshot is [assets/submission/screenshot-home.png](../assets/submission/screenshot-home.png), refreshed October 1 by successful workflow 36825001246. It was captured from a fixture-powered Android 16 / API 36 emulator at 1179×2556 pixels. It shows one NOW, readable capture controls and navigation; NEXT is accessible by scrolling. The corrected submission video remains to be reviewed.
 
 Submission checklist to verify against the current event page before delivery: working Android app, public source/setup/license, demo under two minutes, 1024×1024 icon, at least one 1179×2556 screenshot, and RevenueCat integration. The referenced plan stated these requirements; recheck event details before final submission.
 

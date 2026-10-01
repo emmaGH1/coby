@@ -39,12 +39,24 @@ jobs:
           arch: x86_64
           profile: pixel_6
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
-          script: python3 scripts/capture_android.py
+          script: |
+            python3 scripts/capture_android.py
+            python3 scripts/capture_native_flow.py
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: coby-android-screenshot
           path: artifacts/screenshot-home.png
           if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coby-native-flow-evidence
+          path: |
+            artifacts/flow-*.png
+            artifacts/flow-failure.xml
+            artifacts/native-flow.txt
+          if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         with:
           name: coby-offline-fixture-apk

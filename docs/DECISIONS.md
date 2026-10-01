@@ -180,6 +180,8 @@ Devpost confirms October 1 noon PDT / 20:00 Lagos; retain P0 scope and reserve s
 
 ## October 1 — Safe P0 closure
 
+Native UI acceptance uses a fresh CI emulator and refuses physical devices. It verifies visible transition results rather than trusting timed coordinate taps. Keep failure screenshots/XML synthetic and separate from the user's phone. Fresh screenshot evidence supersedes the old screenshot; do not claim NEXT is visible without scrolling.
+
 User approved automatic free Gentle reminders for newly confirmed future exact-time items. Receipt discloses this and Plan retains mode controls. Notification failure follows successful local holding with truthful recovery copy. No existing modes are changed. Failed extraction offers explicit manual retention as one intact item with null timing; it does not call the fixture's sample extraction or pretend that AI worked offline.
 
 Use the approved circular C vector for exact brand exports and Expo's native splash plugin. Reliability QA runs under a separate Android application ID and a CI-only entry; it must refuse the real package before any clearing. Persistent delivery uses real wall-clock deadlines rather than accelerated mock alarms. Public fixture artifacts contain no development keys and must be labelled as fixture demonstrations, not live AI/billing builds. The Next Gen source/device-demo route remains available without a store release. A publicly distributed live-AI APK requires a secured endpoint.

@@ -193,6 +193,12 @@ The canonical anti-AI-slop hackathon demo video is authored, verified, and rende
 
 Run the isolated native reliability and fresh screenshot workflows, inspect their evidence, then close remaining phone-action and safe-distribution gates before P0 acceptance.
 
+## October 1 — Fresh screenshot and native UI acceptance harness
+
+Downloaded and inspected the successful 36825001246 screenshot: 1179×2556 actual Android 16 rendering, no frame, correct approved companion, settings/pencil/navigation icons and bottom composer. Replaced the stale submission PNG. NOW and primary actions are visible; NEXT stays accessible by scrolling. Native branded APK 36824942961 was downloaded for later authorized installation, not installed over unsaved input.
+
+Added emulator-only native UI checks to the screenshot workflow, refusing a physical serial. They operate exclusively on a fresh CI fixture installation: clear initial synthetic fixtures, text dump, three-item receipt, offscreen first-title error/scroll/correction, hold, Focus completion, List/Calendar, clear remaining held items and preserve Completed through cold restart. Export per-state screenshots/failure evidence. This gate is pending; it must pass before being described as observed. The supplied draft demo remains local/unapproved.
+
 ## October 1 — Recovery and approved automatic Gentle
 
 User approved enabling Gentle automatically when a newly confirmed item has an explicit future timestamp. Date-only, untimed, invalid or past timestamps get none. Receipt explains the default. Do not change existing item modes. Hold now commits items/returns Home before independent reminder synchronization; failure reports saved items plus reminder recovery and cannot invite duplicate capture. Parser failure offers Keep as one item, a receipt of the intact words with null timing, instead of blocking local holding offline. No speech lifecycle changes.
